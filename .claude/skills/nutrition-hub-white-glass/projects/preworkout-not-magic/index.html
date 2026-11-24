@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Pre-workout reel</title>
+<!--
+  "Pre-workout is NOT magic": 9:16, 1080×1920, 30 fps, 24 s, text-only explainer for Nutrition Hub Khanna.
+  Built from the client's "Google-style" storyboard (dot wave, ripples, spinner morph, sparkle, search-bar typing,
+  dot-to-shape morphs) and rebuilt in the White Glass system: orange, ink and ice only, with calm ease-out and no bounce
+  or overshoot. The client then asked for the Google-style four-colour scheme, so the accents are blue, red, yellow and
+  green (01 caffeine blue, 02 beta-alanine red, 03 citrulline yellow, 04 creatine green). That replaces the White Glass
+  orange; logo, type, glass, easing and content rules still follow the nutrition-hub-white-glass skill.
+  Render:  node ../../scripts/render.cjs index.html --out out/video.mp4 --crf 16
+  Preview: open with ?t=5.5 to freeze at 5.5 s.
+  Audio cue times live in audio/sfx.py (CUES). Keep them in step with the times below.
+-->
+<link rel="stylesheet" href="../../assets/brand.css">
+<style>
+  /* Google-style four-colour scheme, chosen by the client for this reel (it replaces the White Glass orange accent).
+     Fills use the bright tones; words use the darker text tones so they stay readable on white. */
+  :root {
+    --g-blue: #4285F4; --g-red: #EA4335; --g-yellow: #FBBC05; --g-green: #34A853;
+    --t-blue: #1A73E8; --t-red: #D93025; --t-amber: #E37400; --t-green: #188038;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #FFFFFF; }
+  .nh-dot { background: var(--c, var(--g-blue)); }
+  #cam, #fx { position: absolute; inset: 0; transform-origin: 540px 900px; }
+  .a { position: absolute; }
+  .scene { position: absolute; inset: 0; }
+  .v { visibility: hidden; }
+  .h { font-weight: 800; letter-spacing: -.032em; line-height: 1.02; color: var(--on-ink, var(--nh-ink)); margin: 0; white-space: nowrap; }
+  em { font-style: normal; color: var(--tc, var(--t-blue)); }
+  .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding: 0 .03em .12em; margin: 0 -.03em -.12em; }
+  .w > * { display: inline-block; }
+  .L { display: inline-block; }
+  .stop { display: inline-block; width: 24px; height: 24px; margin-left: 10px; }
+
+  /* charcoal cards (the client's scheme from the label reel): #29292D with white type, on the white stage */
+  .card { position: absolute; border-radius: 28px;
+    background: linear-gradient(160deg, #36363C 0%, #29292D 42%, #1F1F23 100%);
+    border: 1px solid rgba(255, 255, 255, .06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 2px 4px rgba(17, 17, 19, .06), 0 44px 80px -36px rgba(17, 17, 19, .55); }
+  .nh-chip.a { font-size: 28px; }
+  .nh-chip b { color: var(--tc, var(--t-blue)); font-weight: 800; }
+  .lab { font-size: 24px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--on-sub, var(--nh-slate)); white-space: nowrap; }
+  .src { font-size: 24px; font-weight: 500; line-height: 1.4; color: var(--on-src, var(--nh-slate)); }
+  .sub { font-size: 34px; font-weight: 500; color: var(--on-sub, var(--nh-slate)); white-space: nowrap; }
+  .metric { font-size: 124px; font-weight: 800; letter-spacing: -.02em; line-height: 1; color: var(--on-ink, var(--nh-ink));
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .metric .u { font-size: 52px; font-weight: 700; letter-spacing: -.01em; color: var(--tc, var(--t-blue)); margin-left: 14px; }
+
+  /* charcoal orbs (the four ingredients), each ringed in its colour: --c */
+  .orb { position: absolute; left: 0; top: 0; width: 190px; height: 190px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 56px; font-weight: 800; letter-spacing: -.02em; color: #FFFFFF;
+    font-variant-numeric: tabular-nums; }
+  .skin, .orb { background: radial-gradient(circle at 34% 26%, #4A4A52 0%, #2E2E33 46%, #1F1F23 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 30px 60px -26px rgba(17, 17, 19, .55);
+    outline: 6px solid var(--c, transparent); outline-offset: -3px; }
+  .cb { --c: #4285F4; --tint: #D2E3FC; --tc: #1A73E8; }
+  .cr { --c: #EA4335; --tint: #FAD2CF; --tc: #D93025; }
+  .cy { --c: #FBBC05; --tint: #FEEFC3; --tc: #E37400; }
+  .cg { --c: #34A853; --tint: #CEEAD6; --tc: #188038; }
+  .cb { --tl: #8AB4F8; } .cr { --tl: #F28B82; } .cy { --tl: #FDD663; } .cg { --tl: #81C995; }
+  /* type on a charcoal surface: white heads, light-grey support, light colour tones for key words */
+  .dk { --on-ink: #FFFFFF; --on-sub: #A1A1AA; --on-src: #8E8E96; --tc: var(--tl, #8AB4F8); }
+  .dk .nh-chip { background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .12); box-shadow: none; color: #D4D4D8; }
+  .dk .nh-chip--cta { color: #FFFFFF; }
+  .orb.sm { width: 112px; height: 112px; font-size: 38px; }
+  .skin { position: absolute; inset: 0; border-radius: inherit; }
+  .olab { position: absolute; width: 400px; text-align: center; font-size: 32px; font-weight: 700; color: var(--nh-ink); white-space: nowrap; }
+
+  .dot { position: absolute; left: 0; top: 0; width: 44px; height: 44px; border-radius: 50%; }
+  .rip { position: absolute; left: 0; top: 0; border-radius: 50%; border: 4px solid var(--c, #4285F4); }
+  .rip.ink { border-color: rgba(32, 43, 56, .28); }
+  .spark { position: absolute; left: 0; top: 0; }
+
+  /* flip counter */
+  .flip { position: absolute; top: 0; width: 170px; height: 230px; perspective: 900px;
+    filter: drop-shadow(0 18px 22px rgba(32, 43, 56, .14)); }
+  .hf { position: absolute; left: 0; width: 170px; height: 115px; overflow: hidden; backface-visibility: hidden; }
+  .hf.t { top: 0; border-radius: 22px 22px 0 0; transform-origin: 50% 100%;
+    background: linear-gradient(180deg, #46464D, #3A3A40); border-bottom: 2px solid #1C1C1F; }
+  .hf.b { top: 115px; border-radius: 0 0 22px 22px; transform-origin: 50% 0;
+    background: linear-gradient(180deg, #34343A, #3E3E44); }
+  .hf span { position: absolute; left: 0; width: 170px; height: 230px; line-height: 230px; text-align: center;
+    font-size: 168px; font-weight: 800; letter-spacing: -.03em; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+  .hf.t span { top: 0; } .hf.b span { top: -115px; }
+  .flip-u { position: absolute; left: 386px; top: 128px; font-size: 64px; font-weight: 700; color: #F28B82; letter-spacing: -.01em; }
+
+  .stamp { font-size: 128px; font-weight: 800; letter-spacing: -.035em; line-height: 1; color: #FFFFFF;
+    padding: 16px 30px 20px; border: 7px solid var(--g-yellow); border-radius: 26px; white-space: nowrap;
+    background: rgba(251, 188, 5, .10); }
+  .orfill { position: absolute; inset: 0; border-radius: inherit; background: var(--g-red); opacity: 0; }
+
+  .disc { border-radius: 50%; background: radial-gradient(circle at 36% 28%, #44444B 0%, #2B2B30 50%, #1F1F23 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .10), 0 40px 80px -34px rgba(17, 17, 19, .55); }
+  .pill { display: inline-flex; align-items: center; gap: 22px; padding: 22px 40px 22px 28px; border-radius: 999px;
+    background: linear-gradient(160deg, #36363C 0%, #29292D 50%, #1F1F23 100%); border: 1px solid rgba(255, 255, 255, .06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 24px 44px -24px rgba(17, 17, 19, .5);
+    font-size: 36px; font-weight: 700; color: #FFFFFF; white-space: nowrap; }
+
+  #bar { position: absolute; }
+  #bar .ringl { position: absolute; inset: 0; border-radius: inherit; border: 14px solid #E1E8F0; }
+  #bar .glassl { position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(160deg, #36363C 0%, #29292D 50%, #1F1F23 100%); border: 1px solid rgba(255, 255, 255, .06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 40px 70px -34px rgba(17, 17, 19, .55); }
+  #typed { position: absolute; left: 118px; top: 0; height: 140px; line-height: 140px; font-size: 46px; font-weight: 500;
+    color: #FFFFFF; white-space: nowrap; }
+  #caret { display: inline-block; width: 4px; height: 54px; margin-left: 4px; vertical-align: -10px; background: #8AB4F8; border-radius: 2px; }
+  .mic { position: absolute; left: 818px; top: 26px; width: 88px; height: 88px; border-radius: 50%; background: var(--g-blue);
+    box-shadow: 0 12px 24px -10px rgba(66, 133, 244, .6); display: grid; place-items: center; }
+  .micring { position: absolute; left: 818px; top: 26px; width: 88px; height: 88px; border-radius: 50%; border: 3px solid rgba(66, 133, 244, .75); }
+
+  /* Material circular reveal: four colour rings sweep out, then white */
+  .wipe { position: absolute; left: -760px; top: -340px; width: 2600px; height: 2600px; border-radius: 50%; }
+  .wipe.white { background: radial-gradient(circle, #FFFFFF 0%, #FBFCFE 55%, #F1F5F9 100%); }
+  .endl { position: absolute; left: 0; width: 1080px; text-align: center; color: var(--nh-ink); white-space: nowrap; }
+  .logo-missing { outline: 4px dashed #E66D2A; }
+</style>
+</head>
+<body>
+<div class="nh-stage" id="stage">
+  <div class="nh-orb" id="orbA" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="nh-orb" id="orbB" style="width:760px;height:760px;left:-460px;top:1040px"></div>
+
+  <div id="cam">
+    <!-- ===== S1 · 0–2 s · hook: dot wave → "NOT" ===== -->
+    <div class="nh-chip cb a v" id="s1chip" style="left:72px;top:300px"><span class="nh-dot"></span>Supplement science</div>
+    <div class="card v" id="s1card" style="left:72px;top:450px;width:936px;height:720px"></div>
+    <div class="h dk a v" id="s1pre" style="left:132px;top:498px;font-size:80px">Pre-workout is</div>
+    <div class="h dk a" id="not" style="left:124px;top:600px;font-size:330px;line-height:.9;letter-spacing:-.04em"><span class="L v" style="color:#4285F4">N</span><span class="L v" style="color:#EA4335">O</span><span class="L v" style="color:#FBBC05">T</span></div>
+    <div class="h dk a v" id="s1magic" style="left:132px;top:930px;font-size:150px">magic<span class="stop" id="stop"></span></div>
+
+    <!-- ===== S2 · 2–4 s · spinner → scoop → four orbs ===== -->
+    <div class="h a v" id="s2head" style="left:72px;top:300px;font-size:84px">4 ingredients.<br>4 jobs.</div>
+    <svg class="a v" id="spin" style="left:440px;top:850px" width="200" height="200" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="78" fill="none" stroke="#E1E8F0" stroke-width="6"/>
+      <circle id="spinArc" cx="100" cy="100" r="78" fill="none" stroke="#4285F4" stroke-width="7" stroke-linecap="round" stroke-dasharray="140 490"/>
+    </svg>
+    <svg class="a v" id="scoop" style="left:220px;top:760px;transform-origin:62% 45%" width="640" height="400" viewBox="0 0 640 400">
+      <defs>
+        <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E3EAF2"/></linearGradient>
+      </defs>
+      <!-- measuring scoop, side view: deep cup, powder mound, short flat handle -->
+      <path class="sd" d="M 402 190 L 560 128" stroke="#202B38" stroke-width="22" stroke-linecap="round" fill="none" pathLength="1"/>
+      <path d="M 186 150 C 220 66 380 66 414 150 Z" fill="#F2F6FA" stroke="#C5D0DC" stroke-width="5" stroke-linejoin="round"/>
+      <path class="sd" d="M 180 150 L 200 336 Q 203 356 224 356 L 376 356 Q 397 356 400 336 L 420 150 Z" fill="url(#bowl)" stroke="#202B38" stroke-width="7" stroke-linejoin="round" pathLength="1"/>
+      <path class="sd" d="M 176 150 L 424 150" stroke="#202B38" stroke-width="7" stroke-linecap="round" fill="none" pathLength="1"/>
+      <path d="M 196 200 L 404 200" stroke="#E1E8F0" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <div class="orb cb v" id="o1">01</div><div class="orb cr v" id="o2">02</div><div class="orb cy v" id="o3">03</div><div class="orb cg v" id="o4">04</div>
+    <div class="olab v" id="ol1">Caffeine</div><div class="olab v" id="ol2">Beta-alanine</div>
+    <div class="olab v" id="ol3">Citrulline</div><div class="olab v" id="ol4">Creatine</div>
+
+    <!-- ===== S3 · 4–7 s · 01 caffeine ===== -->
+    <div class="scene cb dk v" id="s3">
+      <div class="card" id="card3"><div class="skin" id="skin3"></div></div>
+      <div class="nh-chip nh-chip--cta a v" id="c3chip" style="left:132px;top:392px"><span class="nh-dot"></span><span><b>01</b>&nbsp;·&nbsp;Caffeine</span></div>
+      <svg class="a v" id="brain" style="left:120px;top:486px" width="400" height="320" viewBox="0 0 400 320" fill="none" stroke="#F4F4F5" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+        <path class="bd" pathLength="1" d="M 120 238 C 78 240 44 214 42 178 C 18 160 20 118 50 104 C 48 70 78 44 114 48 C 130 22 172 14 200 30 C 226 12 270 16 288 42 C 322 40 352 64 352 96 C 378 112 384 152 364 174 C 372 206 348 236 314 236 C 300 258 268 266 246 252 C 228 266 196 268 178 252 C 160 262 134 256 120 238 Z"/>
+        <path class="bd" pathLength="1" d="M 262 252 C 268 284 318 290 334 254"/>
+        <path class="bd" pathLength="1" d="M 222 262 C 226 284 230 298 236 314"/>
+        <path class="bg" pathLength="1" d="M 84 150 C 104 128 140 132 150 156"/>
+        <path class="bg" pathLength="1" d="M 120 92 C 140 110 176 106 186 84"/>
+        <path class="bg" pathLength="1" d="M 214 34 C 202 80 214 120 196 160"/>
+        <path class="bg" pathLength="1" d="M 300 110 C 284 132 296 160 322 166"/>
+        <path class="bg" pathLength="1" d="M 160 196 C 186 214 228 212 252 192"/>
+        <path class="bg" pathLength="1" d="M 236 120 C 252 136 276 134 288 116"/>
+        <path class="bg" pathLength="1" d="M 96 204 C 108 192 128 192 138 206"/>
+      </svg>
+      <svg class="a v" id="shield" style="left:620px;top:470px" width="300" height="330" viewBox="0 0 300 330">
+        <defs>
+          <linearGradient id="shg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A4A52"/><stop offset="1" stop-color="#2A2A2F"/></linearGradient>
+          <clipPath id="clipL"><polygon points="0,0 150,0 150,18 138,80 162,128 136,186 160,240 150,314 150,330 0,330"/></clipPath>
+          <clipPath id="clipR"><polygon points="150,0 300,0 300,330 150,330 150,314 160,240 136,186 162,128 138,80 150,18"/></clipPath>
+          <g id="shieldArt">
+            <path d="M150 18 L 268 58 L 268 160 C 268 238 214 290 150 314 C 86 290 32 238 32 160 L 32 58 Z" fill="url(#shg)" stroke="#A1A1AA" stroke-width="6" stroke-linejoin="round"/>
+            <text x="150" y="196" text-anchor="middle" font-family="Inter" font-weight="800" font-size="96" letter-spacing="-4" fill="#A1A1AA">Zz</text>
+          </g>
+        </defs>
+        <g id="shL" clip-path="url(#clipL)"><use href="#shieldArt"/></g>
+        <g id="shR" clip-path="url(#clipR)"><use href="#shieldArt"/></g>
+        <path id="crack" d="M150 18 L 138 80 L 162 128 L 136 186 L 160 240 L 150 314" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" pathLength="1"/>
+      </svg>
+      <div class="lab a v" id="s3lab" style="left:620px;top:818px;width:300px;text-align:center">Tiredness signal</div>
+      <div class="h a v" id="s3head" style="left:132px;top:890px;font-size:84px">Masks tiredness.<br>Feels like <em id="energy">energy</em>.</div>
+      <svg class="spark v" id="spk1" width="74" height="74" viewBox="0 0 100 100"><use href="#starB"/></svg>
+      <svg class="spark v" id="spk2" width="34" height="34" viewBox="0 0 100 100"><use href="#starB"/></svg>
+      <div class="metric a v" id="s3metric" style="left:128px;top:1112px">3–6<span class="u">mg/kg</span></div>
+      <div class="sub a v" id="s3sub" style="left:132px;top:1246px">of body weight</div>
+      <div class="src a v" id="s3src" style="left:132px;top:1352px;width:816px">Source: ISSN position stand on caffeine (Guest et al., 2021)</div>
+    </div>
+
+    <!-- ===== S4 · 7–10 s · 02 beta-alanine ===== -->
+    <div class="scene cr v" id="s4">
+      <div class="card" id="card4" style="left:72px;top:330px;width:936px;height:1100px"><div class="orfill" id="orfill4"></div></div>
+      <div class="scene dk" id="s4c">
+        <div class="nh-chip nh-chip--cta a v" id="c4chip" style="left:132px;top:392px"><span class="nh-dot"></span><span><b>02</b>&nbsp;·&nbsp;Beta-alanine</span></div>
+        <div class="h a v" id="s4head" style="left:132px;top:474px;font-size:96px">That <em id="tingle">tingle</em>?<br>Harmless.</div>
+        <div id="tdots"></div>
+        <div class="lab a v" id="s4lab" style="left:132px;top:736px">Days of daily use</div>
+        <div class="a v" id="flips" style="left:132px;top:782px;width:560px;height:230px">
+          <div class="flip" id="fA" style="left:0"></div>
+          <div class="flip" id="fB" style="left:186px"></div>
+          <div class="flip-u">days</div>
+        </div>
+        <div class="h a v" id="s4l1" style="left:132px;top:1058px;font-size:54px;letter-spacing:-.02em">Builds up over 2–4 weeks</div>
+        <div class="sub a v" id="s4l2" style="left:132px;top:1136px">at 4–6 g a day</div>
+        <div class="src a v" id="s4src" style="left:132px;top:1352px;width:816px">Source: ISSN position stand on beta-alanine (Trexler et al., 2015)</div>
+      </div>
+    </div>
+
+    <!-- ===== S5 · 10–13 s · 03 citrulline ===== -->
+    <div class="dot v" id="s5dot" style="background:#EA4335"></div>
+    <svg class="a v" id="vein" style="left:0;top:0" width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" stroke-linecap="round">
+      <defs>
+        <linearGradient id="pg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".5" stop-color="#FFF7E0"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient>
+      </defs>
+      <g id="vbase" stroke="#FBBC05">
+        <path class="vh" pathLength="1" d="M 540 690 C 450 640 360 640 290 700 C 220 760 160 790 60 740"/>
+        <path class="vh" pathLength="1" d="M 540 690 C 630 740 720 740 790 680 C 860 620 920 590 1020 640"/>
+        <path class="vbr" pathLength="1" d="M 290 700 C 300 760 330 800 380 832"/>
+        <path class="vbr" pathLength="1" d="M 790 680 C 800 624 772 584 730 562"/>
+      </g>
+      <g id="vcore" stroke="#FDE293" opacity=".95">
+        <path class="vh" pathLength="1" d="M 540 690 C 450 640 360 640 290 700 C 220 760 160 790 60 740"/>
+        <path class="vh" pathLength="1" d="M 540 690 C 630 740 720 740 790 680 C 860 620 920 590 1020 640"/>
+        <path class="vbr" pathLength="1" d="M 290 700 C 300 760 330 800 380 832"/>
+        <path class="vbr" pathLength="1" d="M 790 680 C 800 624 772 584 730 562"/>
+      </g>
+      <path class="pulse" pathLength="1" stroke="url(#pg)" d="M 60 740 C 160 790 220 760 290 700 C 360 640 450 640 540 690 C 630 740 720 740 790 680 C 860 620 920 590 1020 640"/>
+      <path class="pulse" pathLength="1" stroke="url(#pg)" d="M 60 740 C 160 790 220 760 290 700 C 360 640 450 640 540 690 C 630 740 720 740 790 680 C 860 620 920 590 1020 640"/>
+    </svg>
+    <div class="nh-chip nh-chip--cta cy a v" id="c5chip" style="left:72px;top:330px"><span class="nh-dot"></span><span><b>03</b>&nbsp;·&nbsp;Citrulline</span></div>
+    <div class="card cy dk v" id="card5" style="left:72px;top:900px;width:936px;height:520px">
+      <div class="h a v" id="s5head" style="left:58px;top:46px;font-size:84px">More blood flow.</div>
+      <div class="sub a v" id="s5sub" style="left:60px;top:146px">via nitric oxide</div>
+      <div class="stamp a v" id="stamp" style="left:54px;top:214px">BIG PUMP.</div>
+      <div class="src a v" id="s5src" style="left:60px;top:446px">Source: Gonzalez &amp; Trexler, J Strength Cond Res, 2020</div>
+    </div>
+
+    <!-- ===== S6 · 13–16 s · 04 creatine ===== -->
+    <svg class="a v" id="batt" style="left:0;top:0" width="1080" height="1920" viewBox="0 0 1080 1920">
+      <defs>
+        <linearGradient id="og" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5BB974"/><stop offset=".6" stop-color="#34A853"/><stop offset="1" stop-color="#1E8E3E"/></linearGradient>
+      </defs>
+      <rect id="bBody" x="240" y="580" width="560" height="260" rx="44" fill="#29292D"/>
+      <path id="bOut" pathLength="1" d="M 520 580 H 756 A 44 44 0 0 1 800 624 V 796 A 44 44 0 0 1 756 840 H 284 A 44 44 0 0 1 240 796 V 624 A 44 44 0 0 1 284 580 Z" fill="none" stroke="#29292D" stroke-width="8" stroke-linejoin="round"/>
+      <rect id="bCap" x="810" y="664" width="34" height="92" rx="12" fill="#29292D"/>
+      <rect class="cell" x="262" y="602" width="121" height="216" rx="18" fill="url(#og)"/>
+      <rect class="cell" x="397" y="602" width="121" height="216" rx="18" fill="url(#og)"/>
+      <rect class="cell" x="532" y="602" width="121" height="216" rx="18" fill="url(#og)"/>
+      <rect class="cell" x="667" y="602" width="111" height="216" rx="18" fill="url(#og)"/>
+    </svg>
+    <div class="a v" id="atp" style="left:0;top:452px;width:1080px;text-align:center"><span class="pill" id="atpchip" style="font-size:56px;font-weight:800;padding:14px 44px;letter-spacing:-.01em">ATP</span></div>
+    <svg class="spark v" id="spk3" width="64" height="64" viewBox="0 0 100 100"><use href="#starG"/></svg>
+    <div class="nh-chip nh-chip--cta cg a v" id="c6chip" style="left:72px;top:330px"><span class="nh-dot"></span><span><b>04</b>&nbsp;·&nbsp;Creatine</span></div>
+    <div class="h a v" id="s6head" style="left:72px;top:930px;font-size:84px">Recharges your<br>ATP battery.</div>
+    <div class="metric cg a v" id="s6metric" style="left:68px;top:1140px">3–5<span class="u">g/day</span></div>
+    <div class="sub a v" id="s6sub" style="left:72px;top:1274px">every day, not just before training</div>
+    <div class="src a v" id="s6src" style="left:72px;top:1360px;width:936px">Source: ISSN position stand on creatine (Kreider et al., 2017)</div>
+
+    <!-- ===== S7 · 16–19 s · timing ===== -->
+    <div class="h a v" id="s7head" style="left:72px;top:330px;font-size:84px">Time it right.</div>
+    <svg class="a v" id="ring" style="left:0;top:0" width="1080" height="1920" viewBox="0 0 1080 1920" fill="none">
+      <circle cx="540" cy="800" r="260" stroke="#E1E8F0" stroke-width="14"/>
+      <circle class="arc" cx="540" cy="800" r="260" stroke="#4285F4" stroke-width="14" transform="rotate(-90 540 800)"/>
+      <circle class="arc" cx="540" cy="800" r="260" stroke="#EA4335" stroke-width="14" transform="rotate(0 540 800)"/>
+      <circle class="arc" cx="540" cy="800" r="260" stroke="#FBBC05" stroke-width="14" transform="rotate(90 540 800)"/>
+      <circle class="arc" cx="540" cy="800" r="260" stroke="#34A853" stroke-width="14" transform="rotate(180 540 800)"/>
+    </svg>
+    <div class="a v disc dk" id="clock" style="left:350px;top:610px;width:380px;height:380px">
+      <svg class="a" style="left:0;top:0" width="380" height="380" viewBox="0 0 380 380" id="ticks"></svg>
+      <div class="a" style="left:0;top:92px;width:380px;text-align:center;font-size:150px;font-weight:800;letter-spacing:-.03em;line-height:1;color:#FFFFFF;font-variant-numeric:tabular-nums">60<span style="font-size:50px;font-weight:700;color:#8AB4F8;margin-left:8px;letter-spacing:-.01em">min</span></div>
+      <div class="lab a" style="left:0;top:262px;width:380px;text-align:center;font-size:22px">Before training</div>
+    </div>
+    <div class="orb sm cb v" id="p1">01</div><div class="orb sm cr v" id="p2">02</div><div class="orb sm cy v" id="p3">03</div><div class="orb sm cg v" id="p4">04</div>
+    <div class="a v" id="moon" style="left:0;top:1190px;width:1080px;text-align:center">
+      <span class="pill" id="moonpill">
+        <svg width="64" height="64" viewBox="0 0 64 64" style="overflow:visible">
+          <defs><mask id="mm"><rect width="64" height="64" fill="#fff"/><circle cx="44" cy="22" r="19" fill="#000"/></mask></defs>
+          <circle id="moonIcon" cx="30" cy="34" r="25" fill="#E4E4E7" mask="url(#mm)"/>
+          <path class="xl" pathLength="1" d="M 6 6 L 58 58" stroke="#EA4335" stroke-width="7" stroke-linecap="round"/>
+          <path class="xl" pathLength="1" d="M 58 6 L 6 58" stroke="#EA4335" stroke-width="7" stroke-linecap="round"/>
+        </svg>
+        Not within 6 h of bedtime
+      </span>
+    </div>
+    <div class="src a v" id="s7src" style="left:72px;top:1362px;width:936px">Sources: ISSN position stand on caffeine (Guest et al., 2021); Drake et al., J Clin Sleep Med, 2013</div>
+
+    <!-- ===== S8 · 19–21.6 s · search bar + CTA ===== -->
+    <div class="scene v" id="s8">
+      <div id="bar"><div class="ringl" id="ringl"></div><div class="glassl" id="glassl"></div>
+        <div class="a v" id="barc" style="left:0;top:0;width:936px;height:140px">
+          <svg class="a" style="left:44px;top:42px" width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"><circle cx="24" cy="24" r="15"/><path d="M 35 35 L 49 49"/></svg>
+          <div id="typed"><span id="tt"></span><i id="caret"></i></div>
+          <div class="micring" id="micring"></div>
+          <div class="mic" id="mic"><svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"><rect x="15" y="4" width="14" height="24" rx="7" fill="#FFFFFF" stroke="none"/><path d="M 9 21 C 9 39 35 39 35 21"/><path d="M 22 34 L 22 41"/></svg></div>
+        </div>
+      </div>
+      <div class="card dk v" id="res" style="left:72px;top:880px;width:936px;height:400px">
+        <div class="lab a" style="left:62px;top:54px">Top answer</div>
+        <div class="h a" style="left:58px;top:104px;font-size:104px">Comment <em>PRE</em></div>
+        <div class="a" style="left:800px;top:112px;width:96px;height:96px;display:grid;place-items:center;border-radius:50%;background:#3A3A40">
+          <svg width="56" height="56" viewBox="0 0 56 56" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M 28 8 L 28 46 M 12 30 L 28 46 L 44 30"/></svg>
+        </div>
+        <div class="sub a" style="left:62px;top:270px">We'll help you choose the right one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="wipes">
+    <div class="wipe v" style="background:#4285F4"></div><div class="wipe v" style="background:#EA4335"></div>
+    <div class="wipe v" style="background:#FBBC05"></div><div class="wipe v" style="background:#34A853"></div>
+    <div class="wipe white v"></div>
+  </div>
+
+  <!-- dots and ripples sit above everything, under the end card -->
+  <div id="fx">
+    <div id="rips"></div>
+    <div class="dot v" id="d0" style="background:#4285F4"></div>
+    <div class="dot v" id="d1" style="background:#EA4335"></div>
+    <div class="dot v" id="d2" style="background:#FBBC05"></div>
+    <div class="dot v" id="d3" style="background:#34A853"></div>
+  </div>
+
+  <!-- ===== S9 · 21.6–24 s · end card ===== -->
+  <div class="scene" id="end">
+    <img class="a v" id="logo" data-nh-logo alt="Nutrition Hub Khanna logo" style="left:150px;top:500px;width:780px">
+    <div class="endl v" id="handle" style="top:1100px;font-size:54px;font-weight:800;letter-spacing:-.015em">@nutritionhubkhanna</div>
+    <div class="endl v" id="wa" style="top:1182px;font-size:40px;font-weight:600;color:var(--nh-slate)">WhatsApp <span style="color:var(--nh-ink);font-weight:800;font-variant-numeric:tabular-nums">9914571175</span></div>
+    <div class="endl v" id="cta" style="top:1282px"><span class="nh-chip nh-chip--cta"><span class="nh-dot"></span>Comment PRE for help choosing</span></div>
+  </div>
+</div>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="sgB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8AB4F8"/><stop offset=".55" stop-color="#4285F4"/><stop offset="1" stop-color="#1A73E8"/></linearGradient>
+    <linearGradient id="sgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#81C995"/><stop offset=".55" stop-color="#34A853"/><stop offset="1" stop-color="#188038"/></linearGradient>
+    <path id="starB" fill="url(#sgB)" d="M50 0 C 54 32 68 46 100 50 C 68 54 54 68 50 100 C 46 68 32 54 0 50 C 32 46 46 32 50 0 Z"/>
+    <path id="starG" fill="url(#sgG)" d="M50 0 C 54 32 68 46 100 50 C 68 54 54 68 50 100 C 46 68 32 54 0 50 C 32 46 46 32 50 0 Z"/>
+  </defs>
+</svg>
+
+<script>
+const DUR = 24.5;
+const LOGO = "../../assets/logo/nutrition-hub-logo.png";   // ORIGINAL logo, never a redraw
+
+/* ===== easing (White Glass: ease-out reveals, ease-in exits, sine in-out loops, no overshoot) ===== */
+function bezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sx = (t) => ((ax * t + bx) * t + cx) * t, sy = (t) => ((ay * t + by) * t + cy) * t;
+  return (x) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let lo = 0, hi = 1, t = x;
+    for (let i = 0; i < 30; i++) { const v = sx(t); if (Math.abs(v - x) < 1e-5) break; if (v < x) lo = t; else hi = t; t = (lo + hi) / 2; }
+    return sy(t);
+  };
+}
+const E = { out: bezier(.22, 1, .36, 1), in: bezier(.64, 0, .78, 0), inout: bezier(.37, 0, .63, 1) };
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, p) => a + (b - a) * p;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const PI = Math.PI;
+
+/* put(el, opacity, x, y, scale, rotate, blur): one transform per element per frame */
+function put(el, op, tx = 0, ty = 0, sc = 1, rot = 0, blur = 0) {
+  // hide with opacity too: a child set to visibility:visible would otherwise show through a hidden parent
+  if (op <= .002) { if (el._v !== 0) { el.style.visibility = "hidden"; el.style.opacity = "0"; el._v = 0; } return; }
+  if (el._v !== 1) { el.style.visibility = "visible"; el._v = 1; }
+  el.style.opacity = op >= .999 ? "1" : op.toFixed(3);
+  el.style.transform = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sc.toFixed(4)}) rotate(${rot.toFixed(2)}deg)`;
+  el.style.filter = blur > .05 ? `blur(${blur.toFixed(2)}px)` : "none";
+}
+function env(t, a, b, din, dout) { const i = E.out(seg(t, a, a + din)), o = E.in(seg(t, b, b + dout)); return [i, o, i * (1 - o)]; }
+const reveal = (el, t, a, b = 99, din = .7, dout = .35) => { const [i, o, op] = env(t, a, b, din, dout); put(el, op, 0, 0, (.96 + .04 * i) * (1 - .02 * o)); };
+const rise = (el, t, a, b = 99, din = .55, dout = .35, dy = 30) => { const [i, o, op] = env(t, a, b, din, dout); put(el, op, 0, (1 - i) * dy, 1 - .02 * o); };
+const fade = (el, t, a, b = 99, din = .45, dout = .3) => { const [, , op] = env(t, a, b, din, dout); put(el, op); };
+const blurIn = (el, t, a, b = 99, din = .5, dout = .35) => { const [i, o, op] = env(t, a, b, din, dout); put(el, op, (1 - i) * 60, 0, 1 - .02 * o, 0, (1 - i) * 14 + o * 6); };
+function words(el, t, a, b = 99, dout = .35) {
+  const o = E.in(seg(t, b, b + dout));
+  put(el, t < a ? 0 : 1 - o, 0, 0, 1 - .02 * o);
+  el._w.forEach((w, k) => { const p = E.out(seg(t, a + k * .055, a + k * .055 + .45)); w.style.transform = `translateY(${((1 - p) * 112).toFixed(1)}%)`; });
+}
+function split(el) {
+  const nodes = [...el.childNodes]; el.textContent = ""; el._w = [];
+  nodes.forEach((n) => {
+    if (n.nodeName === "BR") { el.appendChild(document.createElement("br")); return; }
+    const isEm = n.nodeName === "EM";
+    n.textContent.split(/(\s+)/).forEach((tok) => {
+      if (!tok) return;
+      if (/^\s+$/.test(tok)) { el.appendChild(document.createTextNode(" ")); return; }
+      const w = document.createElement("span"); w.className = "w";
+      const s = document.createElement(isEm ? "em" : "span"); s.textContent = tok;
+      if (isEm && n.id) s.id = n.id;
+      w.appendChild(s); el.appendChild(w); el._w.push(s);
+    });
+  });
+}
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const center = (el) => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, r }; };
+
+/* ===== build ===== */
+["s2head", "s3head", "s4head", "s5head", "s6head", "s7head"].forEach((id) => split(document.getElementById(id)));
+
+// flip-counter faces
+function buildFlip(el) {
+  el.innerHTML = '<div class="hf t st"><span></span></div><div class="hf b sb"><span></span></div><div class="hf t ft"><span></span></div><div class="hf b fb"><span></span></div>';
+  const g = (c) => $(c, el);
+  return { st: g(".st span"), sb: g(".sb span"), ft: g(".ft span"), fb: g(".fb span"), ftEl: g(".ft"), fbEl: g(".fb") };
+}
+const FLIP = [
+  { f: buildFlip($("#fA")), vals: ["0", "1", "2"], at: [7.92, 8.5] },
+  { f: buildFlip($("#fB")), vals: ["1", "4", "8"], at: [7.98, 8.56] },
+];
+const FLIP_DUR = .42;
+function drawFlip(F, t) {
+  const { f, vals, at } = F;
+  let cur = vals[0], from = null, to = null, p = 0;
+  at.forEach((a, k) => { if (t >= a + FLIP_DUR) cur = vals[k + 1]; else if (t >= a) { from = vals[k]; to = vals[k + 1]; p = E.inout((t - a) / FLIP_DUR); } });
+  if (from === null) {
+    f.st.textContent = f.sb.textContent = cur;
+    f.ftEl.style.visibility = f.fbEl.style.visibility = "hidden";
+    return;
+  }
+  f.st.textContent = to; f.sb.textContent = from; f.ft.textContent = from; f.fb.textContent = to;
+  if (p < .5) {
+    f.ftEl.style.visibility = "visible"; f.fbEl.style.visibility = "hidden";
+    f.ftEl.style.transform = `rotateX(${(-180 * p).toFixed(1)}deg)`;
+  } else {
+    f.ftEl.style.visibility = "hidden"; f.fbEl.style.visibility = "visible";
+    f.fbEl.style.transform = `rotateX(${(180 * (1 - p)).toFixed(1)}deg)`;
+  }
+}
+
+// clock ticks
+(() => {
+  let s = "";
+  for (let k = 0; k < 12; k++) {
+    const a = k * PI / 6, r1 = 168, r2 = k % 3 === 0 ? 150 : 158;
+    s += `<line x1="${190 + r1 * Math.sin(a)}" y1="${190 - r1 * Math.cos(a)}" x2="${190 + r2 * Math.sin(a)}" y2="${190 - r2 * Math.cos(a)}" stroke="${k % 3 === 0 ? "#A1A1AA" : "#52525B"}" stroke-width="${k % 3 === 0 ? 5 : 3}" stroke-linecap="round"/>`;
+  }
+  $("#ticks").innerHTML = s;
+})();
+
+// geometry measured once (everything is untransformed at this point)
+let LP, ENERGY, TINGLE, ATP, MOON, RIPS = [], TD = [];
+const ARC_C = 2 * PI * 260;
+const OPOS = [[250, 600], [830, 600], [250, 1300], [830, 1300]];   // S2 orb landing spots
+const C7 = [540, 800], R7 = 260;
+
+function measure() {
+  const Ls = $$("#not .L");
+  LP = Ls.map((L) => center(L));
+  const st = center($("#stop")); st.d = 24; LP.push(st);
+  ENERGY = $("#energy").getBoundingClientRect();
+  TINGLE = $("#tingle").getBoundingClientRect();
+  ATP = $("#atpchip").getBoundingClientRect();
+  MOON = center($("#moonIcon"));
+
+  // Material ripples: [x, y, start, diameter, colour]
+  const COL = ["#4285F4", "#EA4335", "#FBBC05", "#34A853"];
+  const R = [
+    ...LP.slice(0, 3).map((p, i) => [p.x, p.y, .42 + i * .07, 300, COL[i]]),
+    [LP[3].x, LP[3].y, .8, 150, "#34A853"],
+    [OPOS[0][0], OPOS[0][1], 3.97, 420, "#4285F4"],
+    [540, 880, 4.28, 1100, "#4285F4"],
+    [ENERGY.right + 30, ENERGY.top + 18, 5.5, 220, "#4285F4"],
+    [540, 690, 10.0, 300, "#FBBC05"],
+    [430, 1220, 11.48, 640, "#FBBC05"],
+    [540, 500, 14.52, 360, "#34A853"],
+    ...[0, 1, 2, 3].map((k) => [C7[0] + R7 * Math.cos((k - 1) * PI / 2), C7[1] + R7 * Math.sin((k - 1) * PI / 2), 16.78, 220, COL[k]]),
+    [MOON.x, MOON.y, 17.84, 240, "#EA4335"],
+    [530, 1040, 20.4, 520, "#4285F4"],
+    [540, 796, 22.26, 620, "#4285F4"],
+  ];
+  RIPS = R.map(([x, y, t0, d, c]) => {
+    const el = document.createElement("i"); el.className = "rip v";
+    el.style.setProperty("--c", c);
+    el.style.width = el.style.height = d + "px";
+    $("#rips").appendChild(el);
+    return { el, x, y, t0, d };
+  });
+
+  // tingle dots: a seeded cluster beside the headline (clear of the type)
+  const r = rng(5), cx = 862, cy = TINGLE.top + TINGLE.height / 2 + 34;
+  for (let k = 0; k < 18; k++) {
+    const a = (k / 18) * 2 * PI + r() * .5, rx = 20 + r() * 72, ry = 14 + r() * 70;
+    const el = document.createElement("i"); el.className = "a v";
+    const d = 8 + r() * 7, orange = k % 4 === 1;
+    Object.assign(el.style, { left: "0", top: "0", width: d + "px", height: d + "px", borderRadius: "50%", background: orange ? "#A1A1AA" : (k % 3 ? "#EA4335" : "#F28B82") });
+    $("#tdots").appendChild(el);
+    TD.push({ el, x: cx + rx * Math.cos(a) - d / 2, y: cy + ry * Math.sin(a) - d / 2, p1: r() * 6.28, p2: r() * 6.28, p3: r() * 6.28 });
+  }
+}
+
+/* ===== the four dots (S1 hook, S2 spinner, S9 end) ===== */
+const DOTS = $$("#fx .dot");
+function drawDots(t) {
+  DOTS.forEach((el, i) => {
+    const home = i < 3 ? LP[i] : { x: LP[2].x + (LP[2].x - LP[1].x), y: LP[0].y };
+    let x = home.x, y = home.y, s = 1, op = 1;
+    if (t < 1.85) {
+      s = E.out(seg(t, i * .05, i * .05 + .22));
+      y -= 40 * Math.sin(PI * seg(t, .04 + i * .07, .38 + i * .07));             // the wave
+      if (i < 3) {
+        const m = .42 + i * .07;
+        s *= (1 - E.in(seg(t, m, m + .18))) + E.out(seg(t, 1.58 + i * .03, 1.8 + i * .03));   // dot → letter → dot
+      } else {
+        const k = E.inout(seg(t, .5, .85)) * (1 - E.inout(seg(t, 1.6, 1.85)));   // 4th dot becomes the full stop of "magic"
+        x = lerp(home.x, LP[3].x, k); y = lerp(y, LP[3].y, k); s *= lerp(1, LP[3].d / 44, k);
+      }
+    } else if (t < 3.0) {
+      const p = E.inout(seg(t, 1.85, 2.4));
+      const ang = (-90 + 90 * i + 520 * E.inout(seg(t, 1.9, 2.95))) * PI / 180;
+      x = lerp(home.x, 540 + 78 * Math.cos(ang), p); y = lerp(home.y, 950 + 78 * Math.sin(ang), p);
+      s = lerp(1, .62, p) * (1 - E.in(seg(t, 2.7, 2.92)));
+    } else if (t >= 21.76 && t < 22.5) {
+      const hx = 540 + (i - 1.5) * 84, hy = 796;
+      s = E.out(seg(t, 21.76 + i * .04, 21.98 + i * .04));
+      const c = E.inout(seg(t, 22.12, 22.38));
+      y = hy - 34 * Math.sin(PI * seg(t, 21.82 + i * .07, 22.14 + i * .07));
+      x = lerp(hx, 540, c); y = lerp(y, hy, c); s *= 1 - c;
+    } else op = 0;
+    put(el, s > .01 ? op : 0, x - 22, y - 22, Math.max(s, .001));
+  });
+}
+
+/* ===== scenes ===== */
+function s1(t) {
+  reveal($("#s1chip"), t, .05, 1.6, .5);
+  reveal($("#s1card"), t, 0, 1.62, .6);
+  blurIn($("#s1pre"), t, .1, 1.6);
+  blurIn($("#s1magic"), t, .26, 1.6);
+  put($("#not"), t < 2 ? 1 : 0);
+  $$("#not .L").forEach((L, i) => {
+    const m = .42 + i * .07;
+    const a = E.out(seg(t, m + .04, m + .3)), b = E.in(seg(t, 1.56 + i * .03, 1.76 + i * .03));
+    put(L, a * (1 - b), 0, 0, (.72 + .28 * a) * (1 - .28 * b));
+  });
+}
+function s2(t) {
+  words($("#s2head"), t, 2.1, 3.85);
+  put($("#spin"), E.out(seg(t, 2.1, 2.35)) * (1 - E.in(seg(t, 2.68, 2.9))), 0, 0, 1, (t - 2) * 420);
+  $("#spinArc").setAttribute("stroke", ["#4285F4", "#EA4335", "#FBBC05", "#34A853"][Math.floor(Math.max(0, t - 2.1) / .15) % 4]);
+  const [i, o, op] = env(t, 2.72, 3.66, .5, .3);
+  const sh = seg(t, 3.0, 3.5);
+  put($("#scoop"), op, 0, (1 - i) * 20, (.94 + .06 * i) * (1 - .03 * o), 5 * Math.sin(2 * PI * sh * 2) * (1 - sh));
+  $$("#scoop .sd").forEach((p) => { p.style.strokeDasharray = "1 2"; p.style.strokeDashoffset = (1 - E.out(seg(t, 2.72, 3.15))).toFixed(4); });
+  ["#o1", "#o2", "#o3", "#o4"].forEach((id, k) => {
+    const a = 3.22 + k * .07, p = E.out(seg(t, a, a + .55));
+    const x = lerp(540, OPOS[k][0], p), y = lerp(880, OPOS[k][1], p);
+    let op = E.out(seg(t, a, a + .15)), sc = .3 + .7 * p;
+    if (k === 0) op *= t < 3.97 ? 1 : 0;                       // orb 01 hands over to the S3 card
+    else { const q = E.in(seg(t, 3.95, 4.25)); op *= 1 - q; sc *= 1 - .15 * q; }
+    put($(id), op, x - 95, y - 95, sc);
+    const L = $("#ol" + (k + 1));
+    L.style.left = (OPOS[k][0] - 200) + "px"; L.style.top = (OPOS[k][1] + 112) + "px";
+    rise(L, t, a + .3, 3.9, .4, .3, 16);
+  });
+}
+function s3(t) {
+  const sw = E.in(seg(t, 6.72, 7.1));                            // swipe left, like a feed card
+  put($("#s3"), t >= 3.97 && t < 7.1 ? 1 : 0, -1180 * sw, 0, 1, -6 * sw);
+  const p = E.out(seg(t, 3.97, 4.47)), c = $("#card3");
+  const w = lerp(190, 936, p), h = lerp(190, 1100, p), cx = lerp(OPOS[0][0], 540, p), cy = lerp(OPOS[0][1], 880, p);
+  Object.assign(c.style, { left: (cx - w / 2).toFixed(1) + "px", top: (cy - h / 2).toFixed(1) + "px", width: w.toFixed(1) + "px", height: h.toFixed(1) + "px", borderRadius: lerp(95, 28, p).toFixed(1) + "px" });
+  $("#skin3").style.opacity = (1 - E.out(seg(t, 3.97, 4.3))).toFixed(3);
+  reveal($("#c3chip"), t, 4.35, 99, .5);
+  put($("#brain"), t >= 4.42 ? 1 : 0);
+  $$("#brain .bd").forEach((q) => { q.style.strokeDasharray = "1 2"; q.style.strokeDashoffset = (1 - E.out(seg(t, 4.42, 5.05))).toFixed(4); });
+  $$("#brain .bg").forEach((q, k) => { q.style.strokeDasharray = "1 2"; q.style.strokeDashoffset = (1 - E.out(seg(t, 4.75 + k * .04, 5.15 + k * .04))).toFixed(4); });
+  reveal($("#shield"), t, 4.55, 99, .6);
+  const cr = $("#crack"); cr.style.strokeDasharray = "1 2"; cr.style.strokeDashoffset = (1 - E.out(seg(t, 5.22, 5.42))).toFixed(4);
+  cr.style.opacity = t < 5.22 ? 0 : 1 - .6 * E.out(seg(t, 5.5, 5.9));
+  const q = E.out(seg(t, 5.42, 5.9));
+  $("#shL").setAttribute("transform", `translate(${(-16 * q).toFixed(1)} ${(8 * q).toFixed(1)}) rotate(${(-6 * q).toFixed(2)} 150 314)`);
+  $("#shR").setAttribute("transform", `translate(${(16 * q).toFixed(1)} ${(8 * q).toFixed(1)}) rotate(${(6 * q).toFixed(2)} 150 314)`);
+  $("#shL").style.opacity = $("#shR").style.opacity = (1 - .55 * q).toFixed(3);
+  fade($("#s3lab"), t, 4.8);
+  words($("#s3head"), t, 4.6);
+  rise($("#s3metric"), t, 5.0); rise($("#s3sub"), t, 5.1); fade($("#s3src"), t, 5.15);
+  sparkle($("#spk1"), t, 5.45, ENERGY.right + 4, ENERGY.top - 26, 74);
+  sparkle($("#spk2"), t, 5.6, ENERGY.right + 66, ENERGY.top + 34, 34);
+}
+function sparkle(el, t, a, x, y, d) {
+  const p = E.out(seg(t, a, a + .4));
+  const sh = t > a + .4 ? 1 + .06 * Math.sin((t - a - .4) * 7) : 1;
+  put(el, t < a ? 0 : p * (t > a + .4 ? .88 + .12 * Math.sin((t - a) * 9) : 1), x, y, Math.max(p, .001) * sh, 20 * (1 - p));
+}
+function s4(t) {
+  const si = E.out(seg(t, 6.95, 7.5));
+  put($("#s4"), t >= 6.95 && t < 10.0 ? 1 : 0, 1180 * (1 - si), 0, 1, 6 * (1 - si));
+  put($("#s4c"), 1 - E.in(seg(t, 9.46, 9.66)));
+  // card shrinks into an orange dot that becomes the vein
+  const p = E.inout(seg(t, 9.56, 9.98)), c = $("#card4");
+  const w = lerp(936, 44, p), h = lerp(1100, 44, p), cy = lerp(880, 690, p);
+  Object.assign(c.style, { left: (540 - w / 2).toFixed(1) + "px", top: (cy - h / 2).toFixed(1) + "px", width: w.toFixed(1) + "px", height: h.toFixed(1) + "px", borderRadius: lerp(28, 22, p).toFixed(1) + "px" });
+  $("#orfill4").style.opacity = E.in(seg(t, 9.6, 9.92)).toFixed(3);
+  reveal($("#c4chip"), t, 7.3, 99, .5);
+  words($("#s4head"), t, 7.35);
+  fade($("#s4lab"), t, 7.55);
+  reveal($("#flips"), t, 7.5, 99, .5);
+  FLIP.forEach((F) => drawFlip(F, t));
+  rise($("#s4l1"), t, 7.7); rise($("#s4l2"), t, 7.8); fade($("#s4src"), t, 7.9);
+  TD.forEach((d, k) => {
+    const a = 7.72 + k * .03, op = E.out(seg(t, a, a + .2)) * (.55 + .45 * Math.sin(t * 23 + d.p3));
+    const jx = 4 * Math.sin(t * 41 + d.p1) + 2.5 * Math.sin(t * 67 + d.p2), jy = 4 * Math.sin(t * 37 + d.p2) + 2.5 * Math.sin(t * 59 + d.p3);
+    put(d.el, op, d.x + jx, d.y + jy);
+  });
+}
+function s5(t) {
+  put($("#s5dot"), t >= 9.97 && t < 10.3 ? 1 : 0, 540 - 22, 690 - 22, Math.max(1 - E.in(seg(t, 10.0, 10.25)), .001));
+  put($("#vein"), t >= 10.0 && t < 12.98 ? 1 : 0);
+  const vis = E.out(seg(t, 10.0, 10.45)) * (1 - E.in(seg(t, 12.58, 12.95)));
+  const vb = E.out(seg(t, 10.3, 10.72)) * (1 - E.in(seg(t, 12.45, 12.7)));
+  $$("#vein .vh").forEach((q) => { q.style.strokeDasharray = `${vis.toFixed(4)} 2`; });
+  $$("#vein .vbr").forEach((q) => { q.style.strokeDasharray = `${vb.toFixed(4)} 2`; });
+  const w = 24 + 22 * E.out(seg(t, 10.8, 11.35));
+  $("#vbase").style.strokeWidth = w.toFixed(2); $("#vcore").style.strokeWidth = (w * .28).toFixed(2);
+  $$("#vbase .vbr").forEach((q) => { q.style.strokeWidth = (w * .55).toFixed(2); });
+  $$("#vcore .vbr").forEach((q) => { q.style.strokeWidth = (w * .16).toFixed(2); });
+  $$("#vein .pulse").forEach((q, k) => {
+    const [a, b] = [[10.45, 11.2], [11.3, 12.05]][k], u = seg(t, a, b);
+    q.style.strokeDasharray = "0.14 2"; q.style.strokeDashoffset = (.14 - E.inout(u) * 1.14).toFixed(4);
+    q.style.strokeWidth = (w * .62).toFixed(2); q.style.opacity = u > 0 && u < 1 ? Math.sqrt(Math.sin(PI * u)).toFixed(3) : 0;
+  });
+  reveal($("#c5chip"), t, 10.2, 12.55, .5);
+  rise($("#card5"), t, 10.85, 12.55, .6, .35, 40);
+  words($("#s5head"), t, 11.0);
+  fade($("#s5sub"), t, 11.2);
+  const sp = E.out(seg(t, 11.45, 11.75));
+  put($("#stamp"), t < 11.45 ? 0 : sp, 0, 0, 1.05 - .05 * sp);
+  fade($("#s5src"), t, 11.6);
+}
+function s6(t) {
+  const out = E.in(seg(t, 15.68, 15.98));
+  put($("#batt"), t >= 12.85 ? 1 - out : 0, 0, 0, 1 - .02 * out);
+  const bo = $("#bOut"); bo.style.strokeDasharray = "1 2"; bo.style.strokeDashoffset = (1 - E.out(seg(t, 12.85, 13.4))).toFixed(4);
+  $("#bBody").style.opacity = E.out(seg(t, 13.1, 13.4)).toFixed(3);
+  $("#bCap").style.opacity = E.out(seg(t, 13.25, 13.45)).toFixed(3);
+  $$("#batt .cell").forEach((c, k) => {
+    const p = E.out(seg(t, 13.45 + k * .28, 13.7 + k * .28));
+    c.style.transformBox = "fill-box"; c.style.transformOrigin = "left center";
+    c.style.transform = `scaleX(${Math.max(p, .0001).toFixed(4)})`; c.style.opacity = p > 0 ? 1 : 0;
+  });
+  reveal($("#atp"), t, 14.5, 15.68, .5, .3);
+  sparkle($("#spk3"), t, 14.66, ATP.right - 18, ATP.top - 34, 64);
+  if (t > 15.68) put($("#spk3"), 1 - out, ATP.right - 18, ATP.top - 34, 1);
+  reveal($("#c6chip"), t, 13.1, 15.68, .5, .3);
+  words($("#s6head"), t, 13.55, 15.68, .3);
+  rise($("#s6metric"), t, 13.95, 15.68, .55, .3); rise($("#s6sub"), t, 14.05, 15.68, .55, .3); fade($("#s6src"), t, 14.1, 15.68);
+}
+function s7(t) {
+  words($("#s7head"), t, 16.1, 18.55, .3);
+  const corners = [[-90, 160], [1170, 160], [1170, 1560], [-90, 1560]], fin = [-90, 0, 90, 180];
+  ["#p1", "#p2", "#p3", "#p4"].forEach((id, k) => {
+    const p = E.out(seg(t, 15.85 + k * .04, 16.5 + k * .04));
+    const ang = (fin[k] - 200 * (1 - E.out(seg(t, 15.85, 16.8)))) * PI / 180;
+    const x = lerp(corners[k][0], C7[0] + R7 * Math.cos(ang), p), y = lerp(corners[k][1], C7[1] + R7 * Math.sin(ang), p);
+    const o = E.in(seg(t, 18.55, 18.8));
+    put($(id), t < 15.85 ? 0 : E.out(seg(t, 15.85, 16.05)) * (1 - o), x - 56, y - 56, (.6 + .4 * p) * (1 - .3 * o));
+  });
+  put($("#ring"), t >= 16.45 && t < 18.77 ? E.out(seg(t, 16.45, 16.75)) : 0);
+  const fr = E.out(seg(t, 16.5, 16.82)) * (1 - E.inout(seg(t, 16.95, 18.3)));     // timer arc: fills, then counts down
+  $$("#ring .arc").forEach((a, k) => {
+    const len = clamp(fr - k / 4, 0, .25) * ARC_C;
+    a.style.strokeDasharray = `${len.toFixed(1)} ${ARC_C.toFixed(1)}`;
+    a.style.opacity = len > .5 ? 1 : 0;
+  });
+  reveal($("#clock"), t, 16.45, 18.5, .6, .3);
+  reveal($("#moon"), t, 17.22, 18.5, .55, .3);
+  $$("#moon .xl").forEach((x, k) => { x.style.strokeDasharray = "1 2"; x.style.strokeDashoffset = (1 - E.out(seg(t, 17.8 + k * .12, 17.98 + k * .12))).toFixed(4); x.style.opacity = t < 17.8 ? 0 : 1; });
+  $("#moonIcon").style.opacity = (1 - .7 * E.inout(seg(t, 18.0, 18.3))).toFixed(3);
+  fade($("#s7src"), t, 16.7, 18.5);
+}
+const QUERY = "best pre-workout for me?";
+function s8(t) {
+  put($("#s8"), t >= 18.75 && t < 21.84 ? 1 : 0);
+  const p = E.inout(seg(t, 18.75, 19.3));
+  const w = lerp(534, 936, p), h = lerp(534, 140, p), cy = lerp(C7[1], 770, p);
+  Object.assign($("#bar").style, { left: (540 - w / 2).toFixed(1) + "px", top: (cy - h / 2).toFixed(1) + "px", width: w.toFixed(1) + "px", height: h.toFixed(1) + "px", borderRadius: (h / 2).toFixed(1) + "px" });
+  $("#ringl").style.opacity = (1 - p).toFixed(3); $("#glassl").style.opacity = p.toFixed(3);
+  fade($("#barc"), t, 19.22, 99, .25);
+  const n = t < 19.35 ? 0 : Math.min(QUERY.length, Math.floor((t - 19.35) / .03) + 1);
+  $("#tt").textContent = QUERY.slice(0, n);
+  $("#caret").style.opacity = t < 20.1 || Math.floor((t - 20.1) / .4) % 2 === 1 ? 1 : 0;
+  const ph = ((t - 19.3) % .8 + .8) % .8 / .8;
+  put($("#micring"), t >= 19.3 ? .55 * (1 - ph) : 0, 0, 0, 1 + .75 * E.out(ph));
+  put($("#mic"), 1, 0, 0, 1 + .035 * Math.sin((t - 19.3) * 2 * PI / .8));
+  const [i] = env(t, 20.1, 99, .5, .3);
+  put($("#res"), t < 20.1 ? 0 : i, 0, -70 * (1 - i));
+  $$("#wipes .wipe").forEach((el, k) => {
+    const a = 21.22 + k * .06, wp = E.inout(seg(t, a, a + .36));
+    const op = t < a ? 0 : k === 4 ? 1 - E.out(seg(t, 21.84, 22.14)) : (t < 21.84 ? 1 : 0);
+    put(el, op, 0, 0, Math.max(wp, .001));
+  });
+}
+function s9(t) {
+  reveal($("#logo"), t, 22.18, 99, .85);
+  rise($("#handle"), t, 22.5); rise($("#wa"), t, 22.64); reveal($("#cta"), t, 22.78, 99, .6);
+}
+function drawRips(t) {
+  RIPS.forEach((r) => {
+    const p = (t - r.t0) / .7;
+    if (p <= 0 || p >= 1) { put(r.el, 0); return; }
+    const e = E.out(p);
+    put(r.el, .6 * (1 - e), r.x - r.d / 2, r.y - r.d / 2, .25 + .75 * e);
+  });
+}
+
+/* ===== master clock ===== */
+function draw(t) {
+  // slow camera push across the whole explainer (3 %), none on the end card
+  const push = t < 21.84 ? 1 + .03 * E.inout(seg(t, 0, 21.8)) : 1;
+  $("#cam").style.transform = $("#fx").style.transform = `scale(${push.toFixed(5)})`;
+  $("#orbA").style.transform = `translate(${(Math.sin(t * .11) * 34).toFixed(1)}px, ${(Math.cos(t * .09) * 26).toFixed(1)}px)`;
+  $("#orbB").style.transform = `translate(${(Math.cos(t * .08) * 30).toFixed(1)}px, ${(Math.sin(t * .12) * 22).toFixed(1)}px)`;
+  s1(t); s2(t); s3(t); s4(t); s5(t); s6(t); s7(t); s8(t); s9(t);
+  drawDots(t); drawRips(t);
+}
+
+/* ===== logo: original file only; render.cjs refuses to render if it fails ===== */
+const params = new URLSearchParams(location.search);
+window.__logoStatus = "loading";
+(() => {
+  const probe = new Image();
+  probe.onload = () => { $$("img[data-nh-logo]").forEach((img) => (img.src = probe.src)); window.__logoStatus = "ok"; };
+  probe.onerror = () => { window.__logoStatus = "missing"; $$("img[data-nh-logo]").forEach((img) => img.classList.add("logo-missing")); console.error("ORIGINAL LOGO MISSING"); };
+  probe.src = params.get("logo") || LOGO;
+})();
+
+document.fonts.ready.then(() => {
+  measure();
+  window.__duration = DUR;
+  window.__seek = (t) => draw(t);
+  draw(params.has("t") ? parseFloat(params.get("t")) : 0);
+});
+</script>
+</body>
+</html>
