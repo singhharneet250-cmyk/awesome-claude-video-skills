@@ -44,10 +44,17 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
 
 ## 4. Captions
 
-1. Get a transcript. Use the user's script, a connected transcription tool, or Whisper if it is installed.
-2. Copy `$SK/reference/captions.ass` and replace the `[Events]`. Follow these limits:
-   - 2 lines at most, about 28 characters per line, 1–3 s each.
-   - One orange key word per caption, written as `{\c&H2B78F0&}word{\c&H382B20&}`.
+1. Get word timings. Use Whisper or faster-whisper with word timestamps, IT Reelsmaker's
+   transcription, or the WhisperAI connector. An `.srt` also works, but its word timing is
+   estimated, so check the sync.
+2. Build the captions. They follow the limits in SKILL.md §6: 2 lines, about 28 characters
+   per line, 1–3 s each, one orange key word, never across a sentence end or a pause.
+
+```bash
+python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery
+```
+
+   To fix a single caption by hand, the orange word is written `{\c&H2B78F0&}word{\c&H382B20&}`.
 3. Burn the captions in:
 
 ```bash
@@ -97,10 +104,30 @@ source is endless and needs the trim (tested).
 ## 8. QA
 
 ```bash
-ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate:format=duration -of compact final.mp4
-ffmpeg -i final.mp4 -vf "fps=2,scale=180:-1,tile=10x2" -frames:v 1 sheet.png    # look at it
-ffmpeg -ss 3 -i final.mp4 -frames:v 1 still.png                                 # full-size check
-sha256sum $SK/assets/logo/nutrition-hub-logo.png   # must match the hash in SKILL.md
+python3 $SK/scripts/qa.py final.mp4 --expect 18.5          # footage reel; add --graphics for all-graphics pieces
+ffmpeg -ss 3 -i final.mp4 -frames:v 1 still.png           # full-size check, look at it
 ```
 
-Then run through the checklist in SKILL.md §9.7.
+`qa.py` prints one PASS / WARN / FAIL line per check, with the fix for each FAIL. It
+checks format, codec, audio, faststart, loudness, the logo hash, stray hues and black
+frames, and it writes `final.sheet.png`. Look at the sheet, then run through the by-eye
+checklist in SKILL.md §9.7.
+
+## 9. Fit a size cap (WhatsApp 16 MB, email)
+
+Prefer the `halfsize` skill (`npx -y halfsize@0.2.0 final.mp4 --for whatsapp`), which also
+reports VMAF. Without it, this two-pass ffmpeg encode lands just under the cap (tested:
+1.473 MB for a 1.5 MB target on an 11 s reel):
+
+```bash
+IN=final.mp4; TARGET_MB=15.5      # WhatsApp media cap is 16 MB; keep headroom
+DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 $IN)
+VK=$(python3 -c "print(int($TARGET_MB*8000/$DUR*0.97 - 128))")   # video kb/s after 128k audio
+ffmpeg -y -i $IN -c:v libx264 -b:v ${VK}k -preset slow -pass 1 -passlogfile fit -an -f null /dev/null
+ffmpeg -y -i $IN -c:v libx264 -b:v ${VK}k -preset slow -pass 2 -passlogfile fit -profile:v high -pix_fmt yuv420p \
+  -c:a aac -b:a 128k -ar 48000 -movflags +faststart whatsapp.mp4 && rm -f fit-0.log*
+```
+
+If `VK` comes out under about 1500 for a 1080×1920 reel, the picture will soften. Trim the
+reel, or send the full-quality file another way, instead of going lower. Run `qa.py` on the
+result too.
