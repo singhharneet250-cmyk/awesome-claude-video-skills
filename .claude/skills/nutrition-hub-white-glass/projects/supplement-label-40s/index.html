@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=1080, height=1920">
 <title>Supplement label reel</title>
 <!--
-  "How to Read a Supplement Label in 40 Seconds" — 9:16, 60.8 s (timed to the recorded Hinglish VO).
+  "How to Read a Supplement Label in 40 Seconds" — 9:16, 59.9 s (timed to the recorded Hinglish VO, music and SFX).
   Look: Performance Science on a white stage (white → ice background, charcoal #111113 type,
   orange #FF7518 highlights, grey #29292D cards), chosen by the client for this reel. Logo, type (Inter), easing and content rules follow the
   nutrition-hub-white-glass skill.
@@ -203,6 +203,21 @@
     border: 1px solid rgba(255,255,255,.1); color: var(--white); font-size: 32px; font-weight: 700; white-space: nowrap;
     box-shadow: 0 14px 28px -10px rgba(17,17,19,.3); }
   .chip .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--or); box-shadow: 0 0 12px var(--or); }
+  /* ---------- VFX ---------- */
+  #cam { position: absolute; inset: 0; transform-origin: 540px 900px; }
+  .shine { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 4; }
+  .shine i { position: absolute; top: -30%; bottom: -30%; left: 0; width: 34%; opacity: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.17) 50%, rgba(255,255,255,0)); }
+  .ripple { position: absolute; left: 50%; top: 50%; width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--or);
+    opacity: 0; pointer-events: none; box-shadow: 0 0 18px rgba(255,117,24,.45); }
+  #land { position: absolute; left: 310px; top: 838px; width: 460px; height: 44px; border-radius: 50%; border: 3px solid rgba(255,117,24,.8);
+    opacity: 0; pointer-events: none; box-shadow: 0 0 22px rgba(255,117,24,.35); }
+  #streak { position: absolute; left: 0; right: 0; top: 0; height: 3px; opacity: 0; z-index: 26; pointer-events: none;
+    background: linear-gradient(90deg, rgba(255,117,24,0), #FF7518 18%, #FF7518 82%, rgba(255,117,24,0));
+    box-shadow: 0 0 24px 5px rgba(255,117,24,.45); }
+  #progress b { position: absolute; left: 0; top: 4px; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 3px var(--or), 0 0 18px 5px rgba(255,117,24,.75); }
+  .grow .ck { position: relative; }
   .logo-missing { outline: 4px dashed var(--or); min-height: 200px; }
 </style>
 </head>
@@ -232,14 +247,15 @@
 
 <div id="stage">
   <div class="bg-glow"></div>
-  <div class="orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
-  <div class="orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
+  <div class="orb" id="orbA" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="orb" id="orbB" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
   <div class="bg-grid"></div>
   <div id="particles"></div>
   <div class="vignette"></div>
-  <div id="progress"><i></i></div>
+  <div id="progress"><i></i><b></b></div>
 
   <!-- ===== Scene 1 — hook ===== -->
+  <div id="cam">
   <section class="scene" id="s1">
     <div class="kicker" data-fx="rise" data-at="0" data-dur=".5"><span class="dot"></span>How to read a label</div>
     <h1 class="h1" style="top:318px" data-fx="words" data-at=".08" data-stagger=".04" data-dur=".4"><em>STOP</em> buying protein<br>by the photo<br>on the box</h1>
@@ -317,7 +333,7 @@
   </section>
 
   <!-- shared Nutrition Facts card: zooms off the tub in scene 1, flattens in scene 2 -->
-  <div id="facts" class="card">
+  <div id="facts" class="card" data-shine=".7" data-shine-scene="s2">
     <div class="fc-clip">
       <div class="fc-title">Nutrition Facts</div>
       <div class="fc-sub">Example label · per serving</div>
@@ -365,8 +381,9 @@
       </svg>
     </div>
     <div id="lcd" data-fx="fade" data-at=".5"><span class="v">0</span><span class="u">g</span></div>
+    <div id="land"></div>
     <svg id="scoop3" viewBox="0 0 260 200" aria-hidden="true"><use href="#scoop"/></svg>
-    <div class="rowcard card" style="top:1238px" data-fx="rise" data-at="3.6"><span>Serving size</span><b>1 scoop (33 g)</b></div>
+    <div class="rowcard card" data-shine="3.95" style="top:1238px" data-fx="rise" data-at="3.6"><span>Serving size</span><b>1 scoop (33 g)</b></div>
     <svg style="position:absolute;left:52px;top:1218px;overflow:visible" width="976" height="152" viewBox="0 0 976 152" aria-hidden="true">
       <g fill="none" stroke="#FF7518" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px rgba(255,117,24,.7))">
         <path pathLength="1" data-fx="draw" data-at="3.95" d="M3 48 V20 A17 17 0 0 1 20 3 H68"/>
@@ -384,7 +401,7 @@
     <div class="steps" data-fx="fade" data-at=".1"><i class="done"></i><i class="on"></i><i></i><i></i></div>
     <h2 class="h2" data-fx="words" data-at=".15">Divide protein<br>by scoop size.</h2>
     <div class="pwrap" style="left:72px" data-fx="rise" data-at=".55">
-      <div class="pcard card" id="pA">
+      <div class="pcard card" id="pA" data-shine="1.0 9.0">
         <div class="meta">Scoop A</div>
         <div class="sc"><svg width="161" height="124" viewBox="0 0 260 200"><use href="#scoop"/></svg></div>
         <div class="l1">33 g scoop</div>
@@ -401,7 +418,7 @@
       </div>
     </div>
     <div class="pwrap" style="left:564px" data-fx="rise" data-at=".7">
-      <div class="pcard card" id="pB">
+      <div class="pcard card" id="pB" data-shine="1.15">
         <div class="meta">Scoop B</div>
         <div class="sc"><svg width="200" height="154" viewBox="0 0 260 200"><use href="#scoop"/></svg></div>
         <div class="l1">40 g scoop</div>
@@ -426,12 +443,12 @@
     <div class="steps" data-fx="fade" data-at=".1"><i class="done"></i><i class="done"></i><i class="on"></i><i></i></div>
     <h2 class="h2" data-fx="words" data-at=".15">Lower is better<br>for lean goals.</h2>
     <div id="cubes"></div>  <!-- behind the card: the cubes fall out from under the label -->
-    <div class="card" style="position:absolute;left:72px;right:72px;top:560px;overflow:hidden" data-fx="rise" data-at=".5">
+    <div class="card" data-shine=".95" style="position:absolute;left:72px;right:72px;top:560px;overflow:hidden" data-fx="rise" data-at=".5">
       <div class="srow"><span>Carbohydrate</span><b>3 g</b></div>
       <div class="srow"><span>Total sugars</span><b>2 g</b></div>
       <div class="srow" id="sugrow"><i class="hl"></i><span>Added sugar</span><b>1 g</b></div>
     </div>
-    <div class="warn" data-fx="rise" data-at="5.0">
+    <div class="warn" data-fx="rise" data-at="4.1">
       <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 L22 20.5 H2 Z" fill="none" stroke="#FF7518" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v4.6" stroke="#FF7518" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.4" fill="#FF7518"/></svg>
       <span>Mass gainers can be high in sugar.</span>
     </div>
@@ -442,7 +459,7 @@
     <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>4 · Ingredients</div>
     <div class="steps" data-fx="fade" data-at=".1"><i class="done"></i><i class="done"></i><i class="done"></i><i class="on"></i></div>
     <h2 class="h2" data-fx="words" data-at=".15">The first one<br>is the biggest.</h2>
-    <div id="ingcard" class="card" data-fx="rise" data-at=".4">
+    <div id="ingcard" class="card" data-shine="1.0" data-fx="rise" data-at=".4">
       <div class="head"><span class="meta">Ingredients</span><span class="meta">Most → least</span></div>
       <div id="ingwin">
         <div id="inglist">
@@ -473,15 +490,15 @@
   <section class="scene" id="s7">
     <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>Bonus</div>
     <h2 class="h2" data-fx="words" data-at=".12">Check it’s genuine.</h2>
-    <div class="grow card" style="top:560px" data-fx="rise" data-at=".35">
+    <div class="grow card" data-shine=".75" style="top:560px" data-fx="rise" data-at=".35">
       <div class="ic"><svg width="48" height="48" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M20 4 L34 9 V19 C34 28 28 34 20 37 C12 34 6 28 6 19 V9 Z"/><path d="M14 20 l4 4 l8 -8"/></svg></div>
       <div class="tx">FSSAI licence no.</div><div class="ck"><svg width="40" height="40" viewBox="0 0 24 24"><path pathLength="1" data-fx="draw" data-at="1.05" data-dur=".35" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
-    <div class="grow card" style="top:748px" data-fx="rise" data-at=".5">
+    <div class="grow card" data-shine=".9" style="top:748px" data-fx="rise" data-at=".5">
       <div class="ic"><svg width="48" height="48" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="6" y="9" width="28" height="26" rx="4"/><path d="M6 16 H34 M13 5 V11 M27 5 V11 M12 23 H18 M12 28 H24"/></svg></div>
       <div class="tx">Batch no. + MFG / Expiry</div><div class="ck"><svg width="40" height="40" viewBox="0 0 24 24"><path pathLength="1" data-fx="draw" data-at="1.95" data-dur=".35" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
-    <div class="grow card" style="top:936px" data-fx="rise" data-at=".65">
+    <div class="grow card" data-shine="1.05" style="top:936px" data-fx="rise" data-at=".65">
       <div class="ic"><svg width="48" height="48" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 15 L9 6 H31 L35 15 Z"/><path d="M8 15 V34 H32 V15"/><path d="M17 34 V25 H23 V34"/></svg></div>
       <div class="tx">Authorised seller</div><div class="ck"><svg width="40" height="40" viewBox="0 0 24 24"><path pathLength="1" data-fx="draw" data-at="2.95" data-dur=".35" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
     </div>
@@ -492,7 +509,7 @@
     <div id="s8a">
       <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>Free checklist</div>
       <h2 class="h2" data-fx="words" data-at=".12">Comment <em>LABEL</em><br>for the free checklist.</h2>
-      <div id="cmt" class="card" data-fx="rise" data-at=".3">
+      <div id="cmt" class="card" data-shine=".75" data-fx="rise" data-at=".3">
         <div class="hdr">Comments</div><div class="hr"></div>
         <div class="crow" data-fx="rise" data-at="1.65" data-dur=".45">
           <div class="av" style="width:76px;height:76px"><svg width="40" height="40" viewBox="0 0 24 24" fill="#A1A1AA"><circle cx="12" cy="8.5" r="4.2"/><path d="M3.5 21c.8-4.4 4.2-7 8.5-7s7.7 2.6 8.5 7z"/></svg></div>
@@ -515,13 +532,15 @@
     <div class="end-line" style="top:1186px;font-size:40px;font-weight:600;color:var(--ink-2)" data-fx="rise" data-at="4.15">WhatsApp <span class="num" style="color:var(--ink);font-weight:800">9914571175</span></div>
     <div class="end-chip" data-fx="fade" data-at="4.5"><span class="chip"><span class="dot"></span>Comment LABEL for the free checklist</span></div>
   </section>
+  </div>
+  <div id="streak"></div>
 </div>
 
 <script>
 /* ===== Timing: scene in/out in seconds (retime here after the VO is recorded) ===== */
 // scene changes sit 0.35 s before each scene's first spoken phrase (see vo-hinglish.srt)
-const SC = { s1: [0, 4.37], s2: [4.37, 7.70], s3: [7.70, 15.07], s4: [15.07, 29.30], s5: [29.30, 38.93], s6: [38.93, 47.88], s7: [47.88, 51.95], s8: [51.95, 60.8] };
-const DURATION = 60.8;
+const SC = { s1: [0, 4.37], s2: [4.37, 7.70], s3: [7.70, 15.07], s4: [15.07, 29.30], s5: [29.30, 38.00], s6: [38.00, 46.95], s7: [46.95, 51.02], s8: [51.02, 59.9] };
+const DURATION = 59.9;
 const EXIT = 0.32;                       // scene exit (reverse reveal), seconds
 const LOGO = "../../assets/logo/nutrition-hub-logo.png";   // ORIGINAL logo, never a redraw
 
@@ -638,6 +657,7 @@ function scene12(t) {
     const cx = lerp(lerp(540, 540, pZ), FC.x, pF), cy = lerp(lerp(985, 1010, pZ), FC.y, pF);
     const sc = lerp(lerp(s0, sZ, pZ), 1, pF) * (1 - .015 * q), rx = 13 * pZ * (1 - pF);
     facts.style.opacity = clamp((t - tIn) / .15) * (1 - q);
+    facts.style.filter = q > 0 ? `blur(${(q * 6).toFixed(2)}px)` : "none";
     facts.style.transform = `translate(${(cx - FC.x).toFixed(2)}px, ${(cy - FC.y).toFixed(2)}px) perspective(1800px) rotateX(${rx.toFixed(2)}deg) scale(${sc.toFixed(4)})`;
     const hud = clamp((t - (a1 + TURN + .7)) / .25) * (1 - clamp((t - a2) / .3));
     $$(".brk", facts).forEach((b) => (b.style.opacity = hud));
@@ -676,6 +696,8 @@ function scene3(t) {
   scoop3.style.transform = `translateY(${(fall + dip).toFixed(2)}px)`;
   plat.setAttribute("transform", `translate(0 ${dip.toFixed(2)})`);
   lcdV.textContent = Math.round(33 * E.out(clamp((lt - 2.35) / 1.15)));
+  const g = Math.max(0, 1 - Math.abs(lt - 3.55) / .45);
+  $("#lcd").style.textShadow = `0 0 ${22 + 26 * g}px rgba(255,117,24,${.55 + .35 * g})`;
 }
 
 /* ===== scene 4: rings ===== */
@@ -724,9 +746,9 @@ function scene5(t) {
     c.el.style.opacity = clamp((lt - t0) / .1);
     c.el.style.transform = `translateY(${(-460 * (1 - pf * pf)).toFixed(1)}px) rotate(${lerp(c.r0, c.r1, E.out(pf)).toFixed(2)}deg)`;
   });
-  const h = E.out(clamp((lt - 1.9) / .3));
+  const h = E.out(clamp((lt - 1.0) / .3));
   const pw = (a, b) => (lt > a && lt < b ? .5 - .5 * Math.cos(2 * Math.PI * (lt - a) / .9) : 0);
-  const pulse = Math.max(pw(1.9, 3.7), pw(7.0, 8.8));   // "added sugar" … "added sugar kam hona chahiye"
+  const pulse = Math.max(pw(1.0, 2.8), pw(6.07, 7.87));   // "added sugar" … "added sugar kam hona chahiye"
   sugHl.style.opacity = h;
   sugHl.style.background = `linear-gradient(90deg, rgba(255,117,24,${.18 + .26 * pulse}), rgba(255,117,24,${.04 + .08 * pulse}))`;
   sugrow.style.boxShadow = `inset 0 0 ${40 * pulse}px rgba(255,117,24,${.35 * pulse})`;
@@ -778,6 +800,59 @@ function scene8(t) {
   s8a.style.display = q >= 1 ? "none" : "block";
 }
 
+/* ===== VFX: camera push, depth drift, light sweeps, ripples, transition streak ===== */
+const cam = $("#cam"), orbA = $("#orbA"), orbB = $("#orbB"), streak = $("#streak"), head = $("#progress b");
+const SHOTS = [[SC.s1[0], SC.s2[1]], SC.s3, SC.s4, SC.s5, SC.s6, SC.s7, SC.s8];   // s1+s2 is one continuous shot
+const shines = $$("[data-shine]").flatMap((el) => {
+  const box = document.createElement("div"); box.className = "shine"; box.innerHTML = "<i></i>"; el.appendChild(box);
+  const sc = el.dataset.shineScene || el.closest(".scene").id;
+  return el.dataset.shine.split(" ").map((v) => ({ bar: box.firstChild, t0: SC[sc][0] + parseFloat(v) }));
+});
+function addRipple(host) { const r = document.createElement("i"); r.className = "ripple"; host.appendChild(r); return r; }
+const ripples = [
+  ...cpRows.map((c, i) => ({ el: addRipple(c.dot), t0: SC.s2[0] + .95 + i * .4 })),
+  ...$$("#s7 .ck").map((c, i) => ({ el: addRipple(c), t0: SC.s7[0] + [1.0, 1.9, 2.9][i] })),
+  { el: addRipple($("#pA .tick-badge")), t0: SC.s4[0] + 8.9 },
+];
+const land = $("#land");
+function vfx(t) {
+  // camera: slow push-in across each shot (ease in-out, 2.8 %)
+  const shot = SHOTS.find(([a, b]) => t >= a && t < b) || SHOTS[SHOTS.length - 1];
+  const push = 1 + .028 * E.inout(clamp((t - shot[0]) / (shot[1] - shot[0])));
+  cam.style.transform = `scale(${push.toFixed(5)})`;
+  // background depth drift
+  orbA.style.transform = `translate(${(Math.sin(t * .11) * 34).toFixed(1)}px, ${(Math.cos(t * .09) * 26).toFixed(1)}px)`;
+  orbB.style.transform = `translate(${(Math.cos(t * .08) * 30).toFixed(1)}px, ${(Math.sin(t * .12) * 22).toFixed(1)}px)`;
+  // light sweeps across cards
+  shines.forEach((s) => {
+    const p = (t - s.t0) / .9;
+    if (p <= 0 || p >= 1) { s.bar.style.opacity = 0; return; }
+    s.bar.style.opacity = 1;
+    s.bar.style.transform = `translateX(${(-140 + 440 * E.inout(p)).toFixed(1)}%) skewX(-18deg)`;
+  });
+  // ripples
+  ripples.forEach((r) => {
+    const p = (t - r.t0) / .7;
+    if (p <= 0 || p >= 1) { r.el.style.opacity = 0; return; }
+    const e = E.out(p);
+    r.el.style.opacity = (.65 * (1 - e)).toFixed(3);
+    r.el.style.transform = `translate(-50%, -50%) scale(${(1 + 1.2 * e).toFixed(3)})`;
+  });
+  const lp = (t - (SC.s3[0] + 2.3)) / .6;
+  if (lp > 0 && lp < 1) { const e = E.out(lp); land.style.opacity = (.8 * (1 - e)).toFixed(3); land.style.transform = `scale(${(.55 + .75 * e).toFixed(3)})`; }
+  else land.style.opacity = 0;
+  // transition streak: a thin orange scan line sweeps the frame at each scene change
+  let so = 0, sy = 0;
+  [SC.s3[0], SC.s4[0], SC.s5[0], SC.s6[0], SC.s7[0], SC.s8[0]].forEach((B) => {
+    const p = (t - (B - .3)) / .62;
+    if (p > 0 && p < 1) { so = Math.sin(Math.PI * p) * .8; sy = 140 + 1640 * E.inout(p); }
+  });
+  streak.style.opacity = so.toFixed(3);
+  streak.style.transform = `translateY(${sy.toFixed(1)}px)`;
+  // progress bar head
+  head.style.left = (clamp(t / DURATION) * 1080).toFixed(1) + "px";
+}
+
 /* ===== master clock ===== */
 const bar = $("#progress i");
 function draw(t) {
@@ -790,9 +865,11 @@ function draw(t) {
     const q = last ? 0 : E.in(clamp((t - (s.b - EXIT)) / EXIT));
     s.el.style.opacity = 1 - q;
     s.el.style.transform = `scale(${1 - .015 * q})`;
+    s.el.style.filter = q > 0 ? `blur(${(q * 6).toFixed(2)}px)` : "none";
   });
   anims.forEach((a) => fx(a, t));
   scene12(t); scene3(t); scene4(t); scene5(t); scene6(t); scene7(t); scene8(t);
+  vfx(t);
 }
 
 /* ===== logo: original file only; render.cjs refuses to render if it fails ===== */
