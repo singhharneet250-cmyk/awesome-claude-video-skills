@@ -222,7 +222,9 @@ def wrap(tokens):
     for k in range(1, len(tokens)):
         a, b = " ".join(tokens[:k]), " ".join(tokens[k:])
         over = max(0, len(a) - LINE_CHARS) + max(0, len(b) - LINE_CHARS)
-        score = (over, abs(len(a) - len(b)))
+        pair = is_number(tokens[k - 1], tokens[k]) and is_unit(tokens[k])   # keep "24 gram" on one line
+        weak = tokens[k - 1].lower() in WEAK_ENDS
+        score = (pair, over, abs(len(a) - len(b)) + 4 * weak)
         if best_score is None or score < best_score:
             best, best_score = k, score
     return [tokens[:best], tokens[best:]]
