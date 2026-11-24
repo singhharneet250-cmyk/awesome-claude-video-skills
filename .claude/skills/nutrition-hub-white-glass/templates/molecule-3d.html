@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub molecule 3D</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; }
+  #gl { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  .copy { position: absolute; left: 72px; right: 72px; top: 1150px; display: grid; gap: 22px; }
+  .copy .nh-display { font-size: 104px; }
+  .meta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .formula sub { font-size: .72em; vertical-align: -.18em; line-height: 0; }
+  .is-transparent .copy { top: auto; bottom: 470px; padding: 40px 44px; }
+  .is-transparent .copy .nh-display { font-size: 84px; }
+</style>
+</head>
+<body>
+<!--
+  Realistic 3D molecule (White Glass §4 B): ceramic and frosted-glass ball-and-stick model built from
+  computed atomic coordinates, one signal-orange accent atom, real studio light and contact shadow.
+
+  Render (from the skill folder):
+    node scripts/render.cjs templates/molecule-3d.html --out creatine.mp4
+    node scripts/render.cjs templates/molecule-3d.html --out frame.png --still 3
+    node scripts/render.cjs "templates/molecule-3d.html?molecule=caffeine&samples=8" --out caffeine.mp4
+    node scripts/render.cjs templates/molecule-3d.html --transparent --out molecule.mov   (over footage)
+
+  URL params: ?t=3 freeze · ?molecule=<id> (assets/molecules/) · ?samples=8 real-camera sub-frames
+              (motion blur + depth of field, about 8× slower) · ?dof=0 motion blur only
+              ?transparent=1 no background (shadow stays, text goes on a glass panel)
+  Preview in a browser through a local server (ES modules don't load from file://):
+    python3 -m http.server -d .. 8000   then open http://localhost:8000/templates/molecule-3d.html
+  New molecules: scripts/make_molecule.py (RDKit) writes assets/molecules/<id>.json.
+  The copy is EXAMPLE content: keep every claim sourced (§8).
+-->
+<div class="nh-stage" id="stage">
+  <div class="nh-orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="nh-orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
+  <canvas id="gl"></canvas>
+  <section class="nh-scene" id="scene">
+    <div class="copy" id="copy">
+      <div class="nh-kicker nh-fade" style="--at:.35s" data-text="kicker"></div>
+      <div class="nh-display nh-type" style="--at:.45s" data-text="headline"></div>
+      <div class="meta nh-fade" style="--at:1s">
+        <span class="nh-chip"><span class="nh-dot"></span><span class="formula" id="formula"></span></span>
+        <span class="nh-chip" data-text="chip" data-if="chip"></span>
+      </div>
+      <div class="nh-source nh-fade" style="--at:1.3s" id="note"></div>
+    </div>
+  </section>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "../assets/vendor/three/three.module.min.js", "three/addons/": "../assets/vendor/three/addons/" } }
+</script>
+<script type="module">
+import { createStage, buildMolecule, span, ease, floatWave, THREE } from "../assets/wg3d.js";
+
+const SCENE = {
+  duration: 8,
+  molecule: "creatine",          // any id in assets/molecules/
+  hydrogens: true,               // false: heavy atoms only (cleaner for big molecules)
+  accent: null,                  // null = the molecule's default accent atom, a number = that atom, false = none
+  spin: 16,                      // turntable speed, degrees per second
+  kicker: "Supplement science",
+  headline: null,                // null = "<molecule name>, up close."
+  chip: "",                      // e.g. "Most researched form: monohydrate" (keep it sourced)
+  note: "3D model: computed conformer (RDKit, MMFF94). Shape illustrative.",
+  // real camera: samples > 1 averages sub-frames over the shutter (motion blur) and the lens (depth of field).
+  // 1 = fast draft; 8 = delivery look. aperture is the lens radius in model units (Å); 0 = everything sharp.
+  camera: { samples: 1, shutter: 0.5, aperture: 0.35 },
+  exposure: 1.08,
+};
+
+const params = new URLSearchParams(location.search);
+const transparent = params.get("transparent") === "1";
+if (params.has("molecule")) SCENE.molecule = params.get("molecule");
+if (params.has("samples")) SCENE.camera.samples = Number(params.get("samples"));
+if (params.get("dof") === "0") SCENE.camera.aperture = 0;
+if (transparent) document.getElementById("stage").classList.add("is-transparent");
+if (transparent) document.getElementById("copy").classList.add("nh-glass");
+window.__logoStatus = "none";
+
+try {
+  const res = await fetch(`../assets/molecules/${SCENE.molecule}.json`);
+  if (!res.ok) throw new Error(`molecule "${SCENE.molecule}" not found in assets/molecules/`);
+  const mol = await res.json();
+
+  // ---- copy ----
+  SCENE.headline ??= `${mol.name}, up close.`;
+  document.querySelectorAll("[data-text]").forEach((el) => { el.textContent = SCENE[el.dataset.text] ?? ""; });
+  document.querySelectorAll("[data-if]").forEach((el) => { if (!SCENE[el.dataset.if]) el.remove(); });
+  document.getElementById("formula").innerHTML = mol.formula.replace(/(\d+)/g, "<sub>$1</sub>");
+  document.getElementById("note").textContent = SCENE.note;
+  document.querySelectorAll(".nh-type").forEach((el) => {
+    const words = el.textContent.split(/\s+/).filter(Boolean); el.textContent = "";
+    words.forEach((w, i) => {
+      const m = document.createElement("span"); m.className = "nh-w";
+      const s = document.createElement("span"); s.textContent = w; s.style.setProperty("--i", i);
+      m.appendChild(s); el.appendChild(m); el.appendChild(document.createTextNode(" "));
+    });
+  });
+  document.getElementById("scene").style.setProperty("--out", (SCENE.duration - 0.45) + "s");
+
+  // ---- 3D ----
+  const stage = createStage({
+    out: document.getElementById("gl"), width: 1080, height: 1920,
+    exposure: SCENE.exposure, fov: 26, shadowOpacity: 0.09,
+  });
+  const { group, radius, center, bottom } = buildMolecule(mol, { hydrogens: SCENE.hydrogens, accent: SCENE.accent, overFootage: transparent });
+  group.position.sub(center);
+
+  // nesting keeps each motion on its own transform: reveal > float > spin > model
+  const spinG = new THREE.Group(); spinG.add(group);
+  const floatG = new THREE.Group(); floatG.add(spinG);
+  const revealG = new THREE.Group(); revealG.add(floatG);
+  const lift = bottom + 0.35;                // the lowest atom hovers 0.35 Å up; the soft shadow sits right under it
+  revealG.position.y = lift;
+  stage.scene.add(revealG);
+
+  // camera: framed so the model fills ~60% of the width, 5° above (a low studio angle keeps the
+  // shadow tucked under the model), lens-shifted into the upper half
+  const fovH = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(26) / 2) * (1080 / 1920));
+  const dist0 = radius / Math.tan(fovH / 2) / 0.98;
+  const elev = THREE.MathUtils.degToRad(4);
+  stage.shift(transparent ? 340 : 250);
+  stage.focusTarget.set(0, lift, 0);
+  stage.lightFrom(new THREE.Vector3(0, lift, 0));
+  const upp = stage.unitsPerPixel(dist0);    // world units per screen pixel at the model
+
+  const canvasEl = document.getElementById("gl");
+  const D = SCENE.duration;
+
+  function update(t) {
+    // 01 glass reveal (0.75 s) and the exit (last 0.45 s): opacity on the canvas, scale on the model
+    const rin = span(t, 0, 0.75, ease.out);
+    const rout = span(t, D - 0.45, 0.45, ease.in);
+    canvasEl.style.opacity = String(rin * (1 - rout));
+    revealG.scale.setScalar((0.96 + 0.04 * rin) * (1 - 0.02 * rout));
+    // 02 3D float: ±12 px drift, ±3° tilt, 2.6 s loop
+    const w = floatWave(t, 2.6);
+    floatG.position.y = w * 12 * upp;
+    floatG.rotation.z = THREE.MathUtils.degToRad(3) * w;
+    // turntable with a physical spin-up (no snap to speed)
+    const tau = 0.8;
+    spinG.rotation.y = THREE.MathUtils.degToRad(SCENE.spin) * (t - tau * (1 - Math.exp(-t / tau)));
+    // camera: slow push-in, 4% over the shot
+    const d = dist0 * (1 - 0.04 * ease.float(Math.min(1, t / D)));
+    stage.camera.position.set(0, lift + d * Math.sin(elev), d * Math.cos(elev));
+    stage.camera.lookAt(0, lift, 0);
+  }
+
+  window.__duration = D;
+  window.__seek = (t) => {
+    document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
+    stage.frame(t, update, SCENE.camera);
+  };
+  await document.fonts.ready;
+  if (params.has("t")) window.__seek(parseFloat(params.get("t")));
+  else window.__seek(0);
+} catch (e) {
+  window.__error = String(e.message || e);
+  console.error(window.__error);
+}
+</script>
+</body>
+</html>

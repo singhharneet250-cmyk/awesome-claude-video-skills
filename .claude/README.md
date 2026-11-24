@@ -7,7 +7,9 @@ else does the heavy lifting under its rules.
 
 | Skill | What it adds |
 |---|---|
-| `nutrition-hub-white-glass` | The White Glass brand and motion system: original logo, palette, Inter type, glass components, motion timings, caption style, footage grade, HTML templates and the render pipeline. Now also `scripts/captions.py` (word timings → on-brand captions), `scripts/qa.py` (automated delivery QA) and a routing table for the companions below (SKILL.md §10). |
+| `nutrition-hub-white-glass` | The White Glass brand and motion system: original logo, palette, Inter type, glass components, motion timings, caption style, footage grade, HTML templates and the render pipeline. Now also `scripts/captions.py` (word timings → on-brand captions), `scripts/qa.py` (automated delivery QA), a routing table for the companions below (SKILL.md §10), and realistic 3D: `templates/molecule-3d.html` (17 supplement molecules as ceramic and frosted-glass models from verified computed conformers, studio light, contact shadow, real-camera motion blur and depth of field) and `templates/product-hero-3d.html` (your real product photo in a 3D studio with shadow, reflection and parallax, label untouched). |
+| `molecular-film` | Blender-grade protein and enzyme films from real PDB / AlphaFold structures with the [Molecular_Animation](https://github.com/AmadeusBio-ai/Molecular_Animation) framework (Apache-2.0, pinned commit), given the White Glass look. Needs Blender 5.2 and a GPU, so it runs on your own machine. |
+| `use-3d-software` | Exact Blender 5.x and three.js steps for realistic materials, glass, lighting, HDRI, depth of field and headless renders. Vendored from [codepawl/creator-generalist](https://github.com/codepawl/creator-generalist) (MIT). |
 | `halfsize` | Compress a finished video to an exact size cap (WhatsApp 16 MB, Gmail, Outlook) and report the measured quality. Vendored from [YKLovePython/halfsize](https://github.com/YKLovePython/halfsize) (MIT), pinned to v0.2.0. See `skills/halfsize/SOURCE.md`. |
 
 ## Project plugin (`.claude/settings.json`)
@@ -36,3 +38,6 @@ the White Glass rules or duplicate a plugin above:
 - `kurbaitaev/ghost-editor`: Apple-silicon only, sends frames to Google; IT Reelsmaker covers the same job.
 - `louisedesadeleer/cut-video`: macOS/Homebrew install; IT Reelsmaker cuts pauses and retakes.
 - `remotion-dev/skills`: no licence file to copy under; the official Remotion plugin is used instead.
+- `mromidev/claude-blender-skills`: realistic Blender drone, forest and car films; Windows-centred scripts and not supplement content. `use-3d-software` covers the Blender craft.
+- `sunxiayi/make-blender-education-video-skill`: forces its own Kokoro voice, Arial subtitles and English-only narration, against your recorded Hinglish VO and Inter captions.
+- The rest of `codepawl/creator-generalist` (characters, games, cutaways): renders through its own Crucible engine and MCP server; only its `use-3d-software` tool skill was taken.

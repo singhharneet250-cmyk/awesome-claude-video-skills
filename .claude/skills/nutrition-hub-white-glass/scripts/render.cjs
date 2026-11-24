@@ -44,11 +44,14 @@ async function main() {
   }
   const [W, H] = o.size.split("x").map(Number);
   const fps = Number(o.fps);
-  const url = pathToFileURL(path.resolve(o.page));
+  const [pagePath, query] = o.page.split("?");          // "page.html?molecule=caffeine" passes URL params
+  const url = pathToFileURL(path.resolve(pagePath));
+  if (query) new URLSearchParams(query).forEach((v, k) => url.searchParams.set(k, v));
   if (o.transparent) url.searchParams.set("transparent", "1");
   if (o.logo) url.searchParams.set("logo", pathToFileURL(path.resolve(o.logo)).href);
 
-  const browser = await chromium.launch();
+  // --allow-file-access-from-files lets the 3D templates load three.js as ES modules from file://
+  const browser = await chromium.launch({ args: ["--allow-file-access-from-files", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"] });
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: 1 });
   page.on("console", (m) => { if (m.type() === "error") console.error("[page]", m.text()); });
   await page.goto(url.href, { waitUntil: "load" });
@@ -59,8 +62,12 @@ async function main() {
     await browser.close();
     throw new Error("Original Nutrition Hub logo did not load. Put it at assets/logo/nutrition-hub-logo.png or pass --logo <file>. Never substitute a redraw.");
   }
+  // 3D pages build asynchronously (modules, data, textures): wait for __seek, or for the page's own error
+  await page.waitForFunction(() => typeof window.__seek === "function" || window.__error, null, { timeout: 60000 }).catch(() => {});
+  const pageError = await page.evaluate(() => window.__error);
+  if (pageError) { await browser.close(); throw new Error(`Page failed to build: ${pageError}`); }
   const hasSeek = await page.evaluate(() => typeof window.__seek === "function");
-  if (!hasSeek) throw new Error("Page has no window.__seek(t) — use a template from templates/.");
+  if (!hasSeek) { await browser.close(); throw new Error("Page has no window.__seek(t) — use a template from templates/."); }
 
   const shot = () => page.screenshot({ type: "png", omitBackground: o.transparent });
 

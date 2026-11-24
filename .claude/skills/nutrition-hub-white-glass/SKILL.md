@@ -1,6 +1,6 @@
 ---
 name: nutrition-hub-white-glass
-description: Brand and motion system for Nutrition Hub Khanna (the "White Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, IT Reelsmaker, Motion Reel, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade, a tested render pipeline, a caption generator, an automated delivery QA, and which companion skill or plugin to use for each job (this skill wins wherever they disagree).
+description: Brand and motion system for Nutrition Hub Khanna (the "White Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, IT Reelsmaker, Motion Reel, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade, a tested render pipeline, realistic 3D molecule and product-hero templates, a caption generator, an automated delivery QA, and which companion skill or plugin to use for each job (this skill wins wherever they disagree).
 ---
 
 # Nutrition Hub Khanna: White Glass Motion System
@@ -91,9 +91,19 @@ All of these are implemented in `assets/brand.css`.
   18–28 px radius (`.nh-glass`, `.nh-glass--sm`). Over footage they go near-opaque
   automatically (`.is-transparent`). **Every word over footage sits on a panel.**
 - **B · 3D science:** molecular science visuals with realistic materials and controlled
-  detail. Use a real 3D render or a generated image (prompt below). The SVG atom in the
-  template is a stand-in.
-  - Prompt base: *"translucent frosted-glass and white ceramic molecular model, one signal
+  detail. The SVG atom in `reel-9x16.html` is a stand-in; use a real 3D render:
+  - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,
+    citrulline, theanine, taurine, glycine, HMB, vitamin C, melatonin, curcumin):
+    `templates/molecule-3d.html`. It is a physically based three.js studio (`assets/wg3d.js`): white
+    ceramic carbon and hydrogen, frosted-glass heteroatoms, one orange accent atom, studio reflections,
+    a soft contact shadow, and real-camera motion blur and depth of field with `?samples=8`. The
+    atom positions are computed conformers from verified SMILES (`assets/molecules/`, checked for
+    formula and stereochemistry by `scripts/make_molecule.py`, which also adds new molecules), so say
+    "3D model: computed conformer" on screen. Elements are told apart by material and size, never
+    by hue (no CPK blue nitrogen or red oxygen).
+  - **Proteins and enzymes** from a real PDB or AlphaFold structure: the `molecular-film` skill
+    (Blender Cycles, on a GPU machine).
+  - **A generated still**, only when neither fits, from this prompt base: *"translucent frosted-glass and white ceramic molecular model, one signal
     orange (#F0782B) accent atom, seamless white studio, soft diffused key light, gentle
     reflections, shallow depth of field, high-key, clean editorial, minimal"*.
   - Avoid: neon, dark backgrounds, sci-fi HUDs, lens flares, clutter, glowing particles.
@@ -103,6 +113,10 @@ All of these are implemented in `assets/brand.css`.
 - **D · Product hero:** product spotlight with accurate packaging and soft reflections. Use
   real product photos or renders only. Never AI-regenerate or alter a label, logo, claim
   or flavour. Show the front label square-on and legible, on a white sweep with soft shadow.
+  `templates/product-hero-3d.html` stands the real cut-out photo on a 3D studio floor. Its pixels
+  are drawn unlit and un-tonemapped, so the label stays exactly as photographed. The realism
+  comes from the light around it: a silhouette shadow, a contact shadow, a satin floor
+  reflection and a slow ±6° parallax orbit. It refuses a photo with a solid background.
 - **Chips:** `● FROSTED GLASS` style tags and the CTA (`.nh-chip`, `.nh-chip--cta`).
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
@@ -173,11 +187,20 @@ All of these are implemented in `assets/brand.css`.
    and copy. Keep `assets/brand.css` as the single source of truth.
    - `reel-9x16.html`: a full-frame branded reel (hook → data callout → logo end card).
    - `overlay-callout.html`: a transparent glass callout to lay over footage.
+   - `molecule-3d.html`: a realistic 3D molecule (pick it with `?molecule=<id>`). Set the copy in `SCENE`.
+   - `product-hero-3d.html`: the real product photo in a 3D studio (`?photo=/path/pack.png`).
 5. **Render** (from this skill's folder):
    - Full video: `node scripts/render.cjs templates/reel-9x16.html --out out.mp4`
    - Overlay for footage: `node scripts/render.cjs templates/overlay-callout.html --transparent --out callout.mov`
    - End card only: `node scripts/render.cjs templates/reel-9x16.html --from 8.15 --out endcard.mp4`
    - QA still: `node scripts/render.cjs <page> --out frame.png --still 5.2`
+   - 3D molecule: `node scripts/render.cjs "templates/molecule-3d.html?molecule=caffeine" --out caffeine.mp4`
+   - 3D product hero: `node scripts/render.cjs "templates/product-hero-3d.html?photo=/abs/pack.png" --out hero.mp4`
+   - Add `&samples=8` to either for the delivery look (motion blur and depth of field). On a
+     CPU-only machine a draft runs at about 0.5 s per frame and `samples=8` at about 8×;
+     with a GPU it is much faster. Add `--transparent` for an overlay that keeps the shadow.
+   - Preview a 3D template in a browser through a local server, because ES modules don't load from
+     `file://`: `python3 -m http.server -d . 8000`, then open `localhost:8000/templates/molecule-3d.html`.
 6. **Edit the footage:** reframe, grade, composite, caption, transition, end card and
    loudness. Follow `reference/footage-editing.md`; every recipe in it has been tested.
 7. **QA before you deliver.** Run `python3 scripts/qa.py out.mp4` (add `--graphics` for an
@@ -204,6 +227,11 @@ inputs in the last column.
 | An editable HyperFrames project or the HyperFrames desktop app | `hyperframes` plugin (project plugin, `.claude/settings.json`) | `assets/brand.css` tokens; grade footage with §2 numbers via its `media-treatment`. Its skill sends a usage note to HeyGen once per run and asks first; say no to skip. |
 | A project that is already in Remotion | `remotion` plugin | `Easing.bezier(.22,1,.36,1)`; springs `{damping: 200, overshootClamping: true}` |
 | Product film or showreel rendered from code (no footage) | `motion-reel` plugin | Real product photos only (§4 D); palette, logo, §5 motion |
+| A realistic 3D molecule (small molecule) | `templates/molecule-3d.html` (§4 B) | A molecule id; new ones via `scripts/make_molecule.py` |
+| A realistic protein or enzyme film from a PDB / AlphaFold structure | `molecular-film` skill (Blender, GPU machine) | Its White Glass look constants; labels from our callouts |
+| A realistic product hero shot | `templates/product-hero-3d.html` (§4 D) | The real cut-out product photo, never a regenerated one |
+| Any step inside Blender or three.js (materials, glass, lighting, HDRI, depth of field, headless render) | `use-3d-software` skill | §2 palette and §5 motion as the targets |
+| Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router) | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
 | Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a white-box caption preset with no pop |
@@ -240,6 +268,12 @@ assets/logo/nutrition-hub-logo.png   ORIGINAL logo (never modify)
 assets/brand.css               tokens, components and motion primitives
 templates/reel-9x16.html       full branded reel (edit the SCENE object)
 templates/overlay-callout.html transparent glass callout for footage
+templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
+templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
+assets/wg3d.js                 the 3D studio: PBR materials, light, shadow catcher, camera, builders
+assets/molecules/              computed conformers of 17 supplement molecules (+ library.json of verified SMILES)
+assets/vendor/three/           three.js r170 (MIT), vendored
+scripts/make_molecule.py       SMILES → verified 3D molecule JSON (needs RDKit)
 scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
 scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
