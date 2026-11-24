@@ -5,7 +5,8 @@ soft pops on the dot wave, ripple blooms, whooshes on card swipes, flip clacks, 
 sparkle chimes, heartbeat pulses along the vein, battery blips, timer ticks, keyboard clicks
 for the search bar and a shimmer under the logo. No music: add a track inside Instagram.
 
-usage: python3 audio/sfx.py <out.wav>          (needs numpy only)
+usage: python3 audio/sfx.py <out.wav> [warp.json]   (needs numpy only)
+warp.json (from audio/build_vo.py) retimes every cue to the voiceover cut; without it the 24.5 s cut is used.
 Then normalise to -14 LUFS / -1.5 dBTP with ffmpeg loudnorm (see README.md).
 Cue times mirror index.html; change both together.
 """
@@ -17,11 +18,25 @@ try:
 except ImportError:
     sys.exit("sfx.py needs numpy: pip install numpy")
 
-if len(sys.argv) != 2:
-    sys.exit("usage: python3 audio/sfx.py <out.wav>")
+if len(sys.argv) not in (2, 3):
+    sys.exit("usage: python3 audio/sfx.py <out.wav> [warp.json]")
 
 SR = 48000
 DUR = 24.5
+WARP = [[0, 0], [24.5, 24.5]]                                  # [real, anim] knots, same table as index.html
+if len(sys.argv) == 3:
+    import json
+    _w = json.load(open(sys.argv[2]))
+    WARP, DUR = _w["warp"], _w["duration"]
+
+
+def a2r(t):
+    """Animation time (the cue times below) → real time on the retimed cut."""
+    for (r0, a0), (r1, a1) in zip(WARP, WARP[1:]):
+        if t <= a1:
+            return r0 + (r1 - r0) * (t - a0) / (a1 - a0)
+    return t - WARP[-1][1] + WARP[-1][0]
+
 rng = np.random.default_rng(22)
 mix = np.zeros((int(DUR * SR) + SR, 2))
 
@@ -32,7 +47,7 @@ def T(d):
 
 def place(x, t0, gain=1.0, pan=0.0):
     """Add mono x at t0 seconds with constant-power pan (-1 left .. 1 right)."""
-    i = int(t0 * SR)
+    i = int(a2r(t0) * SR)
     a = (pan + 1) * np.pi / 4
     seg = x[: max(0, len(mix) - i)] * gain
     mix[i:i + len(seg), 0] += seg * np.cos(a)

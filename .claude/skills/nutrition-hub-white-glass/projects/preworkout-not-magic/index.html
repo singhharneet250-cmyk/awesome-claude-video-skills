@@ -345,7 +345,18 @@
 </svg>
 
 <script>
-const DUR = 24.5;
+/* Time warp: [real seconds, animation seconds] knots, piecewise linear. It retimes the scenes to the voiceover
+   without touching any scene code (every time below is animation time). audio/sfx.py holds the same table. */
+const WARP = [[0.0, 0.0],  [1.0, 1.0],  [2.45, 1.55],  [2.9, 2.0],  [6.6, 4.0],  [8.5, 5.9],  [10.47, 6.7],  [10.77, 7.0],  [12.77, 9.0],  [16.16, 9.45],  [16.71, 10.0],  [18.51, 11.8],  [20.99, 12.5],  [21.49, 13.0],  [23.59, 15.1],  [26.33, 15.65],  [26.68, 16.0],  [27.48, 16.8],  [30.52, 18.45],  [31.07, 19.0],  [32.62, 20.55],  [34.61, 21.2],  [35.01, 21.6],  [36.81, 23.4],  [40.49, 24.5]];   // from audio/warp.json (audio/build_vo.py)
+function warp(t) {
+  for (let k = 1; k < WARP.length; k++) {
+    const [r0, a0] = WARP[k - 1], [r1, a1] = WARP[k];
+    if (t <= r1 || k === WARP.length - 1) return a0 + (a1 - a0) * (t - r0) / (r1 - r0);
+  }
+  return t;
+}
+const DUR = WARP[WARP.length - 1][0];
+let RT = 0;   // real (unwarped) time, for ambient loops: jitter, shimmer, mic pulse, caret, background drift
 const LOGO = "../../assets/logo/nutrition-hub-logo.png";   // ORIGINAL logo, never a redraw
 
 /* ===== easing (White Glass: ease-out reveals, ease-in exits, sine in-out loops, no overshoot) ===== */
@@ -590,8 +601,8 @@ function s3(t) {
 }
 function sparkle(el, t, a, x, y, d) {
   const p = E.out(seg(t, a, a + .4));
-  const sh = t > a + .4 ? 1 + .06 * Math.sin((t - a - .4) * 7) : 1;
-  put(el, t < a ? 0 : p * (t > a + .4 ? .88 + .12 * Math.sin((t - a) * 9) : 1), x, y, Math.max(p, .001) * sh, 20 * (1 - p));
+  const sh = t > a + .4 ? 1 + .06 * Math.sin(RT * 7) : 1;
+  put(el, t < a ? 0 : p * (t > a + .4 ? .88 + .12 * Math.sin(RT * 9) : 1), x, y, Math.max(p, .001) * sh, 20 * (1 - p));
 }
 function s4(t) {
   const si = E.out(seg(t, 6.95, 7.5));
@@ -609,8 +620,8 @@ function s4(t) {
   FLIP.forEach((F) => drawFlip(F, t));
   rise($("#s4l1"), t, 7.7); rise($("#s4l2"), t, 7.8); fade($("#s4src"), t, 7.9);
   TD.forEach((d, k) => {
-    const a = 7.72 + k * .03, op = E.out(seg(t, a, a + .2)) * (.55 + .45 * Math.sin(t * 23 + d.p3));
-    const jx = 4 * Math.sin(t * 41 + d.p1) + 2.5 * Math.sin(t * 67 + d.p2), jy = 4 * Math.sin(t * 37 + d.p2) + 2.5 * Math.sin(t * 59 + d.p3);
+    const a = 7.72 + k * .03, op = E.out(seg(t, a, a + .2)) * (.55 + .45 * Math.sin(RT * 23 + d.p3));
+    const jx = 4 * Math.sin(RT * 41 + d.p1) + 2.5 * Math.sin(RT * 67 + d.p2), jy = 4 * Math.sin(RT * 37 + d.p2) + 2.5 * Math.sin(RT * 59 + d.p3);
     put(d.el, op, d.x + jx, d.y + jy);
   });
 }
@@ -689,10 +700,10 @@ function s8(t) {
   fade($("#barc"), t, 19.22, 99, .25);
   const n = t < 19.35 ? 0 : Math.min(QUERY.length, Math.floor((t - 19.35) / .03) + 1);
   $("#tt").textContent = QUERY.slice(0, n);
-  $("#caret").style.opacity = t < 20.1 || Math.floor((t - 20.1) / .4) % 2 === 1 ? 1 : 0;
-  const ph = ((t - 19.3) % .8 + .8) % .8 / .8;
+  $("#caret").style.opacity = t < 20.1 || Math.floor(RT / .4) % 2 === 1 ? 1 : 0;
+  const ph = (RT % .8 + .8) % .8 / .8;
   put($("#micring"), t >= 19.3 ? .55 * (1 - ph) : 0, 0, 0, 1 + .75 * E.out(ph));
-  put($("#mic"), 1, 0, 0, 1 + .035 * Math.sin((t - 19.3) * 2 * PI / .8));
+  put($("#mic"), 1, 0, 0, 1 + .035 * Math.sin(RT * 2 * PI / .8));
   const [i] = env(t, 20.1, 99, .5, .3);
   put($("#res"), t < 20.1 ? 0 : i, 0, -70 * (1 - i));
   $$("#wipes .wipe").forEach((el, k) => {
@@ -719,8 +730,8 @@ function draw(t) {
   // slow camera push across the whole explainer (3 %), none on the end card
   const push = t < 21.84 ? 1 + .03 * E.inout(seg(t, 0, 21.8)) : 1;
   $("#cam").style.transform = $("#fx").style.transform = `scale(${push.toFixed(5)})`;
-  $("#orbA").style.transform = `translate(${(Math.sin(t * .11) * 34).toFixed(1)}px, ${(Math.cos(t * .09) * 26).toFixed(1)}px)`;
-  $("#orbB").style.transform = `translate(${(Math.cos(t * .08) * 30).toFixed(1)}px, ${(Math.sin(t * .12) * 22).toFixed(1)}px)`;
+  $("#orbA").style.transform = `translate(${(Math.sin(RT * .11) * 34).toFixed(1)}px, ${(Math.cos(RT * .09) * 26).toFixed(1)}px)`;
+  $("#orbB").style.transform = `translate(${(Math.cos(RT * .08) * 30).toFixed(1)}px, ${(Math.sin(RT * .12) * 22).toFixed(1)}px)`;
   s1(t); s2(t); s3(t); s4(t); s5(t); s6(t); s7(t); s8(t); s9(t);
   drawDots(t); drawRips(t);
 }
@@ -738,8 +749,8 @@ window.__logoStatus = "loading";
 document.fonts.ready.then(() => {
   measure();
   window.__duration = DUR;
-  window.__seek = (t) => draw(t);
-  draw(params.has("t") ? parseFloat(params.get("t")) : 0);
+  window.__seek = (t) => { RT = t; draw(warp(t)); };
+  window.__seek(params.has("t") ? parseFloat(params.get("t")) : 0);
 });
 </script>
 </body>
