@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub overlay callout</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; }
+  /* Sits in the upper safe area so it never fights the captions (bottom of caption box ≈ y 1400) */
+  .slot { position: absolute; left: 72px; right: 72px; top: 270px; }
+  .card { display: grid; gap: 16px; padding: 40px 132px 40px 48px; }
+  .card .nh-h2 { font-size: 60px; }
+  .card .nh-metric { font-size: 150px; }
+</style>
+</head>
+<body>
+<!--
+  Transparent overlay for real footage: one evidence-led glass callout.
+  Render:  node ../scripts/render.cjs overlay-callout.html --transparent --out callout.mov
+  Then composite it over the footage at the right moment (see reference/footage-editing.md).
+  Copy below is EXAMPLE content — replace it, and keep a real source on every number.
+-->
+<div class="nh-stage is-transparent" id="stage">
+  <section class="nh-scene" id="scene">
+    <div class="slot">
+      <div class="card nh-glass nh-callout nh-reveal" style="--at:.15s">
+        <div class="nh-kicker" data-text="kicker"></div>
+        <div class="nh-metric" data-if="value"><span class="nh-w" style="display:block"><span style="--at:.4s;--dur:.5s"><span data-text="value"></span><span class="nh-unit" data-text="unit"></span></span></span></div>
+        <div class="nh-h2 nh-type" data-text="statement" style="--at:.45s"></div>
+        <hr class="nh-rule">
+        <div class="nh-source nh-fade" data-text="source" style="--at:.8s"></div>
+        <div class="nh-callout__bar"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+const SCENE = {
+  duration: 5,                 // total overlay length (s); exit starts .45 s before the end
+  kicker: "Key takeaway",
+  value: "3–5", unit: "g",     // set value: "" to drop the big number
+  statement: "a day is the studied maintenance dose",
+  source: "Source: ISSN position stand on creatine (Kreider et al., 2017)",
+};
+document.querySelectorAll("[data-text]").forEach((el) => { el.textContent = SCENE[el.dataset.text] ?? ""; });
+document.querySelectorAll("[data-if]").forEach((el) => { if (!SCENE[el.dataset.if]) el.remove(); });
+document.querySelectorAll(".nh-type").forEach((el) => {
+  const words = el.textContent.split(/\s+/).filter(Boolean); el.textContent = "";
+  words.forEach((w, i) => {
+    const m = document.createElement("span"); m.className = "nh-w";
+    const s = document.createElement("span"); s.textContent = w; s.style.setProperty("--i", i);
+    m.appendChild(s); el.appendChild(m); el.appendChild(document.createTextNode(" "));
+  });
+});
+document.getElementById("scene").style.setProperty("--out", (SCENE.duration - .45) + "s");
+window.__logoStatus = "none";   // no logo in this overlay
+window.__duration = SCENE.duration;
+window.__seek = (t) => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
+const p = new URLSearchParams(location.search);
+if (p.has("t")) document.fonts.ready.then(() => window.__seek(parseFloat(p.get("t"))));
+</script>
+</body>
+</html>

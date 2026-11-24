@@ -1,0 +1,20 @@
+[Script Info]
+; Nutrition Hub — White Glass caption style (1080x1920 reels).
+; Graphite ink text on an opaque porcelain-white box; the key word goes signal orange.
+; Keep the box OPAQUE (OutlineColour alpha 00): libass draws one box per colour run,
+; so a translucent box stripes wherever a {\c} colour change splits the line.
+; Colours are &HAABBGGRR: ink #202B38 = &H00382B20, orange #F0782B = &H002B78F0, slate #596879 = &H00796859.
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: NH-Caption,Inter SemiBold,62,&H00382B20,&H002B78F0,&H00FFFFFF,&H00000000,0,0,0,0,100,100,0,0,3,22,0,2,110,110,520,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:01.20,NH-Caption,,0,0,0,,One of the most {\c&H2B78F0&}researched{\c&H382B20&} supplements
+Dialogue: 0,0:00:01.20,0:00:02.60,NH-Caption,,0,0,0,,Take {\c&H2B78F0&}3–5 g{\c&H382B20&} a day

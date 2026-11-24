@@ -1,0 +1,209 @@
+---
+name: nutrition-hub-white-glass
+description: Brand and motion system for Nutrition Hub Khanna (the "White Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade and a tested render pipeline.
+---
+
+# Nutrition Hub Khanna: White Glass Motion System
+
+A premium, science-led visual language for supplement education, product films and
+high-retention fitness reels. **Clarity first. Depth second. Accent with intent.**
+White-on-white layers, translucent surfaces, restrained orange highlights and precise
+3D graphics. Keep every frame clean, legible and editorial.
+
+`reference/playbook.png` is the source playbook. Look at it when in doubt. Everything
+marked *(derived)* below adapts the playbook to video. Unmarked values come straight from it.
+
+## 1. Logo: always the original file
+
+- **File:** `assets/logo/nutrition-hub-logo.png`. This is the original Nutrition Hub logo
+  as supplied by the owner: a 1508×1043 transparent PNG with a 3D gold and red
+  "NUTRITION HUB" wordmark and "KHANNA" underneath.
+  - sha256 `1ceaeb7a9ca284fa859de4009237dc52d1827656518150a81f4de6922c20e28d`.
+    Check it with `sha256sum` before you deliver.
+- **Use only this file.** Never redraw, trace, vectorise, re-type, recolour, restyle,
+  crop, stretch, rotate or "glass-ify" it, and never add a glow, stroke, shadow or outline.
+  Its glow and shadow are already baked in. Never generate a logo with AI, and never
+  screen-grab one from another image.
+- The orange rounded-square "A" icon in `playbook.png` is **not** the logo. Never use it.
+- If the file is missing or won't load, **stop and ask the user for the original.** Don't
+  ship with a stand-in. `scripts/render.cjs` refuses to render when the logo fails to load.
+- The logo already says "NUTRITION HUB · KHANNA", so don't set the brand name again beside it.
+- The logo's gold and red belong to the logo only. Never sample them into graphics,
+  type or captions. The system palette stays white, ice, ink and orange.
+- **Placement** *(derived)*: on porcelain or ice backgrounds, or on a near-opaque white
+  glass plate over footage. Never on orange, and never straight on busy footage.
+  - Clear space: at least the height of the "KHANNA" line on every side.
+  - Size by width. On a 1080-wide canvas: corner bug 280–340 px, end card 720–860 px.
+    On 16:9 (1920×1080): end card 640–760 px.
+  - The PNG has transparent padding (about 14% at the top and 4% at the bottom).
+    Compensate with negative margins (see `templates/reel-9x16.html`), never by editing the file.
+- **Logo motion:** glass reveal only (opacity plus scale 0.96→1). Never spin, bounce,
+  float, flip or slam the logo.
+
+## 2. Palette: a controlled, luminous palette
+
+| Token | Hex | Role | Share of frame |
+|---|---|---|---|
+| Porcelain white | `#FFFFFF` | Canvas | 55% |
+| Ice mist | `#EAF0F6` | Depth, panels, gradient floor | 20% |
+| Graphite ink | `#202B38` | Type | 15% |
+| Signal orange | `#F0782B` | Accent: fills, shapes, icons | 10% |
+
+Supporting tones sampled from the playbook:
+
+| Token | Hex | Use |
+|---|---|---|
+| Orange as text | `#E66D2A` | Kickers and units only. Bold, 28 px or larger. |
+| Orange gradient | `#FDAA62 → #F0782B → #EF732D` | Pills, check badges, bars |
+| Slate | `#596879` | Body copy, source notes (5.7:1 on white) |
+| Mist grey | `#8290A0` | Labels and meta only (3.3:1, so never essential info) |
+
+- Use orange sparingly: key metrics, active states and call-to-action details.
+  Allow **one orange focal point per frame** *(derived)*.
+- No other hues: no greens, blues, neons or black backgrounds. The logo is the only exception.
+- White text on signal orange fails contrast, so don't use it for words. Calls to action
+  are ink text on a white chip with an orange dot.
+- The stage background is a soft gradient from white (top left) to ice (bottom right),
+  plus large faint white discs for depth (`.nh-stage`, `.nh-orb`).
+
+## 3. Typography *(identified from the playbook as Inter)*
+
+Inter only (installed here at `/usr/share/fonts/opentype/inter`; use Google Fonts elsewhere).
+Sizes below are for a 1080×1920 canvas. Multiply by 0.85 for 1920×1080 (`.nh-landscape`).
+
+| Style | Size / weight | Tracking | Colour |
+|---|---|---|---|
+| Display headline | 116 / 800, line-height 0.98 | −0.035em | ink |
+| H2 | 72 / 800 | −0.028em | ink |
+| Body | 40 / 500, line-height 1.45 | 0 | slate |
+| Kicker | 28 / 700 UPPERCASE | +0.20em | orange text |
+| Label / meta | 24 / 600 UPPERCASE | +0.14em | mist |
+| Data metric | 150–220 / 800, tabular numbers | −0.02em | ink, unit in orange |
+| Caption | 62 / 600 | 0 | ink on white box |
+
+Headlines are short, sentence case and end in a full stop ("Creatine, explained simply.").
+
+## 4. Graphic components
+
+All of these are implemented in `assets/brand.css`.
+
+- **A · Glass panels:** frosted information cards with an edge light, a soft shadow and an
+  18–28 px radius (`.nh-glass`, `.nh-glass--sm`). Over footage they go near-opaque
+  automatically (`.is-transparent`). **Every word over footage sits on a panel.**
+- **B · 3D science:** molecular science visuals with realistic materials and controlled
+  detail. Use a real 3D render or a generated image (prompt below). The SVG atom in the
+  template is a stand-in.
+  - Prompt base: *"translucent frosted-glass and white ceramic molecular model, one signal
+    orange (#F0782B) accent atom, seamless white studio, soft diffused key light, gentle
+    reflections, shallow depth of field, high-key, clean editorial, minimal"*.
+  - Avoid: neon, dark backgrounds, sci-fi HUDs, lens flares, clutter, glowing particles.
+- **C · Data callouts:** evidence-led, with clear units, a source note and orange emphasis
+  (`.nh-callout`, `.nh-metric`, `.nh-unit`, `.nh-source`, `.nh-callout__bar`).
+  Keep text clear of the orange bar. The playbook sheet itself clips text into it, so don't repeat that.
+- **D · Product hero:** product spotlight with accurate packaging and soft reflections. Use
+  real product photos or renders only. Never AI-regenerate or alter a label, logo, claim
+  or flavour. Show the front label square-on and legible, on a white sweep with soft shadow.
+- **Chips:** `● FROSTED GLASS` style tags and the CTA (`.nh-chip`, `.nh-chip--cta`).
+- **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
+
+## 5. Motion: physical, calm and intentional
+
+| Primitive | Spec | Easing |
+|---|---|---|
+| 01 Glass reveal (`.nh-reveal`) | Opacity 0→100%, scale 96→100%, 0.6–0.9 s (default 0.75), edge-highlight sweep | ease-out `cubic-bezier(.22,1,.36,1)` |
+| 02 3D float (`.nh-float`) | Y drift ±12 px, rotation ±3°, 2.0–3.0 s loop (default 2.6) | sine in-out `cubic-bezier(.37,0,.63,1)` |
+| 03 Kinetic type (`.nh-type`) | Mask reveal per word, stagger 40–70 ms (default 55), 0.35–0.55 s each (default 0.45) | ease-out, **no bouncy overshoot** |
+| Exit *(derived)* | Reverse of the reveal: opacity →0, scale →0.98, 0.3–0.45 s | ease-in `cubic-bezier(.64,0,.78,0)` |
+
+- GSAP equivalents: `power3.out` or `expo.out` for reveals, `sine.inOut` for float. Never use `back`, `elastic` or `bounce`.
+- Remotion: `Easing.bezier(.22,1,.36,1)`. For springs use `{damping: 200}` with `overshootClamping: true`.
+- Put the reveal and the float on different elements (a wrapper and its child), because both animate `transform`.
+- **Transitions between shots** *(derived)*: a straight cut by default, a 0.3–0.5 s soft
+  dissolve, or a 0.3–0.5 s **dip to porcelain white** (ffmpeg `xfade=transition=fadewhite`).
+- **Banned:** whip pans, glitch or RGB split, zoom punches, camera shake, flash frames,
+  spins, bounces, light leaks, star wipes.
+- **Pacing for high-retention reels** *(derived)*:
+  - The hook headline is readable by 0.6 s.
+  - Introduce a new visual beat every 1.5–3 s.
+  - Hold any text for at least 1 s plus 0.25 s per word.
+  - Leave scenes fully before the next one reveals. Never overlap two glass reveals of different beats.
+
+## 6. Captions *(derived)*
+
+- Inter SemiBold 62, graphite ink on an **opaque** white box. One key word per caption
+  (a number, a unit or a claim word) goes signal orange. Don't use scale pops, bounces
+  or black outlines.
+- Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
+- The bottom of the caption box sits at about y 1400 on 1920, above the platform UI.
+- Quick path: `reference/captions.ass` (libass via ffmpeg). For rounded frosted plates,
+  build the captions as an HTML overlay with `.nh-chip` styling and render it with `--transparent`.
+- Source notes go in a glass callout (`templates/overlay-callout.html`), not in captions.
+
+## 7. Formats and safe zones *(derived)*
+
+- **9:16 reels, Shorts and TikTok:** 1080×1920 at 30 fps.
+  - Keep text and logo inside x 72–1008, y 250–1500.
+  - Nothing important in the bottom 420 px or the top 250 px.
+- **16:9 product films and education:** 1920×1080. Use 96 px margins and `.nh-landscape`.
+- **4:5 feed:** 1080×1350 with 72 px margins.
+- **Export:** H.264 High, yuv420p, CRF 16–18, AAC 192 kb/s at 48 kHz, `+faststart`,
+  loudness −14 LUFS with true peak −1.5 dBTP.
+
+## 8. Content rules (evidence-led)
+
+- Every number shows its **unit** and an on-screen **source note** ("Source: …").
+- Never invent statistics, doses, studies or results. If the user gives no source, ask, or
+  put `[SOURCE NEEDED]` in the draft and flag it.
+- No cure, treat or guarantee claims, and no before-and-after promises. Keep the tone calm and factual.
+- The copy in the templates is example content (the ISSN creatine position stand). Replace it.
+
+## 9. Workflow for any video edit
+
+1. **Read the brief and probe the footage:**
+   `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`.
+2. **Check that the logo exists and matches its sha256.** If not, ask for it.
+3. **Plan beats:** hook (0–3 s), evidence or value, end card. Choose components from §4.
+4. **Build graphics** by copying a template from `templates/` and editing only its `SCENE` object
+   and copy. Keep `assets/brand.css` as the single source of truth.
+   - `reel-9x16.html`: a full-frame branded reel (hook → data callout → logo end card).
+   - `overlay-callout.html`: a transparent glass callout to lay over footage.
+5. **Render** (from this skill's folder):
+   - Full video: `node scripts/render.cjs templates/reel-9x16.html --out out.mp4`
+   - Overlay for footage: `node scripts/render.cjs templates/overlay-callout.html --transparent --out callout.mov`
+   - End card only: `node scripts/render.cjs templates/reel-9x16.html --from 8.15 --out endcard.mp4`
+   - QA still: `node scripts/render.cjs <page> --out frame.png --still 5.2`
+6. **Edit the footage:** reframe, grade, composite, caption, transition, end card and
+   loudness. Follow `reference/footage-editing.md`; every recipe in it has been tested.
+7. **QA before you deliver.** Make a contact sheet with
+   `ffmpeg -i out.mp4 -vf "fps=2,scale=180:-1,tile=10x2" -frames:v 1 sheet.png`, then look at it and at full-size stills. Check that:
+   - the logo is the original file, unaltered, with clear space and no name repeated beside it
+   - the palette holds 55/20/15/10, there is one orange focal point, and no stray hues
+   - no text is clipped, colliding with icons or bars, or outside the safe zones
+   - motion has no overshoot, timings are within range, and beats don't overlap
+   - every number has a unit and a source
+   - the export specs match §7
+
+## 10. Using other connected tools
+
+When editing in ManyMotions, Clipzi, OpusClip, Picsart, CapCut, HyperFrames or similar:
+
+- Upload `assets/logo/nutrition-hub-logo.png` as the brand logo.
+- Set the font to Inter and the colours to the palette in §2.
+- Choose the caption preset closest to "dark text on a clean white box with one orange
+  highlight word", with no bounce or pop animation.
+- Set transitions to cut, fade or dip-to-white.
+- After export, run the QA in §9.7 on the result.
+
+## Files
+
+```
+SKILL.md                       this guide
+assets/logo/nutrition-hub-logo.png   ORIGINAL logo (never modify)
+assets/brand.css               tokens, components and motion primitives
+templates/reel-9x16.html       full branded reel (edit the SCENE object)
+templates/overlay-callout.html transparent glass callout for footage
+scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
+reference/playbook.png         the original brand playbook sheet
+reference/captions.ass         caption style for ffmpeg/libass
+reference/footage-editing.md   tested ffmpeg recipes for real footage
+```

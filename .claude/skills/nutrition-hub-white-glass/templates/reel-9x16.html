@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub reel template</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; }
+  /* Safe box for Reels / Shorts / TikTok: x 72–1008, y 250–1500 */
+  .safe { position: absolute; left: 72px; right: 72px; top: 250px; bottom: 420px; }
+
+  .header { position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 24px; }
+  .header .meta { display: grid; gap: 6px; }
+
+  .hero-visual { position: absolute; top: 170px; left: 50%; width: 400px; height: 400px; margin-left: -200px; }
+  .hook { position: absolute; top: 640px; left: 0; right: 0; display: grid; gap: 34px; justify-items: start; }
+
+  .s2-kicker { position: absolute; top: 230px; left: 0; }
+  .s2-card { position: absolute; top: 300px; left: 0; right: 0; }
+  .facts { position: absolute; top: 860px; left: 0; right: 0; display: grid; gap: 22px; }
+  .fact { display: flex; align-items: center; gap: 26px; padding: 26px 30px; }
+  .fact .nh-body { color: var(--nh-ink); font-weight: 600; font-size: 36px; line-height: 1.3; }
+
+  .end { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 30px; text-align: center; }
+  /* the original PNG has transparent padding (top ~14%, bottom ~4%): trim it with margins, never by editing the file */
+  .header .nh-logo { width: 300px; margin: -43px 0 -12px; }
+  .end .nh-logo { width: 780px; margin: -77px 0 -22px; }
+  .end .contact { font-size: 40px; font-weight: 600; color: var(--nh-slate); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+
+  .logo-missing { outline: 4px dashed #E66D2A; }
+</style>
+</head>
+<body>
+<!--
+  Template: 9:16 reel, three beats (hook → data callout → end card).
+  Edit the SCENE object below; layout and motion follow the White Glass system.
+  The copy here is EXAMPLE content (creatine dose from the ISSN position stand) —
+  replace it, and keep a real source note on every number.
+  URL params: ?t=3.2 freeze at 3.2 s · ?transparent=1 no background (overlay use)
+              ?logo=<url> path to the original logo file (overrides SCENE.logo)
+-->
+<div class="nh-stage" id="stage">
+  <div class="nh-orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="nh-orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
+
+  <!-- Beat 1 — hook -->
+  <section class="nh-scene" id="s1">
+    <div class="safe">
+      <div class="header nh-reveal" style="--at:0s">
+        <img class="nh-logo" data-nh-logo alt="Nutrition Hub logo">
+        <div class="meta" data-if-no-wordmark>
+          <div class="nh-wordmark" style="font-size:34px">Nutrition Hub</div>
+          <div class="nh-label" style="font-size:20px">Khanna</div>
+        </div>
+      </div>
+
+      <div class="hero-visual nh-reveal" style="--at:.5s;--dur:.9s">
+        <div class="nh-float" style="--at:.5s;width:100%;height:100%">
+          <!-- B / 3D science: molecular visual (flat stand-in; swap for a real 3D render when available) -->
+          <svg viewBox="0 0 400 400" width="400" height="400" aria-hidden="true">
+            <defs>
+              <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+                <stop offset="0" stop-color="#FDE7D6"/><stop offset="1" stop-color="#FDE7D6" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="og" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#FDAA62"/><stop offset=".62" stop-color="#F0782B"/><stop offset="1" stop-color="#EF732D"/>
+              </linearGradient>
+            </defs>
+            <circle cx="200" cy="200" r="96" fill="url(#halo)"/>
+            <g fill="none" stroke="#A4B0BD" stroke-width="3.5" opacity=".9">
+              <ellipse cx="200" cy="200" rx="178" ry="70"/>
+              <ellipse cx="200" cy="200" rx="178" ry="70" transform="rotate(60 200 200)"/>
+              <ellipse cx="200" cy="200" rx="178" ry="70" transform="rotate(-60 200 200)"/>
+            </g>
+            <circle cx="200" cy="200" r="70" fill="none" stroke="#F0782B" stroke-width="4"/>
+            <circle cx="200" cy="200" r="22" fill="url(#og)"/>
+            <circle cx="357" cy="118" r="15" fill="url(#og)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="hook">
+        <div class="nh-chip nh-reveal" style="--at:.2s"><span class="nh-dot"></span><span data-text="kicker"></span></div>
+        <h1 class="nh-display nh-type" data-text="headline" style="--at:.35s"></h1>
+        <p class="nh-body nh-fade" data-text="body" style="--at:1.3s;max-width:900px"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Beat 2 — evidence-led data callout -->
+  <section class="nh-scene" id="s2">
+    <div class="safe">
+      <div class="s2-kicker nh-kicker nh-fade" data-text="metric.kicker" style="--at:4.5s"></div>
+      <div class="s2-card nh-glass nh-callout nh-reveal" style="--at:4.6s">
+        <div class="nh-label" data-text="metric.label"></div>
+        <div class="nh-metric"><span class="nh-w" style="display:block"><span style="--at:4.85s;--dur:.55s"><span data-text="metric.value"></span><span class="nh-unit" data-text="metric.unit"></span></span></span></div>
+        <div class="nh-body" data-text="metric.per" style="font-size:34px"></div>
+        <hr class="nh-rule">
+        <div class="nh-source" data-text="metric.source"></div>
+        <div class="nh-callout__bar"></div>
+      </div>
+      <div class="facts" id="facts"></div>
+    </div>
+  </section>
+
+  <!-- Beat 3 — end card -->
+  <section class="nh-scene" id="s3">
+    <div class="end">
+      <img class="nh-logo nh-reveal" data-nh-logo alt="Nutrition Hub logo" style="--at:8.2s;--dur:.9s">
+      <div class="nh-wordmark nh-type" data-if-no-wordmark data-text="brand" style="--at:8.5s;font-size:56px"></div>
+      <div class="nh-label nh-fade" data-if-no-wordmark data-text="location" style="--at:8.75s"></div>
+      <div class="contact nh-fade" data-text="contact" style="--at:8.95s"></div>
+      <div class="nh-chip nh-chip--cta nh-reveal" style="--at:9.2s;margin-top:24px"><span class="nh-dot"></span><span data-text="cta"></span></div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ===== Edit this object for each video ===== */
+const SCENE = {
+  duration: 11,                      // seconds
+  logo: "../assets/logo/nutrition-hub-logo.png",   // the ORIGINAL logo — never swap in a redraw
+  logoHasWordmark: true,             // the original logo already reads "NUTRITION HUB · KHANNA": don't repeat the name beside it
+  kicker: "Supplement science",
+  headline: "Creatine, explained simply.",
+  body: "One of the most researched supplements in sport. Here is the daily dose the research supports.",
+  metric: {
+    kicker: "Key takeaway",
+    label: "Daily maintenance dose",
+    value: "3–5",
+    unit: "g",
+    per: "per day, taken consistently",
+    source: "Source: ISSN position stand on creatine (Kreider et al., 2017)",
+  },
+  facts: ["A loading phase is optional", "Without loading, stores fill in about 4 weeks"],
+  brand: "Nutrition Hub",
+  location: "Khanna",
+  contact: "9914571175",
+  cta: "Save this for your next stack",
+  beats: { s1Out: 4.1, s2Out: 7.75 }, // scene exit times
+};
+
+/* ===== Runtime (no need to edit) ===== */
+const NH = {
+  get(path) { return path.split(".").reduce((o, k) => (o == null ? o : o[k]), SCENE); },
+  /* Kinetic type: wrap each word in a mask. Keeps --at from the element. */
+  splitWords(el) {
+    const parts = [];
+    el.childNodes.forEach((n) => parts.push(n));
+    el.textContent = "";
+    let i = 0;
+    const addWords = (text, cls) => {
+      text.split(/(\s+)/).forEach((tok) => {
+        if (!tok) return;
+        if (/^\s+$/.test(tok)) { el.appendChild(document.createTextNode(" ")); return; }
+        const w = document.createElement("span"); w.className = "nh-w";
+        const inner = document.createElement("span"); inner.textContent = tok;
+        if (cls) inner.className = cls;
+        inner.style.setProperty("--i", i++);
+        w.appendChild(inner); el.appendChild(w);
+      });
+    };
+    parts.forEach((n) => n.nodeType === 3 ? addWords(n.textContent) : addWords(n.textContent, n.className));
+  },
+};
+
+const params = new URLSearchParams(location.search);
+if (params.get("transparent") === "1") document.getElementById("stage").classList.add("is-transparent");
+
+document.querySelectorAll("[data-text]").forEach((el) => { el.textContent = NH.get(el.dataset.text) ?? ""; });
+document.getElementById("facts").innerHTML = SCENE.facts.map((f, k) => `
+  <div class="fact nh-glass nh-glass--sm nh-reveal" style="--at:${5.6 + k * .18}s">
+    <div class="nh-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <div class="nh-body"></div>
+  </div>`).join("");
+document.querySelectorAll("#facts .nh-body").forEach((el, k) => { el.textContent = SCENE.facts[k]; });
+if (SCENE.logoHasWordmark) document.querySelectorAll("[data-if-no-wordmark]").forEach((el) => el.remove());
+document.querySelectorAll(".nh-type").forEach((el) => NH.splitWords(el));
+document.getElementById("s1").style.setProperty("--out", SCENE.beats.s1Out + "s");
+document.getElementById("s2").style.setProperty("--out", SCENE.beats.s2Out + "s");
+
+/* Logo: original file only. Never draw a substitute; if it fails to load the render stops. */
+window.__logoStatus = "loading";
+const logoCandidates = params.get("logo")
+  ? [params.get("logo")]
+  : [SCENE.logo];
+const logos = [...document.querySelectorAll("img[data-nh-logo]")];
+(function tryLogo(k) {
+  if (k >= logoCandidates.length) {
+    window.__logoStatus = "missing";
+    logos.forEach((img) => { img.removeAttribute("src"); img.classList.add("logo-missing"); });
+    console.error("ORIGINAL LOGO MISSING — expected at assets/logo/nutrition-hub-logo.png");
+    return;
+  }
+  const probe = new Image();
+  probe.onload = () => { logos.forEach((img) => (img.src = probe.src)); window.__logoStatus = "ok"; };
+  probe.onerror = () => tryLogo(k + 1);
+  probe.src = logoCandidates[k];
+})(0);
+
+/* Deterministic timeline for frame capture: window.__seek(seconds) */
+window.__duration = SCENE.duration;
+window.__seek = (t) => {
+  document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
+};
+if (params.has("t")) {
+  const t = parseFloat(params.get("t"));
+  document.fonts.ready.then(() => window.__seek(t));
+}
+</script>
+</body>
+</html>
