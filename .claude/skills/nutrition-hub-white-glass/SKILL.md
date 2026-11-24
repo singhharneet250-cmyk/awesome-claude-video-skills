@@ -1,6 +1,6 @@
 ---
 name: nutrition-hub-white-glass
-description: Brand and motion system for Nutrition Hub Khanna (the "White Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade and a tested render pipeline.
+description: Brand and motion system for Nutrition Hub Khanna (the "White Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, IT Reelsmaker, Motion Reel, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade, a tested render pipeline, a caption generator, an automated delivery QA, and which companion skill or plugin to use for each job (this skill wins wherever they disagree).
 ---
 
 # Nutrition Hub Khanna: White Glass Motion System
@@ -135,8 +135,14 @@ All of these are implemented in `assets/brand.css`.
   or black outlines.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
 - The bottom of the caption box sits at about y 1400 on 1920, above the platform UI.
-- Quick path: `reference/captions.ass` (libass via ffmpeg). For rounded frosted plates,
-  build the captions as an HTML overlay with `.nh-chip` styling and render it with `--transparent`.
+- Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein`
+  turns word timings (Whisper / faster-whisper JSON, Remotion captions, or an `.srt`) into
+  captions that follow every rule above, using the `reference/captions.ass` style. It never
+  splits a number from its unit, highlights the number first and a `--keywords` claim word
+  second, and leaves a caption all ink when it has neither. Burn in with
+  `ffmpeg -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter"`.
+- For rounded frosted plates, build the captions as an HTML overlay with `.nh-chip` styling
+  and render it with `--transparent`.
 - Source notes go in a glass callout (`templates/overlay-callout.html`), not in captions.
 
 ## 7. Formats and safe zones *(derived)*
@@ -174,8 +180,10 @@ All of these are implemented in `assets/brand.css`.
    - QA still: `node scripts/render.cjs <page> --out frame.png --still 5.2`
 6. **Edit the footage:** reframe, grade, composite, caption, transition, end card and
    loudness. Follow `reference/footage-editing.md`; every recipe in it has been tested.
-7. **QA before you deliver.** Make a contact sheet with
-   `ffmpeg -i out.mp4 -vf "fps=2,scale=180:-1,tile=10x2" -frames:v 1 sheet.png`, then look at it and at full-size stills. Check that:
+7. **QA before you deliver.** Run `python3 scripts/qa.py out.mp4` (add `--graphics` for an
+   all-graphics piece, `--expect <s>` for the planned length). It checks format, codec,
+   audio, faststart, loudness, the logo hash, stray hues and black frames, writes a
+   contact sheet, and exits 1 on any FAIL. Then look at the sheet and at full-size stills. Check that:
    - the logo is the original file, unaltered, with clear space and no name repeated beside it
    - the palette holds 55/20/15/10, there is one orange focal point, and no stray hues
    - no text is clipped, colliding with icons or bars, or outside the safe zones
@@ -183,16 +191,46 @@ All of these are implemented in `assets/brand.css`.
    - every number has a unit and a source
    - the export specs match §7
 
-## 10. Using other connected tools
+## 10. Companion skills, plugins and connected tools
 
-When editing in ManyMotions, Clipzi, OpusClip, Picsart, CapCut, HyperFrames or similar:
+This skill decides **how it looks and moves**. The companions below do the heavy lifting.
+Use the one that fits the job, load this skill first, and give the companion the brand
+inputs in the last column.
 
-- Upload `assets/logo/nutrition-hub-logo.png` as the brand logo.
-- Set the font to Inter and the colours to the palette in §2.
-- Choose the caption preset closest to "dark text on a clean white box with one orange
-  highlight word", with no bounce or pop animation.
-- Set transitions to cut, fade or dip-to-white.
-- After export, run the QA in §9.7 on the result.
+| Job | Use | Give it |
+|---|---|---|
+| Raw talking-head phone take → finished 9:16 reel (cut retakes and pauses, word-timed subs, face-aware layout) | `it-reelsmaker` plugin | A brand profile: Inter, §2 palette, the original logo file, §6 caption style, §5 motion. Its subtitles off or restyled to §6 (or burn ours with `scripts/captions.py`). |
+| Branded title cards, data callouts, lower thirds, end cards | This skill's `templates/` + `scripts/render.cjs` (first choice: tested and on-brand) | — |
+| An editable HyperFrames project or the HyperFrames desktop app | `hyperframes` plugin (project plugin, `.claude/settings.json`) | `assets/brand.css` tokens; grade footage with §2 numbers via its `media-treatment`. Its skill sends a usage note to HeyGen once per run and asks first; say no to skip. |
+| A project that is already in Remotion | `remotion` plugin | `Easing.bezier(.22,1,.36,1)`; springs `{damping: 200, overshootClamping: true}` |
+| Product film or showreel rendered from code (no footage) | `motion-reel` plugin | Real product photos only (§4 D); palette, logo, §5 motion |
+| One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
+| Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
+| Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a white-box caption preset with no pop |
+| Licensed music and sound effects | Epidemic Sound connector | Calm, clean, under the voice by 18–22 dB |
+| Fit a size cap (WhatsApp 16 MB, Gmail, Outlook) | `halfsize` skill (`--for whatsapp`), or the tested ffmpeg fallback in `reference/footage-editing.md` §9 | — |
+| Hooks, scripts, captions for the post | `social-media-skills` (hook-writer, reels-script, caption-writer) | §8 content rules |
+| Final check | `scripts/qa.py`, then §9.7 by eye | — |
+
+**When a companion disagrees with this skill, this skill wins.** Take structure and
+tooling from companions, never their look:
+
+- **Look:** palette, Inter, glass components and the original logo file come from here.
+  Ignore a companion's default theme, fonts, colours and style presets. Nutrition Hub
+  type is fixed as Inter, so don't run a font-picking step for it.
+- **Motion:** §5 overrides any motion advice. That means no zoom punches or snap-zooms,
+  no whip pans, no pop, spring or bounce captions, no logo crash-ins from oversize, and no
+  glitch or flash frames, even when a companion recommends them for retention. A slow
+  push-in of up to about 5% over a whole shot is fine.
+- **Captions:** §6 overrides karaoke, "Hormozi" and word-pop presets.
+- **Pacing:** retention advice from companions is welcome when it fits §5 (hook readable by 0.6 s, a beat every 1.5–3 s, text holds).
+- **Content:** §8 overrides any generated copy. No invented numbers, sources or results.
+- **Sound:** licensed or synthesized only, finished at −14 LUFS.
+
+In any app (ManyMotions, Clipzi, OpusClip, Picsart, CapCut, HyperFrames and so on): upload
+`assets/logo/nutrition-hub-logo.png` as the logo, set Inter and the §2 colours, pick the
+caption preset closest to "dark text on a white box with one orange word, no animation",
+set transitions to cut, fade or dip-to-white, and run `scripts/qa.py` on the export.
 
 ## Files
 
@@ -203,6 +241,8 @@ assets/brand.css               tokens, components and motion primitives
 templates/reel-9x16.html       full branded reel (edit the SCENE object)
 templates/overlay-callout.html transparent glass callout for footage
 scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
+scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
+scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage
