@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Supplement label reel</title>
+<!--
+  "How to Read a Supplement Label in 40 Seconds" — 9:16, 60.8 s (timed to the recorded Hinglish VO).
+  Look: Performance Science on a white stage (white → ice background, charcoal #111113 type,
+  orange #FF7518 highlights, grey #29292D cards), chosen by the client for this reel. Logo, type (Inter), easing and content rules follow the
+  nutrition-hub-white-glass skill.
+  Render:  node ../../scripts/render.cjs index.html --out out/supplement-label-40s.mp4
+  Preview: open with ?t=14.5 to freeze at 14.5 s.
+  Retime:  edit SC (scene in/out, seconds). Every data-at is relative to its scene start.
+-->
+<style>
+  :root {
+    --bg: #FFFFFF; --ink: #111113; --ink-2: #52525B; --or-text: #E66D2A; --card: #29292D; --card-lo: #1C1C1F; --card-hi: #34343A;
+    --or: #FF7518; --white: #FFFFFF; --muted: #A1A1AA; --mist: #71717A;
+    --hair: rgba(255,255,255,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; background: var(--bg); overflow: hidden; }
+  body { font-family: "Inter", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .num { font-variant-numeric: tabular-nums; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--bg); }
+
+  /* ---------- background ---------- */
+  .bg-glow { position: absolute; inset: 0;
+    background:
+      radial-gradient(760px 760px at 540px 1000px, rgba(255,117,24,.07), transparent 70%),
+      linear-gradient(160deg, #FFFFFF 0%, #F5F7FA 50%, #EAF0F6 100%); }
+  .orb { position: absolute; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 35% 30%, #FFFFFF 0%, rgba(255,255,255,.85) 55%, rgba(244,247,250,.6) 100%);
+    box-shadow: 0 60px 140px -60px rgba(32,43,56,.12); }
+  .bg-grid { position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(32,43,56,.045) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(32,43,56,.045) 1px, transparent 1px);
+    background-size: 72px 72px; background-position: 0 0;
+    -webkit-mask-image: radial-gradient(760px 1050px at 540px 960px, #000 25%, transparent 78%); }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(1250px 1650px at 540px 960px, transparent 60%, rgba(214,224,236,.45)); }
+  #particles { position: absolute; inset: 0; }
+  .pt { position: absolute; left: 0; top: 0; border-radius: 50%; }
+  #progress { position: absolute; left: 0; top: 0; width: 1080px; height: 8px; background: rgba(17,17,19,.07); z-index: 30; }
+  #progress i { display: block; height: 100%; width: 100%; background: var(--or); transform-origin: 0 50%; box-shadow: 0 0 12px rgba(255,117,24,.6); }
+
+  /* ---------- type ---------- */
+  .scene { position: absolute; inset: 0; z-index: 5; transform-origin: 540px 900px; display: none; }
+  .kicker { position: absolute; left: 72px; top: 262px; font-size: 30px; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--or-text); display: flex; align-items: center; gap: 16px; white-space: nowrap; }
+  .kicker .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--or); box-shadow: 0 0 14px var(--or); }
+  .steps { position: absolute; right: 72px; top: 274px; display: flex; gap: 10px; }
+  .steps i { width: 40px; height: 8px; border-radius: 4px; background: rgba(17,17,19,.12); }
+  .steps i.done { background: rgba(17,17,19,.42); }
+  .steps i.on { background: var(--or); box-shadow: 0 0 10px rgba(255,117,24,.5); }
+  .h1 { position: absolute; left: 72px; right: 72px; font-family: "Inter Display", "Inter", sans-serif; font-size: 100px;
+    font-weight: 800; line-height: .98; letter-spacing: -.035em; }
+  .h2 { position: absolute; left: 72px; right: 72px; top: 318px; font-family: "Inter Display", "Inter", sans-serif;
+    font-size: 84px; font-weight: 800; line-height: 1.0; letter-spacing: -.03em; }
+  em { font-style: normal; color: var(--or-text); }
+  .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: .1em; margin-bottom: -.1em; }
+  .w > span { display: inline-block; will-change: transform; }
+  .body { font-size: 36px; font-weight: 500; line-height: 1.4; color: var(--ink-2); }
+  .body b { color: var(--ink); font-weight: 700; }
+  .meta { font-size: 24px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--mist); }
+  [data-fx] { opacity: 0; }
+  [data-fx="words"] { opacity: 1; }
+  [data-fx="draw"] { stroke-dasharray: 1; stroke-dashoffset: 1; }
+
+  .card { background: var(--card); color: var(--white); border-radius: 28px; border: 1px solid rgba(255,255,255,.06);
+    box-shadow: 0 28px 56px -12px rgba(17,17,19,.30), inset 0 1px 0 rgba(255,255,255,.07); }
+
+  /* ---------- scene 1: tub ---------- */
+  #tub { position: absolute; left: 320px; top: 650px; width: 440px; height: 600px; transform-origin: 220px 560px; }
+
+  /* ---------- shared Nutrition Facts card (scenes 1–2) ---------- */
+  #facts { position: absolute; left: 72px; top: 460px; width: 760px; z-index: 6; display: none; transform-origin: 50% 50%; }
+  .fc-clip { position: relative; overflow: hidden; border-radius: 28px; padding: 40px 44px 40px; }
+  .fc-title { font-family: "Inter Display", "Inter", sans-serif; font-size: 56px; font-weight: 800; letter-spacing: -.025em; line-height: 1; }
+  .fc-sub { margin-top: 12px; font-size: 22px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--mist); }
+  .fc-bar { height: 8px; background: rgba(255,255,255,.88); border-radius: 2px; margin: 22px 0 6px; }
+  .fc-bar.thin { height: 4px; margin: 6px 0; background: rgba(255,255,255,.55); }
+  .fc-row { position: relative; display: flex; justify-content: space-between; align-items: center; height: 56px;
+    font-size: 30px; border-bottom: 1px solid var(--hair); }
+  .fc-row span { color: var(--muted); font-weight: 500; position: relative; z-index: 1; }
+  .fc-row b { font-weight: 700; position: relative; z-index: 1; font-variant-numeric: tabular-nums; }
+  .fc-row.ind span { padding-left: 32px; }
+  .fc-ing { position: relative; padding-top: 14px; font-size: 25px; line-height: 1.45; color: var(--muted); }
+  .fc-ing span { color: var(--white); font-weight: 700; position: relative; z-index: 1; }
+  .fc-ing .t { position: relative; z-index: 1; }
+  .hl { position: absolute; left: -44px; right: -44px; top: 0; bottom: 0; opacity: 0; z-index: 0;
+    background: linear-gradient(90deg, rgba(255,117,24,.24), rgba(255,117,24,.03)); border-left: 6px solid var(--or); }
+  .fc-ing .hl { top: 6px; bottom: -14px; }
+  .scanlines { position: absolute; inset: 0; opacity: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(255,117,24,.10) 0 2px, transparent 2px 7px); }
+  .scan { position: absolute; left: 0; right: 0; top: 0; height: 170px; opacity: 0; pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(255,117,24,.26));
+    border-bottom: 4px solid var(--or); box-shadow: 0 10px 30px rgba(255,117,24,.55); }
+  .brk { position: absolute; width: 64px; height: 64px; border: 0 solid var(--or); opacity: 0; filter: drop-shadow(0 0 8px rgba(255,117,24,.7)); }
+  .brk.tl { left: -22px; top: -22px; border-left-width: 6px; border-top-width: 6px; border-top-left-radius: 18px; }
+  .brk.tr { right: -22px; top: -22px; border-right-width: 6px; border-top-width: 6px; border-top-right-radius: 18px; }
+  .brk.bl { left: -22px; bottom: -22px; border-left-width: 6px; border-bottom-width: 6px; border-bottom-left-radius: 18px; }
+  .brk.br { right: -22px; bottom: -22px; border-right-width: 6px; border-bottom-width: 6px; border-bottom-right-radius: 18px; }
+
+  /* ---------- scene 2: checkpoints ---------- */
+  .cp-rail { position: absolute; left: 928px; width: 4px; background: rgba(17,17,19,.12); border-radius: 2px; }
+  .cp-conn { position: absolute; left: 832px; width: 64px; height: 4px; margin-top: -2px; background: var(--or);
+    transform-origin: 0 50%; transform: scaleX(0); box-shadow: 0 0 12px rgba(255,117,24,.7); }
+  .cp { position: absolute; left: 896px; width: 68px; height: 68px; margin-top: -34px; border-radius: 50%;
+    border: 3px solid #D4D4D8; display: grid; place-items: center; background: #FFFFFF;
+    font-size: 32px; font-weight: 800; color: #71717A; font-variant-numeric: tabular-nums; }
+
+  /* ---------- scene 3: scale ---------- */
+  #scale { position: absolute; left: 240px; top: 860px; width: 600px; height: 330px; }
+  #lcd { position: absolute; left: 370px; top: 946px; width: 340px; height: 150px; display: flex; align-items: baseline;
+    justify-content: center; padding-top: 22px; gap: 10px; color: var(--or); text-shadow: 0 0 22px rgba(255,117,24,.55); }
+  #lcd .v { font-size: 104px; font-weight: 800; letter-spacing: -.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  #lcd .u { font-size: 52px; font-weight: 700; }
+  #scoop3 { position: absolute; left: 455px; top: 665px; width: 260px; height: 200px; opacity: 0; filter: drop-shadow(0 14px 16px rgba(17,17,19,.22)); }
+  .rowcard { position: absolute; left: 72px; right: 72px; height: 112px; display: flex; align-items: center;
+    justify-content: space-between; padding: 0 40px; font-size: 36px; }
+  .rowcard span { color: var(--muted); font-weight: 500; }
+  .rowcard b { font-weight: 800; font-size: 40px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- scene 4: protein ratio ---------- */
+  .pwrap { position: absolute; top: 560px; width: 444px; height: 690px; }
+  .pcard { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 34px; }
+  .pcard .meta { margin-bottom: 14px; }
+  .pcard .sc { height: 108px; display: flex; align-items: flex-end; justify-content: center; }
+  .pcard .l1 { margin-top: 22px; font-size: 42px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .pcard .l2 { margin-top: 6px; font-size: 32px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ring { position: relative; width: 250px; height: 250px; margin-top: 26px; }
+  .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+  .ring .pct { position: absolute; inset: 0; display: grid; place-items: center; font-size: 66px; font-weight: 800;
+    letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .pcard .f { margin-top: 22px; font-size: 30px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tick-badge { position: absolute; right: -14px; top: -14px; width: 76px; height: 76px; border-radius: 50%; background: var(--or);
+    display: grid; place-items: center; box-shadow: 0 0 32px rgba(255,117,24,.6); }
+
+  /* ---------- scene 5: sugar ---------- */
+  .srow { position: relative; display: flex; justify-content: space-between; align-items: center; height: 92px; padding: 0 40px;
+    font-size: 36px; border-bottom: 1px solid var(--hair); }
+  .srow:last-child { border-bottom: 0; }
+  .srow span { color: var(--muted); font-weight: 500; position: relative; z-index: 1; }
+  .srow b { font-weight: 800; position: relative; z-index: 1; font-variant-numeric: tabular-nums; }
+  .srow .hl { left: 0; right: 0; }
+  .cube { position: absolute; width: 104px; height: 120px; opacity: 0; filter: drop-shadow(0 10px 12px rgba(17,17,19,.22)); }
+  .warn { position: absolute; left: 72px; right: 72px; top: 1300px; height: 96px; border-radius: 48px; display: flex; align-items: center;
+    gap: 22px; padding: 0 36px; background: rgba(255,117,24,.10); border: 2px solid var(--or); font-size: 34px; font-weight: 700; color: var(--ink); }
+
+  /* ---------- scene 6: ingredients ---------- */
+  #ingcard { position: absolute; left: 72px; right: 72px; top: 550px; height: 470px; overflow: hidden; }
+  #ingcard .head { position: absolute; left: 40px; right: 40px; top: 30px; display: flex; justify-content: space-between; }
+  #ingwin { position: absolute; left: 24px; right: 24px; top: 84px; bottom: 16px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent); }
+  #inglist { position: relative; padding-top: 6px; }
+  .ing { position: relative; display: flex; align-items: center; height: 72px; padding: 0 22px; font-size: 34px; font-weight: 600; }
+  .ing .n { width: 52px; color: var(--mist); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ing .q { position: absolute; right: 22px; width: 44px; height: 44px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.45);
+    display: grid; place-items: center; font-size: 26px; font-weight: 800; color: var(--muted); }
+  .tags { position: absolute; left: 72px; right: 72px; top: 1150px; display: flex; gap: 18px; }
+  .tag { position: relative; height: 76px; border-radius: 38px; display: flex; align-items: center; gap: 14px; padding: 0 26px 0 14px;
+    background: var(--card); color: var(--white); font-size: 30px; font-weight: 700; white-space: nowrap;
+    box-shadow: 0 14px 28px -10px rgba(17,17,19,.3); }
+  .tag .qi { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--or); color: var(--or); display: grid; place-items: center;
+    font-size: 26px; font-weight: 800; }
+  .tag .ring2 { position: absolute; inset: -2px; border-radius: 40px; border: 2px solid var(--or); opacity: 0; }
+
+  /* ---------- scene 7: genuine ---------- */
+  .grow { position: absolute; left: 72px; right: 72px; height: 160px; display: flex; align-items: center; gap: 30px; padding: 0 36px 0 32px; }
+  .grow .ic { width: 92px; height: 92px; border-radius: 24px; background: var(--card-lo); display: grid; place-items: center; flex: none; }
+  .grow .tx { flex: 1; font-size: 40px; font-weight: 700; letter-spacing: -.01em; }
+  .grow .ck { width: 72px; height: 72px; border-radius: 50%; border: 3px solid rgba(255,255,255,.2); display: grid; place-items: center; flex: none; }
+
+  /* ---------- scene 8: CTA + end card ---------- */
+  #cmt { position: absolute; left: 72px; right: 72px; top: 590px; height: 560px; }
+  #cmt .hdr { position: absolute; left: 0; right: 0; top: 30px; text-align: center; font-size: 30px; font-weight: 700; }
+  #cmt .hr { position: absolute; left: 0; right: 0; top: 92px; height: 1px; background: var(--hair); }
+  .av { border-radius: 50%; background: #3F3F46; display: grid; place-items: center; flex: none; }
+  .crow { position: absolute; left: 36px; right: 36px; top: 124px; display: flex; gap: 22px; align-items: center; }
+  .crow .who { font-size: 26px; font-weight: 600; color: var(--muted); }
+  .crow .what { font-size: 40px; font-weight: 800; letter-spacing: .04em; margin-top: 2px; }
+  .reply { position: absolute; left: 130px; top: 264px; border-radius: 24px; padding: 18px 28px 20px; background: rgba(255,117,24,.10);
+    border: 2px solid var(--or); }
+  .reply .who { font-size: 24px; font-weight: 600; color: var(--muted); }
+  .reply .what { font-size: 36px; font-weight: 700; margin-top: 4px; }
+  .composer { position: absolute; left: 28px; right: 28px; bottom: 28px; height: 92px; border-radius: 46px; background: var(--card-lo);
+    border: 1px solid rgba(255,255,255,.12); display: flex; align-items: center; padding: 0 30px 0 16px; gap: 20px; }
+  .composer .field { flex: 1; position: relative; height: 50px; display: flex; align-items: center; font-size: 34px; }
+  .composer .ph { position: absolute; left: 0; color: var(--mist); font-weight: 500; }
+  .composer .typed { font-weight: 800; letter-spacing: .04em; }
+  .composer .cur { display: inline-block; width: 3px; height: 40px; background: var(--or); margin-left: 4px; }
+  .composer .post { font-size: 30px; font-weight: 800; }
+
+  #plate { position: absolute; left: 128px; top: 470px; width: 824px; padding: 52px; border-radius: 36px;
+    background: linear-gradient(160deg, #FFFFFF 0%, #F1F3F6 100%);
+    border: 1px solid rgba(32,43,56,.06);
+    box-shadow: 0 40px 90px -30px rgba(32,43,56,.30), 0 0 120px rgba(255,117,24,.10); }
+  #plate img { display: block; width: 720px; margin: -72px 0 -25px; }
+  .end-line { position: absolute; left: 72px; right: 72px; text-align: center; }
+  .end-chip { position: absolute; left: 50%; transform: translateX(-50%); top: 1300px; }
+  .chip { display: inline-flex; align-items: center; gap: 16px; height: 80px; padding: 0 34px; border-radius: 40px; background: var(--card);
+    border: 1px solid rgba(255,255,255,.1); color: var(--white); font-size: 32px; font-weight: 700; white-space: nowrap;
+    box-shadow: 0 14px 28px -10px rgba(17,17,19,.3); }
+  .chip .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--or); box-shadow: 0 0 12px var(--or); }
+  .logo-missing { outline: 4px dashed var(--or); min-height: 200px; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gScoop" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FAFAFA"/><stop offset=".55" stop-color="#D4D4D8"/><stop offset="1" stop-color="#8E8E96"/>
+    </linearGradient>
+    <linearGradient id="gPowder" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E7E5E4"/><stop offset="1" stop-color="#B9B5B1"/>
+    </linearGradient>
+    <radialGradient id="gShadow"><stop offset="0" stop-color="#111113" stop-opacity=".32"/><stop offset="1" stop-color="#111113" stop-opacity="0"/></radialGradient>
+    <symbol id="scoop" viewBox="0 0 260 200">
+      <path d="M18 92 C 40 52, 132 50, 154 92 Z" fill="url(#gPowder)"/>
+      <path d="M10 92 H162 V112 A76 84 0 0 1 10 112 Z" fill="url(#gScoop)"/>
+      <path d="M22 112 A64 70 0 0 0 70 178" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5" stroke-linecap="round"/>
+      <rect x="4" y="84" width="164" height="16" rx="8" fill="#FAFAFA"/>
+      <rect x="158" y="96" width="98" height="24" rx="12" fill="#E4E4E7"/>
+      <rect x="206" y="103" width="34" height="10" rx="5" fill="#A1A1AA"/>
+    </symbol>
+    <symbol id="tick" viewBox="0 0 24 24">
+      <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="stage">
+  <div class="bg-glow"></div>
+  <div class="orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
+  <div class="bg-grid"></div>
+  <div id="particles"></div>
+  <div class="vignette"></div>
+  <div id="progress"><i></i></div>
+
+  <!-- ===== Scene 1 — hook ===== -->
+  <section class="scene" id="s1">
+    <div class="kicker" data-fx="rise" data-at="0" data-dur=".5"><span class="dot"></span>How to read a label</div>
+    <h1 class="h1" style="top:318px" data-fx="words" data-at=".08" data-stagger=".04" data-dur=".4"><em>STOP</em> buying protein<br>by the photo<br>on the box</h1>
+    <div id="tub">
+      <svg viewBox="0 0 440 600" width="440" height="600" aria-hidden="true">
+        <defs>
+          <linearGradient id="gBody" x1="0" x2="1">
+            <stop offset="0" stop-color="#0D0D0F"/><stop offset=".36" stop-color="#3A3A40"/><stop offset=".56" stop-color="#26262B"/><stop offset="1" stop-color="#0B0B0D"/>
+          </linearGradient>
+          <linearGradient id="gShade" x1="0" x2="1">
+            <stop offset="0" stop-color="#000" stop-opacity=".78"/><stop offset=".2" stop-color="#000" stop-opacity=".18"/>
+            <stop offset=".38" stop-color="#fff" stop-opacity=".09"/><stop offset=".55" stop-color="#000" stop-opacity="0"/>
+            <stop offset=".8" stop-color="#000" stop-opacity=".25"/><stop offset="1" stop-color="#000" stop-opacity=".8"/>
+          </linearGradient>
+          <linearGradient id="gLid" x1="0" x2="1">
+            <stop offset="0" stop-color="#18181B"/><stop offset=".38" stop-color="#4A4A52"/><stop offset=".6" stop-color="#303036"/><stop offset="1" stop-color="#141416"/>
+          </linearGradient>
+          <clipPath id="cLabel"><rect x="28" y="150" width="384" height="370"/></clipPath>
+        </defs>
+        <ellipse cx="220" cy="582" rx="210" ry="20" fill="url(#gShadow)"/>
+        <rect x="28" y="96" width="384" height="480" rx="34" fill="url(#gBody)"/>
+        <g clip-path="url(#cLabel)">
+          <g id="strip">
+            <!-- back panel -->
+            <g transform="translate(-356 150)">
+              <rect width="384" height="370" fill="#1F1F23"/>
+              <g fill="#fff" opacity=".22">
+                <rect x="40" y="48" width="220" height="12" rx="6"/><rect x="40" y="76" width="280" height="10" rx="5"/>
+                <rect x="40" y="98" width="250" height="10" rx="5"/><rect x="40" y="120" width="270" height="10" rx="5"/>
+                <rect x="40" y="142" width="190" height="10" rx="5"/>
+              </g>
+              <g fill="#fff" opacity=".7">
+                <rect x="40" y="230" width="4" height="90"/><rect x="50" y="230" width="2" height="90"/><rect x="56" y="230" width="6" height="90"/>
+                <rect x="68" y="230" width="2" height="90"/><rect x="74" y="230" width="4" height="90"/><rect x="84" y="230" width="2" height="90"/>
+                <rect x="90" y="230" width="6" height="90"/><rect x="100" y="230" width="2" height="90"/><rect x="106" y="230" width="4" height="90"/>
+                <rect x="116" y="230" width="2" height="90"/><rect x="122" y="230" width="6" height="90"/><rect x="132" y="230" width="4" height="90"/>
+              </g>
+            </g>
+            <!-- front panel -->
+            <g transform="translate(28 150)">
+              <rect width="384" height="370" fill="#1E1E22"/>
+              <text x="192" y="58" text-anchor="middle" font-family="Inter" font-size="20" font-weight="700" letter-spacing="6" fill="#A1A1AA">100% PREMIUM</text>
+              <text x="192" y="166" text-anchor="middle" font-family="Inter Display, Inter" font-size="118" font-weight="900" letter-spacing="-3" fill="#FFFFFF">WHEY</text>
+              <text x="192" y="222" text-anchor="middle" font-family="Inter" font-size="46" font-weight="800" letter-spacing="8" fill="#FF7518">PROTEIN</text>
+              <rect x="0" y="262" width="384" height="58" fill="#FF7518"/>
+              <text x="192" y="300" text-anchor="middle" font-family="Inter" font-size="22" font-weight="800" letter-spacing="5" fill="#111113">CHOCOLATE · 2 KG</text>
+            </g>
+            <!-- facts panel -->
+            <g transform="translate(412 150)">
+              <rect width="384" height="370" fill="#29292D"/>
+              <text x="34" y="62" font-family="Inter" font-size="34" font-weight="800" fill="#FFFFFF">Nutrition Facts</text>
+              <rect x="34" y="82" width="316" height="5" fill="#FFFFFF" opacity=".88"/>
+              <g fill="#A1A1AA" opacity=".8">
+                <rect x="34" y="108" width="120" height="10" rx="5"/><rect x="250" y="108" width="100" height="10" rx="5"/>
+                <rect x="34" y="138" width="150" height="10" rx="5"/><rect x="310" y="138" width="40" height="10" rx="5"/>
+                <rect x="34" y="176" width="80" height="10" rx="5"/><rect x="280" y="176" width="70" height="10" rx="5"/>
+                <rect x="34" y="206" width="90" height="10" rx="5"/><rect x="300" y="206" width="50" height="10" rx="5"/>
+                <rect x="34" y="236" width="130" height="10" rx="5"/><rect x="310" y="236" width="40" height="10" rx="5"/>
+                <rect x="54" y="266" width="120" height="10" rx="5"/><rect x="310" y="266" width="40" height="10" rx="5"/>
+                <rect x="34" y="306" width="316" height="8" rx="4"/><rect x="34" y="326" width="260" height="8" rx="4"/>
+              </g>
+            </g>
+          </g>
+          <rect x="28" y="150" width="384" height="370" fill="url(#gShade)"/>
+        </g>
+        <rect x="28" y="96" width="384" height="480" rx="34" fill="url(#gShade)" opacity=".45"/>
+        <rect x="16" y="38" width="408" height="76" rx="18" fill="url(#gLid)"/>
+        <g stroke="#fff" stroke-opacity=".07" stroke-width="2">
+          <path d="M34 48V104M50 48V104M66 48V104M82 48V104M98 48V104M114 48V104M130 48V104M146 48V104M162 48V104M178 48V104M194 48V104M210 48V104M226 48V104M242 48V104M258 48V104M274 48V104M290 48V104M306 48V104M322 48V104M338 48V104M354 48V104M370 48V104M386 48V104M402 48V104"/>
+        </g>
+        <rect x="16" y="38" width="408" height="76" rx="18" fill="url(#gShade)" opacity=".6"/>
+        <rect x="40" y="28" width="360" height="18" rx="9" fill="#3A3A40"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- shared Nutrition Facts card: zooms off the tub in scene 1, flattens in scene 2 -->
+  <div id="facts" class="card">
+    <div class="fc-clip">
+      <div class="fc-title">Nutrition Facts</div>
+      <div class="fc-sub">Example label · per serving</div>
+      <div class="fc-bar"></div>
+      <div class="fc-row" data-cp="1"><i class="hl"></i><span>Serving size</span><b>1 scoop (33 g)</b></div>
+      <div class="fc-row"><span>Servings per pack</span><b>30</b></div>
+      <div class="fc-bar thin"></div>
+      <div class="fc-row"><span>Energy</span><b>126 kcal</b></div>
+      <div class="fc-row" data-cp="2"><i class="hl"></i><span>Protein</span><b>24 g</b></div>
+      <div class="fc-row"><span>Carbohydrate</span><b>3 g</b></div>
+      <div class="fc-row ind"><span>Total sugars</span><b>2 g</b></div>
+      <div class="fc-row ind" data-cp="3"><i class="hl"></i><span>Added sugar</span><b>1 g</b></div>
+      <div class="fc-row"><span>Fat</span><b>2 g</b></div>
+      <div class="fc-bar thin"></div>
+      <div class="fc-ing" data-cp="4"><i class="hl"></i><span>Ingredients:</span> <span class="t" style="color:inherit;font-weight:500">Whey protein concentrate (milk), cocoa powder, glycine, taurine, flavour, sweetener (INS 955).</span></div>
+      <div class="scanlines"></div>
+      <div class="scan"></div>
+    </div>
+    <i class="brk tl"></i><i class="brk tr"></i><i class="brk bl"></i><i class="brk br"></i>
+  </div>
+
+  <!-- ===== Scene 2 — setup ===== -->
+  <section class="scene" id="s2">
+    <h1 class="h1" style="top:300px;font-size:92px" data-fx="words" data-at=".15"><em>4</em> things to check.</h1>
+    <div id="cps"></div>
+  </section>
+
+  <!-- ===== Scene 3 — serving size ===== -->
+  <section class="scene" id="s3">
+    <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>1 · Serving size</div>
+    <div class="steps" data-fx="fade" data-at=".1"><i class="on"></i><i></i><i></i><i></i></div>
+    <h2 class="h2" data-fx="words" data-at=".15">How big is 1 scoop?</h2>
+    <div id="scale" data-fx="pop" data-at=".35">
+      <svg viewBox="0 0 600 330" width="600" height="330" aria-hidden="true">
+        <ellipse cx="300" cy="312" rx="290" ry="16" fill="url(#gShadow)"/>
+        <g id="plat">
+          <rect x="60" y="0" width="480" height="28" rx="14" fill="#3E3E45"/>
+          <rect x="72" y="3" width="456" height="5" rx="2.5" fill="#fff" opacity=".12"/>
+          <rect x="266" y="28" width="68" height="20" fill="#232327"/>
+        </g>
+        <rect x="20" y="46" width="560" height="256" rx="38" fill="#29292D" stroke="#fff" stroke-opacity=".08" stroke-width="2"/>
+        <rect x="20" y="46" width="560" height="40" rx="20" fill="#fff" opacity=".04"/>
+        <rect x="130" y="86" width="340" height="150" rx="22" fill="#0B0B0C" stroke="#FF7518" stroke-opacity=".38" stroke-width="2"/>
+        <circle cx="230" cy="270" r="10" fill="#3E3E45"/><circle cx="300" cy="270" r="10" fill="#3E3E45"/><circle cx="370" cy="270" r="10" fill="#3E3E45"/>
+      </svg>
+    </div>
+    <div id="lcd" data-fx="fade" data-at=".5"><span class="v">0</span><span class="u">g</span></div>
+    <svg id="scoop3" viewBox="0 0 260 200" aria-hidden="true"><use href="#scoop"/></svg>
+    <div class="rowcard card" style="top:1238px" data-fx="rise" data-at="3.6"><span>Serving size</span><b>1 scoop (33 g)</b></div>
+    <svg style="position:absolute;left:52px;top:1218px;overflow:visible" width="976" height="152" viewBox="0 0 976 152" aria-hidden="true">
+      <g fill="none" stroke="#FF7518" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px rgba(255,117,24,.7))">
+        <path pathLength="1" data-fx="draw" data-at="3.95" d="M3 48 V20 A17 17 0 0 1 20 3 H68"/>
+        <path pathLength="1" data-fx="draw" data-at="3.95" d="M908 3 H956 A17 17 0 0 1 973 20 V48"/>
+        <path pathLength="1" data-fx="draw" data-at="3.95" d="M3 104 V132 A17 17 0 0 0 20 149 H68"/>
+        <path pathLength="1" data-fx="draw" data-at="3.95" d="M908 149 H956 A17 17 0 0 0 973 132 V104"/>
+      </g>
+    </svg>
+    <p class="body" style="position:absolute;left:72px;right:72px;top:1392px;text-align:center" data-fx="rise" data-at="4.3">Every number on the label is <b>per this 1 scoop.</b></p>
+  </section>
+
+  <!-- ===== Scene 4 — protein per scoop ===== -->
+  <section class="scene" id="s4">
+    <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>2 · Protein per scoop</div>
+    <div class="steps" data-fx="fade" data-at=".1"><i class="done"></i><i class="on"></i><i></i><i></i></div>
+    <h2 class="h2" data-fx="words" data-at=".15">Divide protein<br>by scoop size.</h2>
+    <div class="pwrap" style="left:72px" data-fx="rise" data-at=".55">
+      <div class="pcard card" id="pA">
+        <div class="meta">Scoop A</div>
+        <div class="sc"><svg width="161" height="124" viewBox="0 0 260 200"><use href="#scoop"/></svg></div>
+        <div class="l1">33 g scoop</div>
+        <div class="l2">→ 24 g protein</div>
+        <div class="ring">
+          <svg viewBox="0 0 250 250" width="250" height="250">
+            <circle cx="125" cy="125" r="108" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="18"/>
+            <circle class="arc" cx="125" cy="125" r="108" fill="none" stroke="#F4F4F5" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+          </svg>
+          <div class="pct"><span class="pv">0%</span></div>
+        </div>
+        <div class="f fx" data-fx="fade" data-at="6.6">24 g ÷ 33 g</div>
+        <div class="tick-badge" data-fx="pop" data-at="8.9" data-dur=".5"><svg width="44" height="44"><use href="#tick"/></svg></div>
+      </div>
+    </div>
+    <div class="pwrap" style="left:564px" data-fx="rise" data-at=".7">
+      <div class="pcard card" id="pB">
+        <div class="meta">Scoop B</div>
+        <div class="sc"><svg width="200" height="154" viewBox="0 0 260 200"><use href="#scoop"/></svg></div>
+        <div class="l1">40 g scoop</div>
+        <div class="l2">→ 24 g protein</div>
+        <div class="ring">
+          <svg viewBox="0 0 250 250" width="250" height="250">
+            <circle cx="125" cy="125" r="108" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="18"/>
+            <circle class="arc" cx="125" cy="125" r="108" fill="none" stroke="#F4F4F5" stroke-width="18" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+          </svg>
+          <div class="pct"><span class="pv">0%</span></div>
+        </div>
+        <div class="f fx" data-fx="fade" data-at="6.75">24 g ÷ 40 g</div>
+      </div>
+    </div>
+    <p class="body" style="position:absolute;left:72px;right:72px;top:1300px;text-align:center;font-size:40px" data-fx="rise" data-at="10.6"><b>Higher % = more protein in every scoop.</b></p>
+    <div class="meta" style="position:absolute;left:72px;right:72px;top:1372px;text-align:center" data-fx="fade" data-at="10.9">Example values</div>
+  </section>
+
+  <!-- ===== Scene 5 — added sugar ===== -->
+  <section class="scene" id="s5">
+    <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>3 · Added sugar</div>
+    <div class="steps" data-fx="fade" data-at=".1"><i class="done"></i><i class="done"></i><i class="on"></i><i></i></div>
+    <h2 class="h2" data-fx="words" data-at=".15">Lower is better<br>for lean goals.</h2>
+    <div id="cubes"></div>  <!-- behind the card: the cubes fall out from under the label -->
+    <div class="card" style="position:absolute;left:72px;right:72px;top:560px;overflow:hidden" data-fx="rise" data-at=".5">
+      <div class="srow"><span>Carbohydrate</span><b>3 g</b></div>
+      <div class="srow"><span>Total sugars</span><b>2 g</b></div>
+      <div class="srow" id="sugrow"><i class="hl"></i><span>Added sugar</span><b>1 g</b></div>
+    </div>
+    <div class="warn" data-fx="rise" data-at="5.0">
+      <svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 L22 20.5 H2 Z" fill="none" stroke="#FF7518" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v4.6" stroke="#FF7518" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.4" fill="#FF7518"/></svg>
+      <span>Mass gainers can be high in sugar.</span>
+    </div>
+  </section>
+
+  <!-- ===== Scene 6 — ingredients ===== -->
+  <section class="scene" id="s6">
+    <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>4 · Ingredients</div>
+    <div class="steps" data-fx="fade" data-at=".1"><i class="done"></i><i class="done"></i><i class="done"></i><i class="on"></i></div>
+    <h2 class="h2" data-fx="words" data-at=".15">The first one<br>is the biggest.</h2>
+    <div id="ingcard" class="card" data-fx="rise" data-at=".4">
+      <div class="head"><span class="meta">Ingredients</span><span class="meta">Most → least</span></div>
+      <div id="ingwin">
+        <div id="inglist">
+          <div class="ing"><span class="n">1</span>Whey protein concentrate (milk)
+            <svg style="position:absolute;left:4px;top:2px;overflow:visible" width="880" height="68" viewBox="0 0 880 68" aria-hidden="true">
+              <rect x="0" y="0" width="880" height="68" rx="16" fill="rgba(255,117,24,.12)" data-fx="fade" data-at="1.95" data-dur=".4"/>
+              <rect x="0" y="0" width="880" height="68" rx="16" fill="none" stroke="#FF7518" stroke-width="4" pathLength="1" data-fx="draw" data-at="1.9" data-dur=".6" style="filter:drop-shadow(0 0 8px rgba(255,117,24,.7))"/>
+            </svg>
+          </div>
+          <div class="ing"><span class="n">2</span>Cocoa powder</div>
+          <div class="ing"><span class="n">3</span>Glycine<span class="q" data-fx="pop" data-at="3.9">?</span></div>
+          <div class="ing"><span class="n">4</span>Taurine<span class="q" data-fx="pop" data-at="4.0">?</span></div>
+          <div class="ing"><span class="n">5</span>Flavour (chocolate)</div>
+          <div class="ing"><span class="n">6</span>Sweetener (INS 955)</div>
+        </div>
+      </div>
+    </div>
+    <p style="position:absolute;left:72px;right:72px;top:1060px;font-size:46px;font-weight:800;letter-spacing:-.015em" data-fx="rise" data-at="3.6">Watch for added amino acids.</p>
+    <div class="tags">
+      <div class="tag" data-fx="rise" data-at="3.85"><span class="qi">?</span>Glycine<i class="ring2"></i></div>
+      <div class="tag" data-fx="rise" data-at="3.95"><span class="qi">?</span>Taurine<i class="ring2"></i></div>
+      <div class="tag" data-fx="rise" data-at="4.05"><span class="qi">?</span>Added amino acids<i class="ring2"></i></div>
+    </div>
+    <p class="body" style="position:absolute;left:72px;right:72px;top:1262px" data-fx="rise" data-at="6.2">They can make the protein number<br><b>look higher than it really is.</b></p>
+  </section>
+
+  <!-- ===== Scene 7 — bonus ===== -->
+  <section class="scene" id="s7">
+    <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>Bonus</div>
+    <h2 class="h2" data-fx="words" data-at=".12">Check it’s genuine.</h2>
+    <div class="grow card" style="top:560px" data-fx="rise" data-at=".35">
+      <div class="ic"><svg width="48" height="48" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M20 4 L34 9 V19 C34 28 28 34 20 37 C12 34 6 28 6 19 V9 Z"/><path d="M14 20 l4 4 l8 -8"/></svg></div>
+      <div class="tx">FSSAI licence no.</div><div class="ck"><svg width="40" height="40" viewBox="0 0 24 24"><path pathLength="1" data-fx="draw" data-at="1.05" data-dur=".35" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="grow card" style="top:748px" data-fx="rise" data-at=".5">
+      <div class="ic"><svg width="48" height="48" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><rect x="6" y="9" width="28" height="26" rx="4"/><path d="M6 16 H34 M13 5 V11 M27 5 V11 M12 23 H18 M12 28 H24"/></svg></div>
+      <div class="tx">Batch no. + MFG / Expiry</div><div class="ck"><svg width="40" height="40" viewBox="0 0 24 24"><path pathLength="1" data-fx="draw" data-at="1.95" data-dur=".35" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+    <div class="grow card" style="top:936px" data-fx="rise" data-at=".65">
+      <div class="ic"><svg width="48" height="48" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 15 L9 6 H31 L35 15 Z"/><path d="M8 15 V34 H32 V15"/><path d="M17 34 V25 H23 V34"/></svg></div>
+      <div class="tx">Authorised seller</div><div class="ck"><svg width="40" height="40" viewBox="0 0 24 24"><path pathLength="1" data-fx="draw" data-at="2.95" data-dur=".35" d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#111113" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+  </section>
+
+  <!-- ===== Scene 8 — CTA + end card ===== -->
+  <section class="scene" id="s8">
+    <div id="s8a">
+      <div class="kicker" data-fx="rise" data-at=".05"><span class="dot"></span>Free checklist</div>
+      <h2 class="h2" data-fx="words" data-at=".12">Comment <em>LABEL</em><br>for the free checklist.</h2>
+      <div id="cmt" class="card" data-fx="rise" data-at=".3">
+        <div class="hdr">Comments</div><div class="hr"></div>
+        <div class="crow" data-fx="rise" data-at="1.65" data-dur=".45">
+          <div class="av" style="width:76px;height:76px"><svg width="40" height="40" viewBox="0 0 24 24" fill="#A1A1AA"><circle cx="12" cy="8.5" r="4.2"/><path d="M3.5 21c.8-4.4 4.2-7 8.5-7s7.7 2.6 8.5 7z"/></svg></div>
+          <div><div class="who">you · now</div><div class="what">LABEL</div></div>
+        </div>
+        <div class="reply" data-fx="pop" data-at="2.25" data-dur=".55">
+          <div class="who">↳ nutritionhubkhanna</div>
+          <div class="what">Sent you the checklist <span style="color:var(--or)">✓</span></div>
+        </div>
+        <div class="composer">
+          <div class="av" style="width:58px;height:58px"><svg width="30" height="30" viewBox="0 0 24 24" fill="#A1A1AA"><circle cx="12" cy="8.5" r="4.2"/><path d="M3.5 21c.8-4.4 4.2-7 8.5-7s7.7 2.6 8.5 7z"/></svg></div>
+          <div class="field"><span class="ph">Add a comment…</span><span class="typed"></span><span class="cur"></span></div>
+          <div class="post">Post</div>
+        </div>
+      </div>
+    </div>
+    <div id="plate" data-fx="pop" data-at="3.55" data-dur=".85"><img data-nh-logo alt="Nutrition Hub Khanna logo"></div>
+    <div class="end-line body" style="top:1040px;font-size:32px" data-fx="fade" data-at="5.3">Genuine supplements. Right guidance.</div>
+    <div class="end-line" style="top:1110px;font-size:50px;font-weight:800;letter-spacing:-.01em" data-fx="rise" data-at="4.0">@nutritionhubkhanna</div>
+    <div class="end-line" style="top:1186px;font-size:40px;font-weight:600;color:var(--ink-2)" data-fx="rise" data-at="4.15">WhatsApp <span class="num" style="color:var(--ink);font-weight:800">9914571175</span></div>
+    <div class="end-chip" data-fx="fade" data-at="4.5"><span class="chip"><span class="dot"></span>Comment LABEL for the free checklist</span></div>
+  </section>
+</div>
+
+<script>
+/* ===== Timing: scene in/out in seconds (retime here after the VO is recorded) ===== */
+// scene changes sit 0.35 s before each scene's first spoken phrase (see vo-hinglish.srt)
+const SC = { s1: [0, 4.37], s2: [4.37, 7.70], s3: [7.70, 15.07], s4: [15.07, 29.30], s5: [29.30, 38.93], s6: [38.93, 47.88], s7: [47.88, 51.95], s8: [51.95, 60.8] };
+const DURATION = 60.8;
+const EXIT = 0.32;                       // scene exit (reverse reveal), seconds
+const LOGO = "../../assets/logo/nutrition-hub-logo.png";   // ORIGINAL logo, never a redraw
+
+/* ===== easing (White Glass motion spec: ease-out reveals, ease-in exits, no overshoot) ===== */
+function bezier(x1, y1, x2, y2) {
+  const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx;
+  const cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+  const sx = (t) => ((ax * t + bx) * t + cx) * t, sy = (t) => ((ay * t + by) * t + cy) * t;
+  return (x) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let lo = 0, hi = 1, t = x;
+    for (let i = 0; i < 30; i++) { const v = sx(t); if (Math.abs(v - x) < 1e-5) break; if (v < x) lo = t; else hi = t; t = (lo + hi) / 2; }
+    return sy(t);
+  };
+}
+const E = { out: bezier(.22, 1, .36, 1), in: bezier(.64, 0, .78, 0), inout: bezier(.37, 0, .63, 1) };
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const lerp = (a, b, p) => a + (b - a) * p;
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const mix = (a, b, p) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], p))).join(",")})`; };
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+
+/* ===== kinetic type: wrap words in masks ===== */
+$$('[data-fx="words"]').forEach((el) => {
+  const nodes = [...el.childNodes]; el.textContent = "";
+  nodes.forEach((n) => {
+    if (n.nodeName === "BR") { el.appendChild(document.createElement("br")); return; }
+    const cls = n.nodeType === 1 ? n.tagName.toLowerCase() : null;
+    n.textContent.split(/(\s+)/).forEach((tok) => {
+      if (!tok) return;
+      if (/^\s+$/.test(tok)) { el.appendChild(document.createTextNode(" ")); return; }
+      const w = document.createElement("span"); w.className = "w";
+      const s = document.createElement(cls === "em" ? "em" : "span"); s.textContent = tok;
+      w.appendChild(s); el.appendChild(w);
+    });
+  });
+});
+
+/* ===== generic reveals ===== */
+const scenes = Object.keys(SC).map((id) => ({ id, el: document.getElementById(id), a: SC[id][0], b: SC[id][1] }));
+const anims = $$("[data-fx]").map((el) => {
+  const sc = el.closest(".scene");
+  return { el, fx: el.dataset.fx, base: sc ? SC[sc.id][0] : 0, at: +el.dataset.at || 0,
+    dur: el.dataset.dur ? +el.dataset.dur : null, st: +(el.dataset.stagger || .05),
+    words: el.dataset.fx === "words" ? $$(".w > *", el) : null };
+});
+function fx(a, t) {
+  const T = t - a.base - a.at, s = a.el.style;
+  switch (a.fx) {
+    case "rise": { const p = E.out(clamp(T / (a.dur || .6))); s.opacity = p; s.transform = `translateY(${(1 - p) * 34}px)`; break; }
+    case "fade": { const p = E.out(clamp(T / (a.dur || .45))); s.opacity = p; break; }
+    case "pop":  { const p = E.out(clamp(T / (a.dur || .75))); s.opacity = p; s.transform = `scale(${.96 + .04 * p})`; break; }
+    case "draw": { const p = E.out(clamp(T / (a.dur || .5))); s.strokeDashoffset = 1 - p; s.opacity = p > 0 ? 1 : 0; break; }
+    case "words": a.words.forEach((w, i) => { const p = E.out(clamp((T - i * a.st) / (a.dur || .45))); w.style.transform = `translateY(${(1 - p) * 112}%)`; w.style.opacity = clamp(p * 1.6); }); break;
+  }
+}
+
+/* ===== particles (seeded, deterministic) ===== */
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = rng(11);
+const parts = Array.from({ length: 44 }, () => {
+  const p = { x: R() * 1080, y: R() * 1960, r: 1.5 + R() * 4.5, v: 10 + R() * 26, a: .1 + R() * .32, ph: R() * 6.283, amp: 6 + R() * 20, f: .15 + R() * .3, or: R() < .35 };
+  const d = document.createElement("i"); d.className = "pt";
+  d.style.width = d.style.height = (p.r * 2).toFixed(1) + "px";
+  d.style.background = p.or ? "#FF7518" : "#8290A0";
+  if (p.or) d.style.boxShadow = `0 0 ${p.r * 4}px rgba(255,117,24,.8)`;
+  if (p.r > 4.5) d.style.filter = "blur(1.2px)";
+  $("#particles").appendChild(d); p.el = d; return p;
+});
+function drawParticles(t) {
+  parts.forEach((p) => {
+    const y = ((p.y - p.v * t) % 1960 + 1960) % 1960 - 20;
+    const x = p.x + Math.sin(t * p.f * 2 + p.ph) * p.amp;
+    p.el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+    p.el.style.opacity = (p.a * (.65 + .35 * Math.sin(t * 1.1 + p.ph))).toFixed(3);
+  });
+}
+
+/* ===== scene 1–2: tub + shared facts card + checkpoints ===== */
+const tub = $("#tub"), strip = $("#strip"), facts = $("#facts");
+facts.style.display = "block";
+const FH = facts.offsetHeight, FTOP = 460, FC = { x: 72 + 380, y: FTOP + FH / 2 };
+const cpRows = $$("[data-cp]", facts).map((r) => ({ row: r, hl: $(".hl", r), y: FTOP + 1 + r.offsetTop + (r.classList.contains("fc-ing") ? 26 : r.offsetHeight / 2) }));
+facts.style.display = "none";
+const cpBox = $("#cps");
+const rail = document.createElement("div"); rail.className = "cp-rail"; rail.style.top = cpRows[0].y + "px"; rail.style.height = (cpRows[3].y - cpRows[0].y) + "px"; cpBox.appendChild(rail);
+cpRows.forEach((c, i) => {
+  c.conn = document.createElement("div"); c.conn.className = "cp-conn"; c.conn.style.top = c.y + "px";
+  c.dot = document.createElement("div"); c.dot.className = "cp"; c.dot.style.top = c.y + "px"; c.dot.textContent = i + 1;
+  cpBox.append(c.conn, c.dot);
+});
+
+const TURN = 2.15;   // s1-local time the tub turns to its Nutrition Facts panel
+function scene12(t) {
+  const a1 = SC.s1[0], a2 = SC.s2[0], b2 = SC.s2[1];
+  // tub: spins in (label wraps round), turns to the facts panel, then falls back
+  const lt = t - a1;
+  const pe = E.out(clamp(lt / .8)), pr = E.out(clamp((lt - (TURN + .5)) / .8));
+  tub.style.opacity = pe * (1 - .82 * pr);
+  tub.style.transform = `translateY(${(1 - pe) * 150}px) scale(${(.82 + .18 * pe) * (1 - .08 * pr)}) rotate(${(1 - pe) * -8}deg)`;
+  tub.style.filter = pr > 0 ? `blur(${(pr * 8).toFixed(2)}px)` : "none";
+  const sp1 = E.out(clamp(lt / .85)), sp2 = E.inout(clamp((lt - TURN) / .5));
+  strip.setAttribute("transform", `translate(${(340 * (1 - sp1) - 384 * sp2).toFixed(2)} 0)`);
+
+  // facts card
+  const tIn = a1 + TURN + .45;
+  if (t < tIn || t >= b2) { facts.style.display = "none"; }
+  else {
+    facts.style.display = "block";
+    const pZ = E.out(clamp((t - (a1 + TURN + .5)) / .8)), pF = E.out(clamp((t - a2) / .6));
+    const q = E.in(clamp((t - (b2 - EXIT)) / EXIT));
+    const s0 = 360 / 760, sZ = .86;
+    const cx = lerp(lerp(540, 540, pZ), FC.x, pF), cy = lerp(lerp(985, 1010, pZ), FC.y, pF);
+    const sc = lerp(lerp(s0, sZ, pZ), 1, pF) * (1 - .015 * q), rx = 13 * pZ * (1 - pF);
+    facts.style.opacity = clamp((t - tIn) / .15) * (1 - q);
+    facts.style.transform = `translate(${(cx - FC.x).toFixed(2)}px, ${(cy - FC.y).toFixed(2)}px) perspective(1800px) rotateX(${rx.toFixed(2)}deg) scale(${sc.toFixed(4)})`;
+    const hud = clamp((t - (a1 + TURN + .7)) / .25) * (1 - clamp((t - a2) / .3));
+    $$(".brk", facts).forEach((b) => (b.style.opacity = hud));
+    $(".scanlines", facts).style.opacity = hud * .6;
+    const p1 = clamp((t - (a1 + TURN + .8)) / .6), p2 = clamp((t - (a1 + TURN + 1.4)) / .6);
+    const pass = p2 > 0 ? p2 : p1;
+    const scan = $(".scan", facts);
+    scan.style.opacity = pass > 0 && pass < 1 ? 1 : 0;
+    scan.style.transform = `translateY(${(-170 + (FH + 170) * E.inout(pass)).toFixed(1)}px)`;
+  }
+
+  // checkpoints (scene 2)
+  const l2 = t - a2;
+  rail.style.opacity = E.out(clamp((l2 - .35) / .4));
+  cpRows.forEach((c, i) => {
+    c.dot.style.opacity = E.out(clamp((l2 - .4 - i * .06) / .4));
+    const T0 = .8 + i * .4;
+    const pc = E.out(clamp((l2 - T0) / .3)), pl = E.out(clamp((l2 - T0 - .15) / .35));
+    c.conn.style.transform = `scaleX(${pc})`;
+    c.dot.style.background = mix("#FFFFFF", "#FF7518", pl);
+    c.dot.style.borderColor = mix("#D4D4D8", "#FF7518", pl);
+    c.dot.style.color = mix("#71717A", "#111113", pl);
+    c.dot.style.boxShadow = `0 0 ${36 * pl}px rgba(255,117,24,${.6 * pl})`;
+    c.hl.style.opacity = t >= a2 ? pl : 0;
+  });
+}
+
+/* ===== scene 3: scoop drop + scale count ===== */
+const scoop3 = $("#scoop3"), plat = $("#plat"), lcdV = $("#lcd .v");
+function scene3(t) {
+  const lt = t - SC.s3[0], land = 2.3;
+  const pf = clamp((lt - 1.85) / .45);
+  const fall = -250 * (1 - pf * pf);
+  const dip = lt < land ? 0 : 6 * Math.min(1, (lt - land) / .05) * Math.exp(-(lt - land) * 11);
+  scoop3.style.opacity = clamp((lt - 1.85) / .12);
+  scoop3.style.transform = `translateY(${(fall + dip).toFixed(2)}px)`;
+  plat.setAttribute("transform", `translate(0 ${dip.toFixed(2)})`);
+  lcdV.textContent = Math.round(33 * E.out(clamp((lt - 2.35) / 1.15)));
+}
+
+/* ===== scene 4: rings ===== */
+const pA = $("#pA"), pB = $("#pB");
+const ringA = { arc: $(".arc", pA), pv: $(".pv", pA), v: 73 }, ringB = { arc: $(".arc", pB), pv: $(".pv", pB), v: 60 };
+const s4l2 = $$("#s4 .l2"), s4bL1 = $(".l1", pB), s4bSc = $(".sc svg", pB);
+s4bSc.style.transformOrigin = "50% 100%";
+function scene4(t) {
+  const lt = t - SC.s4[0];
+  const hi24 = E.out(clamp((lt - 1.0) / .4));
+  s4l2.forEach((el) => (el.style.color = mix("#A1A1AA", "#FFFFFF", hi24)));
+  const emB = E.out(clamp((lt - 3.7) / .35)) * (1 - E.out(clamp((lt - 6.1) / .35)));
+  s4bL1.style.color = mix("#FFFFFF", "#FF7518", emB);
+  s4bSc.style.transform = `scale(${1 + .08 * emB})`;
+  const pr = E.out(clamp((lt - 6.4) / 1.6));
+  [ringA, ringB].forEach((r) => {
+    const v = r.v * pr;
+    r.arc.setAttribute("stroke-dasharray", `${v.toFixed(2)} 100`);
+    r.arc.style.opacity = v > .05 ? 1 : 0;
+    r.pv.textContent = Math.round(v) + "%";
+  });
+  const win = E.out(clamp((lt - 8.75) / .6));
+  ringA.arc.setAttribute("stroke", mix("#F4F4F5", "#FF7518", win));
+  ringA.pv.style.color = mix("#FFFFFF", "#FF7518", win);
+  pA.style.borderColor = `rgba(255,117,24,${win})`;
+  pA.style.borderWidth = win > 0 ? "2px" : "1px";
+  pA.style.boxShadow = `0 28px 56px -12px rgba(17,17,19,.30), 0 0 ${70 * win}px rgba(255,117,24,${.35 * win})`;
+  pB.style.opacity = 1 - .45 * win;
+}
+
+/* ===== scene 5: sugar cubes + pulse ===== */
+const cubeSVG = `<svg viewBox="0 0 104 120" width="104" height="120"><polygon points="52,0 104,30 52,60 0,30" fill="#FFFFFF"/><polygon points="0,30 52,60 52,120 0,90" fill="#D4D4D8"/><polygon points="104,30 52,60 52,120 104,90" fill="#9A9AA2"/><g fill="#fff" opacity=".5"><circle cx="40" cy="26" r="2"/><circle cx="62" cy="34" r="1.6"/><circle cx="54" cy="18" r="1.4"/></g><g fill="#000" opacity=".08"><circle cx="20" cy="70" r="2"/><circle cx="34" cy="84" r="1.6"/><circle cx="80" cy="64" r="2"/><circle cx="72" cy="92" r="1.6"/></g></svg>`;
+const CUBES = [  // final centre-x, bottom-y, final rotation, start rotation
+  [430, 1250, -2, -16], [540, 1252, 1, 14], [650, 1250, 3, -12],
+  [485, 1190, -3, 18], [597, 1192, 2, -14], [540, 1131, -1, 12],
+].map(([x, y, r1, r0], i) => {
+  const el = document.createElement("div"); el.className = "cube"; el.innerHTML = cubeSVG;
+  el.style.left = (x - 52) + "px"; el.style.top = (y - 120) + "px";
+  $("#cubes").appendChild(el); return { el, r1, r0, i };
+});
+const sugrow = $("#sugrow"), sugHl = $(".hl", sugrow), sugLbl = $("span", sugrow);
+function scene5(t) {
+  const lt = t - SC.s5[0];
+  CUBES.forEach((c) => {
+    const t0 = .9 + c.i * .16, pf = clamp((lt - t0) / .42);
+    c.el.style.opacity = clamp((lt - t0) / .1);
+    c.el.style.transform = `translateY(${(-460 * (1 - pf * pf)).toFixed(1)}px) rotate(${lerp(c.r0, c.r1, E.out(pf)).toFixed(2)}deg)`;
+  });
+  const h = E.out(clamp((lt - 1.9) / .3));
+  const pw = (a, b) => (lt > a && lt < b ? .5 - .5 * Math.cos(2 * Math.PI * (lt - a) / .9) : 0);
+  const pulse = Math.max(pw(1.9, 3.7), pw(7.0, 8.8));   // "added sugar" … "added sugar kam hona chahiye"
+  sugHl.style.opacity = h;
+  sugHl.style.background = `linear-gradient(90deg, rgba(255,117,24,${.18 + .26 * pulse}), rgba(255,117,24,${.04 + .08 * pulse}))`;
+  sugrow.style.boxShadow = `inset 0 0 ${40 * pulse}px rgba(255,117,24,${.35 * pulse})`;
+  sugLbl.style.color = mix("#A1A1AA", "#FF7518", h);
+}
+
+/* ===== scene 6: ingredient scroll + amino flags ===== */
+const inglist = $("#inglist"), tags = $$(".tag .ring2"), tagQ = $$(".tag .qi");
+function scene6(t) {
+  const lt = t - SC.s6[0];
+  const ps = E.out(clamp((lt - .5) / 1.05));
+  inglist.style.transform = `translateY(${((1 - ps) * 420).toFixed(1)}px)`;
+  inglist.style.opacity = clamp((lt - .5) / .25);
+  tags.forEach((r, i) => {
+    const T = lt - 4.4 - i * .12;
+    const f = T > 0 && T < 1.2 ? .5 - .5 * Math.cos(2 * Math.PI * T / .6) : 0;
+    r.style.opacity = f;
+    tagQ[i].style.background = `rgba(255,117,24,${.28 * f})`;
+  });
+}
+
+/* ===== scene 7: tick badges ===== */
+const ticks = $$("#s7 .ck");
+function scene7(t) {
+  const lt = t - SC.s7[0];
+  ticks.forEach((c, i) => {
+    const p = E.out(clamp((lt - [1.0, 1.9, 2.9][i]) / .3));
+    c.style.background = p > 0 ? `rgba(255,117,24,${p})` : "transparent";
+    c.style.borderColor = mix("#4A4A50", "#FF7518", p);
+    c.style.boxShadow = `0 0 ${30 * p}px rgba(255,117,24,${.55 * p})`;
+  });
+}
+
+/* ===== scene 8: typing → posted → reply → end card ===== */
+const s8a = $("#s8a"), typed = $("#s8a .typed"), ph = $("#s8a .ph"), cur = $("#s8a .cur"), post = $("#s8a .post");
+function scene8(t) {
+  const lt = t - SC.s8[0];
+  const n = lt < .75 ? 0 : Math.min(5, Math.floor((lt - .75) / .12) + 1);
+  const posted = lt >= 1.62;
+  const txt = posted ? "" : "LABEL".slice(0, n);
+  typed.textContent = txt;
+  ph.style.opacity = txt ? 0 : 1;
+  cur.style.opacity = !posted && lt > .35 && (n > 0 && n < 5 || Math.floor(lt / .42) % 2 === 0) ? 1 : 0;
+  post.style.color = txt ? "#FF7518" : "#71717A";
+  post.style.opacity = lt > 1.45 && lt < 1.62 ? .55 : 1;
+  const q = E.in(clamp((lt - 3.15) / .32));
+  s8a.style.opacity = 1 - q;
+  s8a.style.transform = `scale(${1 - .015 * q})`;
+  s8a.style.display = q >= 1 ? "none" : "block";
+}
+
+/* ===== master clock ===== */
+const bar = $("#progress i");
+function draw(t) {
+  bar.style.transform = `scaleX(${clamp(t / DURATION)})`;
+  drawParticles(t);
+  scenes.forEach((s, k) => {
+    if (t < s.a || t >= s.b) { s.el.style.display = "none"; return; }
+    s.el.style.display = "block";
+    const last = k === scenes.length - 1;
+    const q = last ? 0 : E.in(clamp((t - (s.b - EXIT)) / EXIT));
+    s.el.style.opacity = 1 - q;
+    s.el.style.transform = `scale(${1 - .015 * q})`;
+  });
+  anims.forEach((a) => fx(a, t));
+  scene12(t); scene3(t); scene4(t); scene5(t); scene6(t); scene7(t); scene8(t);
+}
+
+/* ===== logo: original file only; render.cjs refuses to render if it fails ===== */
+const params = new URLSearchParams(location.search);
+window.__logoStatus = "loading";
+(() => {
+  const src = params.get("logo") || LOGO;
+  const probe = new Image();
+  probe.onload = () => { $$("img[data-nh-logo]").forEach((img) => (img.src = probe.src)); window.__logoStatus = "ok"; };
+  probe.onerror = () => { window.__logoStatus = "missing"; $$("img[data-nh-logo]").forEach((img) => img.classList.add("logo-missing")); console.error("ORIGINAL LOGO MISSING"); };
+  probe.src = src;
+})();
+
+window.__duration = DURATION;
+window.__seek = (t) => draw(t);
+draw(params.has("t") ? parseFloat(params.get("t")) : 0);
+</script>
+</body>
+</html>
