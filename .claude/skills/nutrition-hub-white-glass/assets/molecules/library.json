@@ -1,0 +1,19 @@
+[
+  {"id": "creatine",      "name": "Creatine",        "smiles": "N[C:1](=N)N(C)CC(=O)O",                         "formula": "C4H9N3O2"},
+  {"id": "caffeine",      "name": "Caffeine",        "smiles": "CN1C=NC2=C1C(=[O:1])N(C(=O)N2C)C",              "formula": "C8H10N4O2"},
+  {"id": "l-leucine",     "name": "L-Leucine",       "smiles": "CC(C)C[C@H]([NH2:1])C(=O)O",                    "formula": "C6H13NO2", "cip": "S"},
+  {"id": "l-isoleucine",  "name": "L-Isoleucine",    "smiles": "CC[C@H](C)[C@H]([NH2:1])C(=O)O",                "formula": "C6H13NO2", "cip": "S,S"},
+  {"id": "l-valine",      "name": "L-Valine",        "smiles": "CC(C)[C@H]([NH2:1])C(=O)O",                     "formula": "C5H11NO2", "cip": "S"},
+  {"id": "beta-alanine",  "name": "Beta-alanine",    "smiles": "[NH2:1]CCC(=O)O",                               "formula": "C3H7NO2"},
+  {"id": "l-carnitine",   "name": "L-Carnitine",     "smiles": "C[N+:1](C)(C)C[C@H](O)CC(=O)[O-]",             "formula": "C7H15NO3", "cip": "R"},
+  {"id": "l-glutamine",   "name": "L-Glutamine",     "smiles": "[NH2:1]C(=O)CC[C@H](N)C(=O)O",                  "formula": "C5H10N2O3", "cip": "S"},
+  {"id": "l-arginine",    "name": "L-Arginine",      "smiles": "N[C:1](=N)NCCC[C@H](N)C(=O)O",                  "formula": "C6H14N4O2", "cip": "S"},
+  {"id": "l-citrulline",  "name": "L-Citrulline",    "smiles": "N[C:1](=O)NCCC[C@H](N)C(=O)O",                  "formula": "C6H13N3O3", "cip": "S"},
+  {"id": "l-theanine",    "name": "L-Theanine",      "smiles": "CC[NH:1]C(=O)CC[C@H](N)C(=O)O",                 "formula": "C7H14N2O3", "cip": "S"},
+  {"id": "taurine",       "name": "Taurine",         "smiles": "NCC[S:1](=O)(=O)O",                             "formula": "C2H7NO3S"},
+  {"id": "glycine",       "name": "Glycine",         "smiles": "[NH2:1]CC(=O)O",                                "formula": "C2H5NO2"},
+  {"id": "hmb",           "name": "HMB",             "smiles": "CC(C)([OH:1])CC(=O)O",                          "formula": "C5H10O3"},
+  {"id": "vitamin-c",     "name": "Vitamin C",       "smiles": "OC[C@H](O)[C@H]1OC(=O)C(O)=[C:1]1O",            "formula": "C6H8O6", "cip": "S,R"},
+  {"id": "melatonin",     "name": "Melatonin",       "smiles": "CC(=O)NCCc1c[nH]c2ccc([O:1]C)cc12",             "formula": "C13H16N2O2"},
+  {"id": "curcumin",      "name": "Curcumin",        "smiles": "COc1cc(/C=C/C(=O)[CH2:1]C(=O)/C=C/c2ccc(O)c(OC)c2)ccc1O", "formula": "C21H20O6"}
+]

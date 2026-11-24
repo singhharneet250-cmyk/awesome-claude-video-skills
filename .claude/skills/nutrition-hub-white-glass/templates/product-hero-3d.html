@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub product hero 3D</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; }
+  #gl { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  .copy { position: absolute; left: 72px; right: 72px; top: 1270px; display: grid; gap: 20px; }
+  .copy .nh-display { font-size: 96px; }
+  .meta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .is-transparent .copy { top: auto; bottom: 460px; padding: 40px 44px; }
+  .is-transparent .copy .nh-display { font-size: 84px; }
+</style>
+</head>
+<body>
+<!--
+  Realistic product hero (White Glass §4 D): the REAL product photo standing on a white studio floor.
+  The label pixels are drawn unlit and un-tonemapped, so packaging colours stay exactly as photographed:
+  never AI-regenerate, repaint or relight a label. Realism comes from the light around the pack: a shadow
+  cast by its own silhouette, a soft contact shadow, a faded floor reflection and a slow parallax orbit.
+
+  Photo: a cut-out PNG with a transparent background, shot square-on with the front label legible.
+  Transparent padding is trimmed automatically. A photo on a solid background is refused (cut it out first).
+
+  Render (from the skill folder):
+    node scripts/render.cjs "templates/product-hero-3d.html?photo=/abs/path/pack.png" --out hero.mp4
+    node scripts/render.cjs "templates/product-hero-3d.html?photo=/abs/path/pack.png" --out frame.png --still 3
+    add &samples=8 for real-camera motion blur and depth of field (slower)
+
+  URL params: ?photo=<path or file URL> · ?t=3 freeze · ?samples=8 · ?transparent=1 (pack, shadow and
+              reflection over footage; text on a glass panel)
+  The copy is EXAMPLE content: product claims need the label or a source (§8).
+-->
+<div class="nh-stage" id="stage">
+  <div class="nh-orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="nh-orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
+  <canvas id="gl"></canvas>
+  <section class="nh-scene" id="scene">
+    <div class="copy" id="copy">
+      <div class="nh-kicker nh-fade" style="--at:.5s" data-text="kicker"></div>
+      <div class="nh-display nh-type" style="--at:.6s" data-text="headline"></div>
+      <div class="meta nh-fade" style="--at:1.1s" id="chips"></div>
+    </div>
+  </section>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "../assets/vendor/three/three.module.min.js", "three/addons/": "../assets/vendor/three/addons/" } }
+</script>
+<script type="module">
+import { createStage, loadCutout, buildProduct, span, ease, THREE } from "../assets/wg3d.js";
+
+const SCENE = {
+  duration: 7,
+  photo: "../assets/products/product.png",    // your real cut-out product photo (or pass ?photo=)
+  kicker: "New in store",
+  headline: "Product name.",
+  chips: ["1 kg", "Flavour"],                 // label facts only: size, flavour, servings
+  orbit: 6,                                   // camera orbit, ± degrees over the shot
+  reflection: 0.22,                           // floor reflection strength (0 = off, e.g. for a matte pouch)
+  camera: { samples: 1, shutter: 0.5, aperture: 0.08 },   // samples 8 = motion blur + depth of field
+  exposure: 1.05,
+};
+
+const params = new URLSearchParams(location.search);
+const transparent = params.get("transparent") === "1";
+if (params.has("photo")) {
+  const p = params.get("photo");
+  SCENE.photo = /^[a-z]+:/i.test(p) ? p : (p.startsWith("/") ? "file://" + p : p);
+}
+if (params.has("samples")) SCENE.camera.samples = Number(params.get("samples"));
+if (transparent) { document.getElementById("stage").classList.add("is-transparent"); document.getElementById("copy").classList.add("nh-glass"); }
+window.__logoStatus = "none";
+
+try {
+  const cut = await loadCutout(SCENE.photo).catch(() => {
+    throw new Error(`product photo not found: ${SCENE.photo}. Use the real cut-out PNG (pass ?photo=/path/pack.png).`);
+  });
+  if (!cut.hasAlpha) throw new Error("the product photo has a solid background: cut it out to a transparent PNG first (never repaint the label).");
+
+  // ---- copy ----
+  document.querySelectorAll("[data-text]").forEach((el) => { el.textContent = SCENE[el.dataset.text] ?? ""; });
+  const chips = document.getElementById("chips");
+  SCENE.chips.filter(Boolean).forEach((c, i) => {
+    const el = document.createElement("span"); el.className = "nh-chip";
+    el.innerHTML = i === 0 ? '<span class="nh-dot"></span>' : "";
+    el.appendChild(document.createTextNode(c)); chips.appendChild(el);
+  });
+  document.querySelectorAll(".nh-type").forEach((el) => {
+    const words = el.textContent.split(/\s+/).filter(Boolean); el.textContent = "";
+    words.forEach((w, i) => {
+      const m = document.createElement("span"); m.className = "nh-w";
+      const s = document.createElement("span"); s.textContent = w; s.style.setProperty("--i", i);
+      m.appendChild(s); el.appendChild(m); el.appendChild(document.createTextNode(" "));
+    });
+  });
+  document.getElementById("scene").style.setProperty("--out", (SCENE.duration - 0.45) + "s");
+
+  // ---- 3D ----
+  const H = 3;                                     // pack height in world units
+  const stage = createStage({
+    out: document.getElementById("gl"), width: 1080, height: 1920,
+    exposure: SCENE.exposure, fov: 24, shadowOpacity: 0.12,
+  });
+  const product = buildProduct(cut, { height: H, reflection: SCENE.reflection });
+  const revealG = new THREE.Group(); revealG.add(product.group);
+  stage.scene.add(revealG);
+  const target = new THREE.Vector3(0, H / 2, 0);
+  stage.focusTarget.copy(target);
+  stage.lightFrom(target, { x: -2.2, y: 9, z: 4.5 });
+
+  // framing: the pack is ~760 px tall (its width capped at ~78% of the frame), low camera, lens shift up
+  const fov = THREE.MathUtils.degToRad(24);
+  const byHeight = (H * 1920) / (760 * 2 * Math.tan(fov / 2));
+  const byWidth = (product.width * 1920) / (0.78 * 1080 * 2 * Math.tan(fov / 2));
+  const dist0 = Math.max(byHeight, byWidth);
+  const elev = THREE.MathUtils.degToRad(6);
+  stage.shift(transparent ? 320 : 270);
+
+  const canvasEl = document.getElementById("gl");
+  const D = SCENE.duration;
+
+  function update(t) {
+    const rin = span(t, 0, 0.75, ease.out);
+    const rout = span(t, D - 0.45, 0.45, ease.in);
+    canvasEl.style.opacity = String(rin * (1 - rout));
+    revealG.scale.setScalar((0.96 + 0.04 * rin) * (1 - 0.02 * rout));
+    // camera: one slow arc from -orbit to +orbit, and a 4% push-in
+    const p = ease.float(Math.min(1, t / D));
+    const az = THREE.MathUtils.degToRad(SCENE.orbit) * (2 * p - 1);
+    const d = dist0 * (1 - 0.04 * p);
+    stage.camera.position.set(
+      Math.sin(az) * Math.cos(elev) * d,
+      target.y + Math.sin(elev) * d,
+      Math.cos(az) * Math.cos(elev) * d,
+    );
+    stage.camera.lookAt(target);
+  }
+
+  window.__duration = D;
+  window.__seek = (t) => {
+    document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
+    stage.frame(t, update, SCENE.camera);
+  };
+  await document.fonts.ready;
+  window.__seek(params.has("t") ? parseFloat(params.get("t")) : 0);
+} catch (e) {
+  window.__error = String(e.message || e);
+  console.error(window.__error);
+}
+</script>
+</body>
+</html>

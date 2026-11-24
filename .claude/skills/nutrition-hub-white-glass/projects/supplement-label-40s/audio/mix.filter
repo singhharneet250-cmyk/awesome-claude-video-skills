@@ -1,0 +1,6 @@
+[0:a]highpass=f=80,deesser=i=0.35,acompressor=threshold=-22dB:ratio=3:attack=5:release=90:makeup=2,pan=stereo|c0=c0|c1=c0,asplit=3[vo][key][vostem];
+[1:a]highpass=f=30,equalizer=f=2800:t=q:w=1.2:g=-3.5,equalizer=f=250:t=q:w=1:g=-1.5,volume=-13.5dB[m0];
+[m0][key]sidechaincompress=threshold=0.025:ratio=5:attack=25:release=450:knee=4:makeup=1[m1];
+[m1]volume=eval=frame:volume='1+0.55*min(max((t-58.2)/0.5\,0)\,1)',asplit=2[mus][musstem];
+[2:a]volume=-5dB,asplit=2[sfx][sfxstem];
+[vo][mus][sfx]amix=inputs=3:normalize=0:duration=first[pre]
