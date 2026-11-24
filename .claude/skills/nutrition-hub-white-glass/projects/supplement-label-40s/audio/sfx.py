@@ -1,10 +1,18 @@
 """Original sound design for the supplement-label reel (procedural, royalty-free).
 Writes sfx.wav (48 kHz stereo float32) placed on the composition's timeline.
-usage: sfx.py <out.wav>"""
+usage: sfx.py <out.wav>
+needs numpy and scipy: pip install numpy scipy"""
 import sys
-import numpy as np
-from scipy import signal
-from scipy.io import wavfile
+
+try:
+    import numpy as np
+    from scipy import signal
+    from scipy.io import wavfile
+except ImportError as e:
+    sys.exit(f"sfx.py needs numpy and scipy ({e.name} is missing): pip install numpy scipy")
+
+if len(sys.argv) != 2:
+    sys.exit("usage: python3 audio/sfx.py <out.wav>")
 
 SR = 48000
 rng = np.random.default_rng(7)

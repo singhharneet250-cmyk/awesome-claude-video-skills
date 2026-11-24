@@ -56,10 +56,26 @@ NUM_RE = re.compile(r"^[~≈<>]?\d[\d.,]*(?:[–\-/]\d[\d.,]*)?(?:%|g|mg|mcg|kg|
 
 
 def load_words(path: Path):
-    text = path.read_text(encoding="utf-8-sig")
+    try:
+        text = path.read_text(encoding="utf-8-sig")
+    except FileNotFoundError:
+        sys.exit(f"Input not found: {path}")
+    except IsADirectoryError:
+        sys.exit(f"Input is a folder, not a file: {path}")
+    except UnicodeDecodeError:
+        sys.exit(f"{path} is not UTF-8 text. Export the transcript as UTF-8 JSON or .srt.")
+    if not text.strip():
+        sys.exit(f"{path} is empty: no words to caption.")
     if path.suffix.lower() == ".srt":
-        return words_from_srt(text), True
-    data = json.loads(text)
+        words = words_from_srt(text)
+        if not words:
+            sys.exit(f"No subtitle cues found in {path}. Each cue needs a '00:00:01,000 --> 00:00:02,500' line followed by text.")
+        return words, True
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError as e:
+        sys.exit(f"{path} is not valid JSON (line {e.lineno}, column {e.colno}: {e.msg}). "
+                 "Pass word timings as JSON, or a subtitle file ending in .srt.")
     if isinstance(data, dict):
         if "segments" in data:
             raw = [w for seg in data["segments"] for w in seg.get("words", [])]
@@ -69,15 +85,23 @@ def load_words(path: Path):
             sys.exit("JSON has no 'segments' or 'words'. See the header of this script for accepted shapes.")
     else:
         raw = data
+    if not isinstance(raw, list):
+        sys.exit("Expected a list of words. See the header of this script for accepted shapes.")
     words = []
-    for w in raw:
-        t = (w.get("word") or w.get("text") or "").strip()
+    for n, w in enumerate(raw, 1):
+        if not isinstance(w, dict):
+            sys.exit(f"Word {n} is not an object with text and timings: {w!r}")
+        t = str(w.get("word") or w.get("text") or "").strip()
         if not t:
             continue
-        if "startMs" in w:
-            s, e = w["startMs"] / 1000, w["endMs"] / 1000
-        else:
-            s, e = float(w["start"]), float(w["end"])
+        try:
+            if "startMs" in w:
+                s, e = float(w["startMs"]) / 1000, float(w["endMs"]) / 1000
+            else:
+                s, e = float(w["start"]), float(w["end"])
+        except (KeyError, TypeError, ValueError):
+            sys.exit(f"Word {n} ({t!r}) needs numeric start and end times "
+                     "('start'/'end' in seconds or 'startMs'/'endMs').")
         words.append({"text": t, "start": s, "end": max(e, s + 0.05)})
     if not words:
         sys.exit("No words found in the input.")
@@ -98,8 +122,12 @@ def words_from_srt(text: str):
         timing = next((i for i, l in enumerate(lines) if "-->" in l), None)
         if timing is None:
             continue
-        a, b = lines[timing].split("-->")
-        start, end = srt_time(a), srt_time(b.split()[0])
+        try:
+            a, b = lines[timing].split("-->")
+            start, end = srt_time(a), srt_time(b.split()[0])
+        except (ValueError, IndexError):
+            sys.exit(f"Bad .srt timing line: {lines[timing].strip()!r} "
+                     "(expected '00:00:01,000 --> 00:00:02,500').")
         tokens = " ".join(lines[timing + 1:]).split()
         if not tokens:
             continue

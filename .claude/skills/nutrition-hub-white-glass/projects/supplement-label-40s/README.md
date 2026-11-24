@@ -54,6 +54,8 @@ From this folder:
 node ../../scripts/render.cjs index.html --out video-only.mov --crf 12
 ```
 
+The sound-effects generator needs numpy and scipy (`pip install numpy scipy`):
+
 ```bash
 python3 audio/sfx.py sfx.wav
 ```
