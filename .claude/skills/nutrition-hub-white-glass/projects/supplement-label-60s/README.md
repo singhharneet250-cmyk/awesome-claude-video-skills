@@ -1,4 +1,4 @@
-# How to Read a Supplement Label in 40 Seconds
+# How to Read a Supplement Label in 60 Seconds
 
 A 9:16 reel for Nutrition Hub Khanna: 1080×1920, 30 fps, 59.9 s, faceless explainer.
 It is timed to the recorded Hinglish voiceover and finished with music, original sound design and VFX.
@@ -11,7 +11,7 @@ The final master with music, and the stems, were delivered to the client directl
 | File | What it is |
 |---|---|
 | `index.html` | The animation: white stage, charcoal type, orange #FF7518 accents, grey #29292D cards, plus the VFX (see below). |
-| `out/supplement-label-40s_no-music.mp4` | Voiceover, sound effects and VFX with no music. Use it if you want to add a trending track inside Instagram. It sits at −13.6 LUFS. |
+| `out/supplement-label-60s_no-music.mp4` | Voiceover, sound effects and VFX with no music. Use it if you want to add a trending track inside Instagram. It sits at −13.6 LUFS. |
 | `out/cover.png` | The Reels cover frame (hook headline and tub), 1080×1920. |
 | `vo/vo-final.m4a` | The edited and cleaned voiceover only. |
 | `vo-hinglish.srt` | The voiceover lines timed to the final cut, for captions. Proofread before use. |
