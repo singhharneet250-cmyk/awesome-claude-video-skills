@@ -41,6 +41,7 @@ PY = sys.executable
 GRADE = "eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015"
 TONEMAP = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,"
 HOOK, MIN_SHOT, MAX_SHOT, MIN_GAP, FX_MIN = 1.5, 1.0, 4.0, 1.0, 1.55
+EFFECTS = ("orbit", "escape", "sticky", "wipe", "pullback", "scatter", "bgswap")   # fx.py (§4 G, H, K)
 
 
 def die(msg):
@@ -133,14 +134,22 @@ def check(e, motion=False):
     seen = {}
     for f in e.get("effects", []):
         tag = f"{f.get('effect')} {f['start']:.2f}-{f['end']:.2f}"
-        if f.get("effect") not in ("orbit", "escape"):
-            bad("FAIL", f"{tag}: effect must be orbit or escape")
+        if f.get("effect") not in EFFECTS:
+            bad("FAIL", f"{tag}: effect must be one of {', '.join(EFFECTS)}")
         if f["end"] - f["start"] < FX_MIN or f["end"] > D or f["start"] < 0:
             bad("FAIL", f"{tag}: needs at least {FX_MIN} s inside the take")
         if any(b["start"] < f["end"] and f["start"] < b["end"] for b in br):
             bad("FAIL", f"{tag}: overlaps b-roll; effects follow the speaker, who isn't on screen then")
-        if f.get("effect") == "escape" and not f.get("matte"):
-            bad("FAIL", f"{tag}: the frame escape needs \"matte\": \"wall\" or a matte video")
+        if f.get("effect") in ("escape", "bgswap") and f.get("matte") in (None, "head"):
+            bad("FAIL", f"{tag}: needs \"matte\": \"wall\" or a cut-out / matte video")
+        if f.get("effect") == "sticky" and not f.get("text"):
+            bad("FAIL", f"{tag}: a sticker needs \"text\"")
+        if f.get("effect") == "scatter" and len([w for w in str(f.get("words", "")).split(",") if w.strip()]) != 2:
+            bad("FAIL", f"{tag}: depth scatter needs two words, e.g. \"words\": \"Label,first\"")
+        for key in ("bg", "before", "matte"):
+            v = f.get(key)
+            if v and v not in ("wall", "head", "stage", "blur") and not (e["_base"] / v).is_file():
+                bad("FAIL", f"{tag}: {key} file not found: {v}")
         seen[f.get("effect")] = seen.get(f.get("effect"), 0) + 1
     for k, n in seen.items():
         if n > 1:
@@ -305,9 +314,19 @@ def render(e):
     for i, f in enumerate(sorted(e.get("effects", []), key=lambda f: f["start"])):
         nxt = work / f"03_fx{i}_{f['effect']}.mp4"
         cmd = [PY, HERE / "fx.py", f["effect"], cur, nxt, "--at", f"{f['start']}-{f['end']}"]
-        for k in ("words", "matte", "tilt", "spheres", "radius", "stage"):
+        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before"):
             if k in f:
-                cmd += [f"--{k}", f[k] if k != "matte" or f[k] in ("wall", "head") else str((base / f[k]).resolve())]
+                v = f[k]
+                if k in ("matte", "bg", "before") and v not in ("wall", "head", "stage", "blur"):
+                    v = str((base / v).resolve())
+                cmd += [f"--{k}", v]
+        if f["effect"] == "wipe" and "before" not in f:          # before = the same reframe without the grade
+            raw = work / "00_ungraded.mp4"
+            if not raw.is_file():
+                run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", e["_src"], "-vf",
+                     (TONEMAP if info["hdr"] else "") + "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30,setsar=1",
+                     "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-an", raw], "ungraded reframe for before + after")
+            cmd += ["--before", raw]
         run(cmd, f"{f['effect']} {f['start']}-{f['end']} s")
         cues.append((nxt.with_suffix(".sfx.json"), 0))
         cur = nxt
@@ -377,7 +396,7 @@ def render(e):
     if len(cmd) > 4:
         run(cmd, "sound effects and loudness")
     elif probe(cur)["audio"]:
-        run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", cur, "-c:v", "copy", "-af", "loudnorm=I=-14:TP=-2:LRA=11,aresample=48000",
+        run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", cur, "-c:v", "copy", "-af", "loudnorm=I=-14:TP=-2:LRA=11,alimiter=limit=0.75:attack=1:release=60:level=disabled,aresample=48000",
              "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", out], "loudness")
     else:
         shutil.copy(cur, out)

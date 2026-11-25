@@ -241,6 +241,33 @@ These refs used type, motion and colour that White Glass had ruled out. The owne
    - **About the owner's Instagram link** (instagram.com/reel/Des4fRaP8-B): it could not be opened here, because
      the network blocks Instagram. The bottom blur was matched from R6, which is very likely the same creator.
 
+## R7: "16 video effects Claude can create" (added 2026-11-25)
+
+A 23.8 s talking head with a two-column checklist at the top that lights up each effect as it plays, about 1 s
+each. Timings were measured by tracking the lit row:
+
+| s | Effect | White Glass |
+|---|---|---|
+| 0–1.6 | hook caption, "claude, can you make all of these effects?" | captions (§6) |
+| 1.6–3.0 | 01 headline wall | built: `headline-wall.html` |
+| 3.0–4.2 | 02 zoom-through cut | not built: zoom punch (§5) |
+| 4.2–5.1 | 03 vertigo | not built: camera zoom (§5) |
+| 5.1–6.2 | 04 green screen | built: `fx.py bgswap` (no memes or others' footage) |
+| 6.2–7.4 | 05 phone mockup | built: `phone-mockup.html` |
+| 7.4–8.6 | 06 digital zoom | not built: zoom punch (§5) |
+| 8.6–9.6 | 07 paper cut | not built: paper look |
+| 9.7–10.8 | 08 ui world | built: `ui-world.html` |
+| 10.8–11.7 | 09 orbit | built: `fx.py orbit` |
+| 11.7–12.7 | 10 frame break | built: `fx.py escape` |
+| 12.7–13.9 | 11 doodle boil | not built: doodle look |
+| 13.9–15.1 | 12 sticky text | built: `fx.py sticky` |
+| 15.1–16.3 | 13 before + after | built: `fx.py wipe` (edits and products only) |
+| 16.3–17.6 | 14 pull-back reveal | built: `fx.py pullback` |
+| 17.7–18.9 | 15 depth scatter | built: `fx.py scatter` |
+| 21.7–23.7 | 16 comment bubble | built: `chat-takeover.html?layout=comment` |
+
+The owner's Instagram link for this style could not be opened (Instagram is blocked here); the uploaded file was used.
+
 ## Pacing targets taken from the refs
 
 - Hook word or line readable by about 0.5 s.

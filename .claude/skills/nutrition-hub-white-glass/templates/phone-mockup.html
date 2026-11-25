@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub phone mockup</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; overflow: hidden; }
+  .phone { position: absolute; width: 330px; height: 690px; border-radius: 62px; background: #FFFFFF; padding: 13px; box-sizing: border-box;
+    box-shadow: inset 0 0 0 2px rgba(32, 43, 56, .08), 0 2px 4px rgba(32, 43, 56, .08), 0 40px 80px -36px rgba(32, 43, 56, .55); opacity: 0; }
+  .screen { position: relative; width: 100%; height: 100%; border-radius: 50px; overflow: hidden; background: var(--nh-ice); }
+  .island { position: absolute; top: 14px; left: 50%; width: 104px; height: 30px; margin-left: -52px; border-radius: 15px; background: var(--nh-ink); z-index: 2; }
+  .content { position: absolute; left: 0; right: 0; top: 0; }
+  .content img { width: 100%; display: block; }
+  .ui { padding: 70px 22px 22px; display: grid; gap: 14px; font-family: var(--nh-font); color: var(--nh-ink); }
+  .ui .k { font: 700 15px/1 var(--nh-font); letter-spacing: .12em; color: var(--nh-orange-text); }
+  .ui h4 { margin: 0; font: 800 32px/1.08 var(--nh-font); letter-spacing: -.01em; }
+  .ui .row { display: flex; gap: 12px; align-items: center; background: #FFFFFF; border-radius: 18px; padding: 14px; font: 600 20px/1.2 var(--nh-font); }
+  .ui .tick { width: 28px; height: 28px; border-radius: 50%; background: var(--nh-orange-grad); display: grid; place-items: center; flex: none; }
+  .ui .tick::after { content: ""; width: 7px; height: 13px; border: solid #FFFFFF; border-width: 0 3px 3px 0; transform: translateY(-2px) rotate(45deg); }
+  .ui .bar { height: 120px; border-radius: 18px; background: linear-gradient(160deg, #FFFFFF, var(--nh-ice)); }
+</style>
+</head>
+<body>
+<!--
+  Phone mockup (R7 #05): a porcelain phone swings in beside the speaker and shows a screen, then swings out.
+  Screen: ?screen=/abs/path.png (a real screenshot or a real product photo, never a redrawn label), or the
+  built-in White Glass checklist below. Side: ?side=left|right (the side away from the speaker's face).
+  Render: node ../scripts/render.cjs "phone-mockup.html?side=right&top=620" --transparent --out phone.mov
+-->
+<div class="nh-stage is-transparent" id="stage">
+  <div class="phone" id="phone"><div class="screen"><div class="island"></div><div class="content" id="content"></div></div></div>
+</div>
+<script>
+/* ===== Edit this object ===== */
+const SCENE = {
+  side: "right", top: 620, start: 0.15, hold: 2.4,
+  kicker: "BEFORE YOU BUY", title: "Read the label first",
+  items: ["Serving size", "Protein per scoop", "Added sugar"],
+};
+/* ============================ */
+const P = new URLSearchParams(location.search);
+if (P.get("side")) SCENE.side = P.get("side");
+if (P.get("top")) SCENE.top = parseFloat(P.get("top"));
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const content = document.getElementById("content");
+if (P.get("screen")) content.innerHTML = `<img alt="" src="${P.get("screen").startsWith("/") ? "file://" + P.get("screen") : P.get("screen")}">`;
+else content.innerHTML = `<div class="ui"><div class="k">${esc(SCENE.kicker)}</div><h4>${esc(SCENE.title)}</h4>
+  ${SCENE.items.map((x) => `<div class="row"><span class="tick"></span>${esc(x)}</div>`).join("")}<div class="bar"></div></div>`;
+const phone = document.getElementById("phone");
+const right = SCENE.side !== "left";
+phone.style.top = SCENE.top + "px";
+phone.style.left = (right ? 1080 - 72 - 330 : 72) + "px";
+function bez(x1, y1, x2, y2) { return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
+  for (let i = 0; i < 8; i++) { const cx = 3 * x1 * t * (1 - t) ** 2 + 3 * x2 * t * t * (1 - t) + t ** 3 - x; const d = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t; if (Math.abs(d) < 1e-6) break; t = Math.min(1, Math.max(0, t - cx / d)); }
+  return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3; }; }
+const easeOut = bez(.22, 1, .36, 1), easeIn = bez(.64, 0, .78, 0);
+const OUT = SCENE.start + 0.7 + SCENE.hold, END = OUT + 0.45;
+function render(t) {
+  const pin = easeOut(Math.min(1, Math.max(0, (t - SCENE.start) / 0.7)));
+  const pout = easeIn(Math.min(1, Math.max(0, (t - OUT) / 0.45)));
+  const off = (1 - pin + pout) * 460 * (right ? 1 : -1);
+  const rot = (right ? 1 : -1) * (4 + 10 * (1 - pin) + 10 * pout);
+  const float = Math.sin((t - SCENE.start) * 2 * Math.PI / 2.6) * 6 * pin;
+  phone.style.opacity = Math.min(1, pin * 1.4) * (1 - pout);
+  phone.style.transform = `translate(${off}px, ${float}px) rotate(${rot}deg)`;
+  const img = content.querySelector("img");
+  if (img && img.naturalHeight) {                        // a tall screenshot scrolls slowly
+    const over = Math.max(0, img.getBoundingClientRect().height - 664);
+    content.style.transform = `translateY(${-over * Math.min(1, Math.max(0, (t - SCENE.start - 0.6) / SCENE.hold))}px)`;
+  }
+}
+window.__logoStatus = "none";
+window.__duration = END;
+window.__sfx = [{ t: SCENE.start + 0.35, sfx: "whoosh", gain: -3, what: "phone in" }];
+window.__seek = render;
+const img = content.querySelector("img");
+if (img) { window.__logoStatus = "loading"; img.onload = () => { window.__logoStatus = "none"; render(0); }; img.onerror = () => { window.__error = "screen image did not load"; window.__logoStatus = "none"; }; }
+render(P.has("t") ? parseFloat(P.get("t")) : 0);
+</script>
+</body>
+</html>

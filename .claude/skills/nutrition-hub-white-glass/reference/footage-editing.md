@@ -158,6 +158,28 @@ python3 $SK/scripts/fx.py escape orbit.mp4 escape.mp4 --at 1-4 --matte person_ma
   - The motion tracker: the head in 100% of frames on R4 and R5; hands in 99% on R4's plain wall, unreliable
     in R5's warm, busy room.
 
+### The R7 pack (SKILL.md §4 K)
+
+```bash
+python3 $SK/scripts/fx.py sticky   graded.mp4 out.mp4 --at 1.6-3.6 --text "3–5 g a day" --badge 12
+python3 $SK/scripts/fx.py wipe     graded.mp4 out.mp4 --at 4.0-6.2 --before ungraded.mp4
+python3 $SK/scripts/fx.py pullback graded.mp4 out.mp4 --at 6-9
+python3 $SK/scripts/fx.py scatter  graded.mp4 out.mp4 --at 6.6-9.2 --words "Label,first"
+python3 $SK/scripts/fx.py bgswap   graded.mp4 out.mp4 --at 2-5 --matte wall --bg stage   # or a clip / image / blur
+node $SK/scripts/render.cjs "$SK/templates/headline-wall.html" --transparent --out wall.mov      # overlays (§3)
+node $SK/scripts/render.cjs "$SK/templates/phone-mockup.html?side=left&top=560" --transparent --out phone.mov
+node $SK/scripts/render.cjs "$SK/templates/ui-world.html" --transparent --out ui.mov
+node $SK/scripts/render.cjs "$SK/templates/chat-takeover.html?layout=comment" --transparent --out comment.mov
+```
+
+- **In `edit.json`:** the five fx effects go under `"effects"`, the templates under `"overlays"`.
+  `timeline.py render` makes the ungraded "before" for a wipe by itself.
+- **Speed:** 10–20 s each on a 7 s clip.
+- **Tested on the R4 and R5 clips:**
+  - The full pack timeline (sticky, wipe, scatter, headline wall, phone, end card) rendered in 1 min 45 s.
+  - `qa.py` passed everything (−14.5 LUFS, true peak −2.4 dBTP).
+  - That test is why `sfx.py` now adds a limiter after loudness: four quick ticks pushed the peak to −0.1 without it.
+
 ### Chat takeover (SKILL.md §4 I)
 
 ```bash

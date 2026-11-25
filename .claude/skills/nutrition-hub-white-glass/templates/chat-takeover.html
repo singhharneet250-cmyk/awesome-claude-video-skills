@@ -37,6 +37,7 @@
   .caret { display: inline-block; width: 3px; height: 38px; margin-left: 3px; background: var(--nh-orange); vertical-align: middle; }
   .send { width: 84px; height: 84px; border-radius: 50%; background: var(--nh-orange-grad); display: grid; place-items: center; opacity: 0; }
   .send svg { width: 38px; height: 38px; color: #FFFFFF; }
+  .linkchip { display: inline-flex; margin-top: 14px; padding: 10px 18px; border-radius: 99px; background: var(--nh-orange-grad); color: #FFFFFF; font: 700 26px/1 var(--nh-font); }
 </style>
 </head>
 <body>
@@ -85,6 +86,8 @@ const SCENE = {
   start: 0.15,                // panel appears
   cps: 17,                    // typing speed, characters per second
   hold: 1.6,                  // time to read the last bubble before the exit
+  // layout "comment" (R7 #16): no contact list, just a comment that types the keyword and the reply with a link chip
+  comment: "LABEL", commentReply: "Sent you the label checklist", linkLabel: "Open link",
 };
 /* ============================ */
 const P = new URLSearchParams(location.search);
@@ -92,6 +95,8 @@ if (P.get("layout")) SCENE.layout = P.get("layout");
 if (P.get("top")) SCENE.top = parseFloat(P.get("top"));
 if (P.get("bottom")) SCENE.bottom = parseFloat(P.get("bottom"));
 const full = SCENE.layout === "full";
+const comment = SCENE.layout === "comment";
+if (comment) { SCENE.message = SCENE.comment; SCENE.reply = SCENE.commentReply; if (!SCENE.bottom) SCENE.bottom = 1500; }
 
 const ICONS = {
   person: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
@@ -111,6 +116,11 @@ document.getElementById("list").innerHTML = SCENE.contacts.map((c, i) => `
   </div>`).join("");
 document.getElementById("sent").textContent = SCENE.message;
 document.getElementById("reply").textContent = SCENE.reply;
+if (comment) {
+  document.querySelector(".head").style.display = "none";
+  document.getElementById("list").style.display = "none";
+  document.getElementById("reply").insertAdjacentHTML("beforeend", `<div class="linkchip">${esc(SCENE.linkLabel)}</div>`);
+}
 const panel = document.getElementById("panel");
 if (full) { panel.style.transform = ""; }
 
@@ -118,7 +128,7 @@ if (full) { panel.style.transform = ""; }
 const T = {};
 T.panel = SCENE.start;
 T.pick = T.panel + 0.85;
-T.compose = T.pick + 0.5;
+T.compose = comment ? T.panel + 0.15 : T.pick + 0.5;
 T.type = T.compose + 0.35;
 T.typed = T.type + SCENE.message.length / SCENE.cps;
 T.send = T.typed + 0.3;

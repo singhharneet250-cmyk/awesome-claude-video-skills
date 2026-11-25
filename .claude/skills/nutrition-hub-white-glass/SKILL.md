@@ -229,6 +229,26 @@ All of these are implemented in `assets/brand.css`.
   - Reliable on a plain wall with contrasting clothes (R4: hands in 99% of frames, no false hands). Warm,
     busy rooms, wooden furniture and blonde hair can fool the hand finder (R5), so check the preview.
     The head track is reliable in both.
+- **K · The R7 effect pack (owner request 2026-11-25).** From the owner's reference "16 video effects Claude can
+  create" (`reference/style-references.md` R7). The White Glass versions of the effects that fit:
+
+  | Effect | How | Rules |
+  |---|---|---|
+  | Sticky text | `fx.py sticky --text "3–5 g a day" --badge 12 --anchor chest\|head\|hand`: a porcelain sticker that follows the speaker | 2–6 words; one sticker on screen |
+  | Before + after | `fx.py wipe --before raw.mp4`: a white light bar sweeps right to left between "Before" and "After" chips | Only edits, grades or product views. Never body, health or results comparisons (§8). |
+  | Pull-back reveal | `fx.py pullback`: the picture pulls back into a White Glass editor (checklist, timeline with the take's real waveform), then pushes back in | — |
+  | Depth scatter | `fx.py scatter --words "Label,first"`: the first word (white) behind the head, the second (orange) in front; letters fly in from scattered depths | Two short words only |
+  | Green screen | `fx.py bgswap --matte wall\|FILE --bg clip\|image\|stage\|blur`: the room behind the speaker becomes another background | Needs a real outline. Backgrounds are your own, licensed or the stage; never memes or other people's footage. |
+  | Headline wall | `templates/headline-wall.html`: porcelain cards with a highlighted phrase pop in around the speaker | Real headlines only, quoted, with outlet and date (§8); the template's example cards say "Example" |
+  | Phone mockup | `templates/phone-mockup.html?side=left\|right&screen=/abs/shot.png`: a porcelain phone swings in beside the head | A real screenshot or product photo, never a redrawn label |
+  | UI world | `templates/ui-world.html?preview=/abs/photo.png`: glass UI cards act out a task (prompt types, progress to 100%, filmstrip, preview ticks done) | Lower half, clear of the face |
+  | Comment bubble | `templates/chat-takeover.html?layout=comment`: a comment types the keyword, then a reply with an "Open link" chip | The keyword is your real call to action |
+
+  - Orbit (§4 G), frame break (§4 H, the frame escape) and the chat (§4 I) were already built.
+  - Not built: zoom-through cut, vertigo and digital zoom (zoom punches and camera zooms, banned in §5), and
+    paper cut and doodle boil (paper and doodle looks, not White Glass). Adding them needs the owner to change
+    those rules first.
+  - Every pack effect runs through `timeline.py` like the others and writes its own SFX cue.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -393,6 +413,7 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
      word, check pills, then the original logo. Colour schemes via `?scheme=` (see §2).
    - `molecule-3d.html`: a realistic 3D molecule (pick it with `?molecule=<id>`). Set the copy in `SCENE`.
    - `product-hero-3d.html`: the real product photo in a 3D studio (`?photo=/path/pack.png`).
+   - `headline-wall.html`, `phone-mockup.html`, `ui-world.html`: the R7 overlays (§4 K).
    - `chat-takeover.html`: a chat sequence (list → pick → typed message → send → reply), above the head or
      taking over the frame (§4 I).
 5. **Render** (from this skill's folder):
@@ -444,7 +465,7 @@ inputs in the last column.
 | Any step inside Blender or three.js (materials, glass, lighting, HDRI, depth of field, headless render) | `use-3d-software` skill | §2 palette and §5 motion as the targets |
 | Live control of Blender on the owner's computer: read the scene, build and light it, look through the camera, render a still | `blender` MCP server (`.mcp.json`, set-up and rules in `reference/blender-mcp.md`) | Real product photos only (never `generate_3d` for products, labels or logos); White Glass look constants from `molecular-film`; safe mode stays on |
 | Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
-| Orbit, frame escape, chat takeover; head and hand motion | `scripts/fx.py`, `templates/chat-takeover.html`, `scripts/motion_track.py` (§4 G–J) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
+| Orbit, frame escape, chat takeover, the R7 pack (sticky, before + after, pull-back, depth scatter, green screen, headline wall, phone, UI world, comment); head and hand motion | `scripts/fx.py` + `fx_pack.py`, the overlay templates, `scripts/motion_track.py` (§4 G–K) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
 | A rough cut on a real timeline the owner can see and tweak: transcript cuts, pause removal, beat order, b-roll placement, FCPXML | OpenChatCut v0.2.17 on the owner's computer, through the `openchatcut` MCP server (`.mcp.json`; set-up and rules in `reference/openchatcut.md`) | `approvalMode: "manual"`; §5 transitions only (no glitch or zoom punch); captions per §6 or burned after export; then the White Glass finishing pass and `qa.py` |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
@@ -487,7 +508,10 @@ assets/brand.css               tokens, components and motion primitives
 templates/reel-9x16.html       full branded reel (edit the SCENE object)
 templates/overlay-callout.html transparent glass callout for footage
 templates/hook-slam.html       10 s hook: Bebas slams + Inter lines with a serif accent + pills + logo; ?scheme= colour schemes
-templates/chat-takeover.html   chat sequence overlay (R4): ?layout=top (above the head, ?bottom=) or ?layout=full (takeover)
+templates/chat-takeover.html   chat sequence overlay (R4): ?layout=top (above the head, ?bottom=), full (takeover) or comment (R7)
+templates/headline-wall.html   R7: real headlines on porcelain cards pop in around the speaker
+templates/phone-mockup.html    R7: a porcelain phone swings in beside the head with a real screenshot or photo
+templates/ui-world.html        R7: glass UI cards act out a task (prompt, progress, filmstrip, preview)
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
@@ -501,7 +525,8 @@ scripts/caption_colors.py      reads a video and picks caption colours to match 
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
 scripts/broll.py               b-roll cutaways over a talking head: on spoken words or set times; cut, white dip or dissolve
 scripts/sfx.py                 original SFX kit (synthesised) + mixer: cue sheets, b-roll plans, levels under the voice, -14 LUFS master
-scripts/fx.py                  person-aware effects: orbit (spheres or word chips around the head) and frame escape
+scripts/fx.py                  person-aware effects: orbit (spheres or word chips around the head) and frame escape, plus the pack below
+scripts/fx_pack.py             R7 pack for fx.py: sticky text, before + after wipe, pull-back reveal, depth scatter, green screen
 scripts/person_matte.py        person mattes for fx.py: head shape from the face track, plain-wall key, or a matte video
 scripts/motion_track.py        head (full frame rate) and hand tracking, gesture / hands-up / head-move moments, --preview
 scripts/timeline.py            one edit.json timeline for the whole edit: check (rules + drawing), edit (drag-and-trim page), render (every step, then qa.py)
