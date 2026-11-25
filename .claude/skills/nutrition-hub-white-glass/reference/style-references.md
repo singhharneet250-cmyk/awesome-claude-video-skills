@@ -133,9 +133,9 @@ confirmed.
 | Slot B: top band | Vertical centre 15–22%, kept below the top 250 px platform zone. For sentence ends and when slot A is busy. |
 | Faceless beats | One line centred at y 50% (R2), or a top-left block at y 20–30% when an image fills the middle (R3). |
 | Slot C: behind the head (R5) | Only with a clean person cut-out. Key word Inter Display 800 at 140–200 px, vertical centre 25–35%, centred on the head, in ink or orange. Lead words Inter 500 at 0.35×, above-left. |
-| Chest line (R5) | One word at a time on the voice, Inter 700 at 40–48 px, centred, vertical centre about 50%, on a small white glass pill (`.nh-chip` style) so it reads over clothing. Use it *instead of* the §6 bottom captions, never both. |
+| Chest line (R5) | One word at a time on the voice, Inter 700 at 40–48 px, centred, vertical centre about 50%. Bare white words with a soft shadow, no pill or glass (§6). Use it *instead of* the §6 bottom captions, never both. |
 | Rhythm | A new key word about every 1 s, on the voice. Kinetic type reveal (§5); no pops or bounces. |
-| Never | Text over the face or hands, or in the bottom 420 px platform zone. The chest line on its pill is the only text allowed on the body. |
+| Never | Text over the face or hands, or in the bottom 420 px platform zone. The chest line is the only text allowed on the body. |
 
 ## Adopt as-is (fits White Glass)
 
@@ -185,9 +185,9 @@ These refs use type and motion that White Glass currently rules out. They change
 2. **A condensed display face for one-word slams** (R3: "PEOPLE", "OWN MINDS"). Currently Inter 800 instead.
 3. **Faster entrances.** The refs land words with a short motion blur. White Glass would allow a
    0.25–0.35 s ease-out with a slight blur and no scale overshoot, but not R2's 2.5× slam.
-4. **Bare captions over footage (R5).** R5's chest captions are white text with only a soft shadow.
-   White Glass puts every word over footage on a panel, so the chest line above uses a small white pill.
-   Bare text is possible if the owner prefers the R5 look, with a stronger soft shadow for legibility.
+4. **Bare captions over footage (R5): decided, adopted.** The owner chose caption words with no
+   glass, box or pill (2026-11-25). SKILL.md §6 now specifies bare white words with a soft shadow on
+   footage, and ink words on light backgrounds.
 
 ## Pacing targets taken from the refs
 

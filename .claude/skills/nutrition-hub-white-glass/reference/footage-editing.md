@@ -39,7 +39,8 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
 ```
 
 - `--transparent` writes ProRes 4444 (`.mov`) or VP9 with alpha (`.webm`).
-- Over footage the glass goes near-opaque automatically. Never put ink type straight on video.
+- Over footage the glass goes near-opaque automatically. Keep callout text on its glass card;
+  only caption words go straight on video (§4).
 - The callout sits in the upper safe area (y about 270) so it never meets the captions.
 
 ## 4. Captions
@@ -54,7 +55,9 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
 python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery
 ```
 
-   To fix a single caption by hand, the orange word is written `{\c&H2B78F0&}word{\c&H382B20&}`.
+   Captions come out as bare white words with a soft shadow. Add `--style ink` when every
+   caption sits over a light wall or the white stage. To fix a single caption by hand, the
+   orange word is written `{\c&H2B78F0&}word{\r\blur6}`.
 3. Burn the captions in:
 
 ```bash
@@ -62,8 +65,11 @@ ffmpeg -i over.mp4 -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inte
   -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a copy capped.mp4
 ```
 
-Keep the box opaque. A translucent `BorderStyle=3` box stripes wherever a colour change
-splits the line (this was tested). `BorderStyle=4` leaves blobby halos.
+Captions have no box (SKILL.md §6). The style uses `BorderStyle=1` with a semi-transparent
+border softened by `{\blur6}`, which reads as a soft shadow while the words stay sharp. This
+was tested on a busy test pattern and on real footage. Don't switch back to a box: a
+translucent `BorderStyle=3` box stripes wherever a colour change splits the line, and
+`BorderStyle=4` leaves blobby halos.
 
 ## 5. Transitions between shots
 

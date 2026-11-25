@@ -79,7 +79,7 @@ Sizes below are for a 1080×1920 canvas. Multiply by 0.85 for 1920×1080 (`.nh-l
 | Kicker | 28 / 700 UPPERCASE | +0.20em | orange text |
 | Label / meta | 24 / 600 UPPERCASE | +0.14em | mist |
 | Data metric | 150–220 / 800, tabular numbers | −0.02em | ink, unit in orange |
-| Caption | 62 / 600 | 0 | ink on white box |
+| Caption | 62 / 700 | 0 | bare words: white with a soft shadow on footage, ink on light backgrounds |
 
 Headlines are short, sentence case and end in a full stop ("Creatine, explained simply.").
 
@@ -89,7 +89,8 @@ All of these are implemented in `assets/brand.css`.
 
 - **A · Glass panels:** frosted information cards with an edge light, a soft shadow and an
   18–28 px radius (`.nh-glass`, `.nh-glass--sm`). Over footage they go near-opaque
-  automatically (`.is-transparent`). **Every word over footage sits on a panel.**
+  automatically (`.is-transparent`). **Every word over footage sits on a panel**, except caption
+  words: those are bare, with no glass (§6).
 - **B · 3D science:** molecular science visuals with realistic materials and controlled
   detail. The SVG atom in `reel-9x16.html` is a stand-in; use a real 3D render:
   - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,
@@ -144,19 +145,24 @@ All of these are implemented in `assets/brand.css`.
 
 ## 6. Captions *(derived)*
 
-- Inter SemiBold 62, graphite ink on an **opaque** white box. One key word per caption
-  (a number, a unit or a claim word) goes signal orange. Don't use scale pops, bounces
-  or black outlines.
+- **Caption words are bare: no glass, box, pill or panel behind them** (the owner's call, 2026-11-25).
+  Inter Bold 62 with a soft blurred shadow for legibility, never a hard black outline.
+  - **Footage (default):** white words with a soft dark shadow.
+  - **Light walls and the white stage:** graphite ink words with a soft white glow. Use ink only
+    where everything behind the words is light; over dark clothing or busy footage, use white.
+- One key word per caption (a number, a unit or a claim word) goes signal orange. Don't use
+  scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
-- The bottom of the caption box sits at about y 1400 on 1920, above the platform UI.
+- The bottom of the caption text sits at about y 1400 on 1920, above the platform UI.
 - Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein`
   turns word timings (Whisper / faster-whisper JSON, Remotion captions, or an `.srt`) into
   captions that follow every rule above, using the `reference/captions.ass` style. It never
   splits a number from its unit, highlights the number first and a `--keywords` claim word
-  second, and leaves a caption all ink when it has neither. Burn in with
+  second, and leaves a caption one colour when it has neither. It writes white captions by
+  default; add `--style ink` for light backgrounds. Burn in with
   `ffmpeg -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter"`.
-- For rounded frosted plates, build the captions as an HTML overlay with `.nh-chip` styling
-  and render it with `--transparent`.
+- For animated captions (kinetic type), build them as an HTML overlay of bare Inter words with a
+  soft `text-shadow`, no chip or glass, and render it with `--transparent`.
 - Source notes go in a glass callout (`templates/overlay-callout.html`), not in captions.
 - **Talking-head kinetic captions** (one big key word plus small italic connector words, placed beside the head
   or in the top band) are specified in `reference/style-references.md` ("Captions: arrangement, font styles and
@@ -237,7 +243,7 @@ inputs in the last column.
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router) | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
-| Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a white-box caption preset with no pop |
+| Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a plain caption preset (no box, no pop) |
 | Licensed music and sound effects | Epidemic Sound connector | Calm, clean, under the voice by 18–22 dB |
 | Fit a size cap (WhatsApp 16 MB, Gmail, Outlook) | `halfsize` skill (`--for whatsapp`), or the tested ffmpeg fallback in `reference/footage-editing.md` §9 | — |
 | Hooks, scripts, captions for the post | `social-media-skills` (hook-writer, reels-script, caption-writer) | §8 content rules |
@@ -260,7 +266,7 @@ tooling from companions, never their look:
 
 In any app (ManyMotions, Clipzi, OpusClip, Picsart, CapCut, HyperFrames and so on): upload
 `assets/logo/nutrition-hub-logo.png` as the logo, set Inter and the §2 colours, pick the
-caption preset closest to "dark text on a white box with one orange word, no animation",
+caption preset closest to "plain bold words with a soft shadow and one orange word, no box, no animation",
 set transitions to cut, fade or dip-to-white, and run `scripts/qa.py` on the export.
 
 ## Files

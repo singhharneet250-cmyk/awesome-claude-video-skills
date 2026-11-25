@@ -19,8 +19,9 @@ Rules applied (SKILL.md section 6):
   - at most 2 lines, about 28 characters per line
   - each caption on screen 1-3 s; a new caption starts at a pause or a sentence end
   - one key word per caption goes signal orange: a number with its unit first, then a word from
-    --keywords; if neither is present the caption stays ink (never a random word)
-  - graphite ink on an opaque white box, style copied from reference/captions.ass
+    --keywords; if neither is present the caption stays one colour (never a random word)
+  - bare words, no box or pill: white with a soft shadow over footage (default), or ink with a
+    soft white glow on light walls (--style ink); styles copied from reference/captions.ass
 """
 import argparse
 import json
@@ -31,8 +32,10 @@ from pathlib import Path
 SKILL = Path(__file__).resolve().parent.parent
 STYLE_FILE = SKILL / "reference" / "captions.ass"
 
+BLUR = r"{\blur6}"              # softens the shadow border; the words themselves stay sharp
 ORANGE = r"{\c&H2B78F0&}"
-INK = r"{\c&H382B20&}"
+RESET = r"{\r\blur6}"          # back to the style colour; {\r} also clears blur, so re-apply it
+STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink"}
 
 LINE_CHARS = 28
 MAX_CHARS = 2 * LINE_CHARS
@@ -273,11 +276,11 @@ def render_ass_text(tokens, span):
                 word = ORANGE + word
             if span and idx == span[1] - 1:
                 core = word.rstrip(".,!?;:\"')”’")
-                word = core + INK + word[len(core):]
+                word = core + RESET + word[len(core):]
             parts.append(word)
             idx += 1
         out_lines.append(" ".join(parts))
-    return r"\N".join(out_lines)
+    return BLUR + r"\N".join(out_lines)
 
 
 def ass_time(t: float) -> str:
@@ -309,6 +312,8 @@ def main():
     ap.add_argument("--srt", type=Path, help="also write a plain .srt sidecar")
     ap.add_argument("--keywords", default="", help="comma-separated claim words to highlight when a caption has no number")
     ap.add_argument("--offset", type=float, default=0.0, help="shift every caption by this many seconds")
+    ap.add_argument("--style", choices=sorted(STYLES), default="footage",
+                    help="footage: white words with a soft shadow (default); ink: dark words for light walls and the white stage")
     args = ap.parse_args()
 
     keywords = {k.strip().lower() for k in args.keywords.split(",") if k.strip()}
@@ -321,7 +326,7 @@ def main():
         span = key_span(tokens, keywords)
         highlighted += bool(span)
         s, e = max(0.0, start + args.offset), max(0.0, end + args.offset)
-        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},NH-Caption,,0,0,0,,{render_ass_text(tokens, span)}")
+        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[args.style]},,0,0,0,,{render_ass_text(tokens, span)}")
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")
