@@ -52,12 +52,14 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
    per line, 1–3 s each, one orange key word, never across a sentence end or a pause.
 
 ```bash
-python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery
+python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery --match over.mp4
 ```
 
-   Captions come out as bare white words with a soft shadow. Add `--style ink` when every
-   caption sits over a light wall or the white stage. To fix a single caption by hand, the
-   orange word is written `{\c&H2B78F0&}word{\r\blur6}`.
+   `--match` reads the video the captions go on. It picks white, ink or strong-shadow words from
+   what is behind each caption, and takes the key-word colour from the video's own dominant colour
+   (signal orange when it has none). Check what it picked with
+   `python3 $SK/scripts/caption_colors.py over.mp4`. To fix a single caption by hand, the key word
+   is written `{\c&H002B78F0&}word{\r\blur6}` (colour as `&H00BBGGRR`).
 3. Burn the captions in:
 
 ```bash

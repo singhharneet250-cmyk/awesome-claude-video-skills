@@ -60,7 +60,8 @@ Supporting tones sampled from the playbook:
 
 - Use orange sparingly: key metrics, active states and call-to-action details.
   Allow **one orange focal point per frame** *(derived)*.
-- No other hues: no greens, blues, neons or black backgrounds. The logo is the only exception.
+- No other hues: no greens, blues, neons or black backgrounds. Two exceptions: the logo, and a caption
+  key word matched to the video's own colour (§6).
 - White text on signal orange fails contrast, so don't use it for words. Calls to action
   are ink text on a white chip with an orange dot.
 - The stage background is a soft gradient from white (top left) to ice (bottom right),
@@ -169,16 +170,29 @@ All of these are implemented in `assets/brand.css`.
   - **Footage (default):** white words with a soft dark shadow.
   - **Light walls and the white stage:** graphite ink words with a soft white glow. Use ink only
     where everything behind the words is light; over dark clothing or busy footage, use white.
-- One key word per caption (a number, a unit or a claim word) goes signal orange. Don't use
-  scale pops or bounces.
+  - **Busy light-and-dark backgrounds:** white words with a stronger shadow.
+- **Caption colours follow the video** (the owner's call, 2026-11-25). Always build captions with
+  `--match <the video they go on>` (`scripts/caption_colors.py` does the analysis):
+  - **Base:** read from the caption zone about twice a second. White for dark or mid footage,
+    ink for light footage, and on mixed videos each caption follows what is behind it.
+  - **Key word colour:** the video's own dominant colour, even a small accent (lime on a navy edit,
+    green or mustard on a minimal white edit). It is re-coloured to a readable shade: bright on
+    white words, deep on ink words (3:1 or better for large text).
+  - **Fallback:** signal orange (#F0782B, or #E66D2A on ink words) when the video has no clear
+    colour or its colour is already warm or orange.
+  - Caption words only. The logo, glass cards, callouts, kickers, data metrics and the serif
+    accent keep the §2 palette.
+- One key word per caption (a number, a unit or a claim word) goes in that key-word colour.
+  Don't use scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
 - The bottom of the caption text sits at about y 1400 on 1920, above the platform UI.
-- Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein`
+- Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein --match video.mp4`
   turns word timings (Whisper / faster-whisper JSON, Remotion captions, or an `.srt`) into
   captions that follow every rule above, using the `reference/captions.ass` style. It never
   splits a number from its unit, highlights the number first and a `--keywords` claim word
-  second, and leaves a caption one colour when it has neither. It writes white captions by
-  default; add `--style ink` for light backgrounds. Burn in with
+  second, and leaves a caption one colour when it has neither. `--match` picks the colours
+  from the video. Without it, captions are white with an orange key word; `--style` and
+  `--accent #RRGGBB` override by hand. Burn in with
   `ffmpeg -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter"`.
 - For animated captions (kinetic type), build them as an HTML overlay of bare Inter words with a
   soft `text-shadow`, no chip or glass, and render it with `--transparent`.
@@ -238,7 +252,8 @@ All of these are implemented in `assets/brand.css`.
    contact sheet, and exits 1 on any FAIL. Then look at the sheet and at full-size stills. Check that:
    - the logo is the original file, unaltered, with clear space and no name repeated beside it
    - at most one serif accent word per line and one slam per beat; the serif is never on a number
-   - the palette holds 55/20/15/10, there is one orange focal point, and no stray hues
+   - the palette holds 55/20/15/10, there is one accent focal point, and no stray hues (a matched
+     caption key word may be the video's own colour; run `qa.py` without `--graphics` then)
    - no text is clipped, colliding with icons or bars, or outside the safe zones
    - motion has no overshoot, timings are within range, and beats don't overlap
    - every number has a unit and a source
@@ -310,6 +325,7 @@ assets/vendor/three/           three.js r170 (MIT), vendored
 scripts/make_molecule.py       SMILES → verified 3D molecule JSON (needs RDKit)
 scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
 scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
+scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass

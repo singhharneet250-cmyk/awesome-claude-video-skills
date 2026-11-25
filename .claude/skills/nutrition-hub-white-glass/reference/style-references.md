@@ -175,9 +175,9 @@ confirmed.
 - **Pixel-block glitch reveals (R1)** and the **black flash frame (R3):** banned by §5.
 - **A second accent colour:** these refs each use one accent, and so do we. Ours is orange.
 
-## Owner decisions (all four decided 2026-11-25)
+## Owner decisions (all decided 2026-11-25)
 
-These refs used type and motion that White Glass had ruled out. The owner has now decided all four:
+These refs used type, motion and colour that White Glass had ruled out. The owner has decided each one:
 
 1. **Italic serif accent word** (R2, R3, R4: "expensive", "every second", "indifference"): **adopted.**
    Instrument Serif Italic, bundled in `assets/fonts/`, class `.nh-accent`. One orange word per line at
@@ -190,6 +190,11 @@ These refs used type and motion that White Glass had ruled out. The owner has no
 4. **Bare captions over footage (R5): adopted.** The owner chose caption words with no
    glass, box or pill (2026-11-25). SKILL.md §6 now specifies bare white words with a soft shadow on
    footage, and ink words on light backgrounds.
+5. **Caption colours follow the video:** **adopted** (2026-11-25). Like the refs (R2 green, R3 mustard, R1 lime),
+   the caption key word takes each video's own dominant colour, made readable. The base is white, ink or
+   strong-shadow white, chosen from what is behind each caption. Signal orange is the fallback.
+   Tested on all five refs and the label reel: R1 lime, R2 green, R3 mustard, R4 and R5 orange (warm
+   interiors), and the label reel orange with ink or white per caption.
 
 ## Pacing targets taken from the refs
 

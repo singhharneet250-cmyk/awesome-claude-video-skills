@@ -35,7 +35,7 @@ STYLE_FILE = SKILL / "reference" / "captions.ass"
 BLUR = r"{\blur6}"              # softens the shadow border; the words themselves stay sharp
 ORANGE = r"{\c&H2B78F0&}"
 RESET = r"{\r\blur6}"          # back to the style colour; {\r} also clears blur, so re-apply it
-STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink"}
+STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink", "strong": "NH-Caption-Strong"}
 
 LINE_CHARS = 28
 MAX_CHARS = 2 * LINE_CHARS
@@ -312,21 +312,58 @@ def main():
     ap.add_argument("--srt", type=Path, help="also write a plain .srt sidecar")
     ap.add_argument("--keywords", default="", help="comma-separated claim words to highlight when a caption has no number")
     ap.add_argument("--offset", type=float, default=0.0, help="shift every caption by this many seconds")
-    ap.add_argument("--style", choices=sorted(STYLES), default="footage",
-                    help="footage: white words with a soft shadow (default); ink: dark words for light walls and the white stage")
+    ap.add_argument("--style", choices=sorted(STYLES), default=None,
+                    help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
+    ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
+    ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
     args = ap.parse_args()
+
+    global ORANGE
+    for flag, val in (("--accent", args.accent),):
+        if val and not re.fullmatch(r"#[0-9A-Fa-f]{6}", val):
+            sys.exit(f"{flag} must look like #F0782B, not {val!r}")
+    scheme = None
+    if args.match:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from caption_colors import analyse, is_light_at, is_busy_at
+        scheme = analyse(args.match)
+
+    def pick(start, end):
+        """(style key, key-word colour) for one caption."""
+        if args.style:
+            style = args.style
+        elif scheme is None:
+            style = "footage"
+        elif scheme["base"] == "ink":
+            style = "ink"
+        elif scheme["base"] == "mixed" and is_light_at(scheme, start, end):
+            style = "ink"                       # mixed video: follow what is behind this caption
+        else:
+            style = "strong" if is_busy_at(scheme, start, end) else "footage"
+        if args.accent:
+            acc = args.accent
+        elif scheme:
+            acc = scheme["accent_deep"] if style == "ink" else scheme["accent_bright"]
+        else:
+            acc = "#E66D2A" if style == "ink" else "#F0782B"
+        return style, acc.upper()
 
     keywords = {k.strip().lower() for k in args.keywords.split(",") if k.strip()}
     words, from_srt = load_words(args.input)
     caps = fix_timing(group(words))
 
     events, srt_blocks, highlighted = [], [], 0
+    used = {"footage": 0, "ink": 0, "strong": 0}; accents = set()
     for n, (start, end, cap) in enumerate(caps, 1):
         tokens = [w["text"] for w in cap]
         span = key_span(tokens, keywords)
         highlighted += bool(span)
         s, e = max(0.0, start + args.offset), max(0.0, end + args.offset)
-        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[args.style]},,0,0,0,,{render_ass_text(tokens, span)}")
+        style, acc = pick(s, e)
+        ORANGE = "{\\c&H00" + acc[5:7] + acc[3:5] + acc[1:3] + "&}"
+        used[style] += 1
+        if span: accents.add(acc)
+        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,0,,{render_ass_text(tokens, span)}")
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")
@@ -336,7 +373,9 @@ def main():
     longest = max((len(" ".join(w["text"] for w in c)) for _, _, c in caps), default=0)
     durs = [e - s for s, e, _ in caps]
     print(f"{len(caps)} captions → {args.out}" + (f" and {args.srt}" if args.srt else ""))
-    print(f"  duration {min(durs):.2f}–{max(durs):.2f} s, longest {longest} chars, {highlighted} with an orange key word")
+    print(f"  colours: {used['footage']} white, {used['strong']} white with a strong shadow, {used['ink']} ink; key word {', '.join(sorted(accents)) or '-'}"
+          + (f" (matched to {Path(args.match).name}: {scheme['source']})" if scheme else ""))
+    print(f"  duration {min(durs):.2f}–{max(durs):.2f} s, longest {longest} chars, {highlighted} with a coloured key word")
     if from_srt:
         print("  note: input was sentence-level SRT, so word timing is estimated. Check the sync on a preview.")
     if highlighted < len(caps):
