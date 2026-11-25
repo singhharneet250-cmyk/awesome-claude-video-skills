@@ -7,6 +7,12 @@
    (1920x1080) put class "nh-landscape" on .nh-stage, which sets --s: .85.
    ========================================================================== */
 
+/* Accent faces approved by the owner (2026-11-25), bundled in assets/fonts (SIL OFL 1.1) */
+@font-face { font-family: "Instrument Serif"; font-style: italic; font-weight: 400; font-display: block;
+  src: url("fonts/InstrumentSerif-Italic.ttf") format("truetype"); }
+@font-face { font-family: "Bebas Neue"; font-style: normal; font-weight: 400; font-display: block;
+  src: url("fonts/BebasNeue-Regular.ttf") format("truetype"); }
+
 :root {
   /* Core palette (from the playbook) — use in the 55 / 20 / 15 / 10 ratio */
   --nh-porcelain: #FFFFFF;      /* canvas   55% */
@@ -43,6 +49,10 @@
   --nh-float-period: 2.6s;      /* full loop: 2.0–3.0 s */
 
   --nh-font: "Inter", "Inter Display", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --nh-serif: "Instrument Serif", Georgia, "Times New Roman", serif;   /* accent word only */
+  --nh-condensed: "Bebas Neue", "Arial Narrow", Impact, sans-serif;  /* one-word slams only */
+  --nh-ease-slam: cubic-bezier(.16, 1, .3, 1);   /* expo out: fast in, settles exactly at 1, no overshoot */
+  --nh-slam-dur: .32s;                             /* .28–.36 s */
 }
 
 /* ---------- Stage ---------- */
@@ -273,6 +283,46 @@
   display: inline-block;
   animation: nh-mask-up var(--dur, var(--nh-type-dur)) var(--nh-ease-out)
              calc(var(--at, 0s) + var(--i, 0) * var(--stagger, var(--nh-type-stagger))) both;
+}
+
+/* Accent serif word — one per line, orange, inside an Inter line. Set the line in Inter and wrap
+   the one word: <h1 class="nh-display">Read the <span class="nh-accent">label.</span></h1>.
+   Never for numbers, units, captions under 60 px, body copy or source notes. */
+.nh-accent {
+  font-family: var(--nh-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 1.3em;          /* the serif runs small: 1.25–1.35× the Inter words around it */
+  line-height: .9;
+  color: var(--nh-orange-text);
+}
+.is-transparent .nh-accent { color: var(--nh-orange); }
+
+/* Condensed slam word — one word (or one number) on its own line, capitals, 200–320 px. */
+.nh-slam-word {
+  font-family: var(--nh-condensed);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  line-height: .86;
+  font-size: calc(260px * var(--s));
+  color: var(--nh-ink);
+}
+.nh-slam-word.is-orange { color: var(--nh-orange); }
+
+/* 04 / Slam — the hook word or a condensed slam word lands from 2.5x with motion blur.
+   .28–.36 s, expo out, settles at exactly 1 (no overshoot). At most one per beat. Never on the
+   logo, cards, captions or footage (camera zoom punches stay banned). */
+@keyframes nh-slam-in {
+  0%   { opacity: 0; transform: scale(2.5); filter: blur(14px); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+.nh-slam {
+  display: inline-block;
+  transform-origin: 50% 55%;
+  animation: nh-slam-in var(--dur, var(--nh-slam-dur)) var(--nh-ease-slam) var(--at, 0s) both;
 }
 
 /* Scene exit — reverse of the reveal, faster, ease in */

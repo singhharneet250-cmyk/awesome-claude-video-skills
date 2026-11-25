@@ -30,7 +30,7 @@ accent colour, frosted white cards. Swap their accent for signal orange #F0782B 
 
 **R2: faceless kinetic type, white stage.** One continuous camera with no cuts. Each idea builds and then the camera moves on.
 - **Words build one at a time.** "Attention" lands, then "is", then "expensive" types on letter by letter in the accent colour.
-  - "Attention" comes in from about 2.5× scale with motion blur and settles in about 0.3 s. That's a slam, banned here; see the decisions below.
+  - "Attention" comes in from about 2.5× scale with motion blur and settles in about 0.3 s. That's a slam, now adopted as §5's 04 Slam for hook and slam words (decision 3).
 - **Objects:**
   - a clock hand that swings in
   - viewfinder corner brackets framing people icons, with one person in ink and the rest in the accent colour
@@ -123,11 +123,11 @@ confirmed.
 | R1 | Regular neo-grotesk, white on dark | Glowing italic script word ("*tasks*"), huge rounded bold word ("costs") | Lead line + big word, centred above the head |
 | R5 | Heavy neo-grotesk for headline words, upper or lower case (it looks like Helvetica Neue Bold or Inter Bold); bold white sans for the chest captions | Small lowercase lead words, white | Lead words above-left + big word behind the head; separate one-word chest captions |
 
-### White Glass version (Inter only, unless the owner adopts a serif)
+### White Glass version (Inter, plus the two approved accent faces)
 
 | Element | Spec on 1080×1920 |
 |---|---|
-| Key word | Inter Display 800, −0.035em tracking, 110–150 px, graphite ink #202B38. When the key word is the claim or number, it goes orange (#E66D2A as text), one word only. |
+| Key word | Inter Display 800, −0.035em tracking, 110–150 px, graphite ink #202B38. When the key word is the claim or number, it goes orange (#E66D2A as text), one word only. A non-number key word may use the orange Instrument Serif accent instead (SKILL.md §3). |
 | Connector words | Inter Italic 400–500, slate #596879, at 0.3× the key word (about 34–44 px), lowercase, tucked above-left or below-right. |
 | Slot A: beside the head | Left edge x 72–120 px. Vertical centre 35–42%. Must clear the face by at least 40 px; mirror to the right side if the speaker sits left of centre. |
 | Slot B: top band | Vertical centre 15–22%, kept below the top 250 px platform zone. For sentence ends and when slot A is busy. |
@@ -171,21 +171,23 @@ confirmed.
 ## Leave out (conflicts with White Glass)
 
 - **Dark navy, red and lime full-screen scenes (R1):** no dark backgrounds or extra hues (§2).
-- **Motion-blur scale slams and whip pushes (R2's "Attention" entrance, its clock whip):** banned by §5 (no zoom punches, no whip pans).
+- **Whip pushes and camera whips (R2's clock whip):** banned by §5 (no whip pans). R2's type slam itself is adopted (decision 3).
 - **Pixel-block glitch reveals (R1)** and the **black flash frame (R3):** banned by §5.
 - **A second accent colour:** these refs each use one accent, and so do we. Ours is orange.
 
-## Open decisions for the owner
+## Owner decisions (all four decided 2026-11-25)
 
-These refs use type and motion that White Glass currently rules out. They change only if the owner says so:
+These refs used type and motion that White Glass had ruled out. The owner has now decided all four:
 
-1. **An italic serif for the accent word** (R2, R3, R4: "expensive", "every second", "indifference").
-   White Glass is Inter only. If adopted, pick one free family (for example Instrument Serif or
-   Playfair Display italic), one word per line at most, always in orange.
-2. **A condensed display face for one-word slams** (R3: "PEOPLE", "OWN MINDS"). Currently Inter 800 instead.
-3. **Faster entrances.** The refs land words with a short motion blur. White Glass would allow a
-   0.25–0.35 s ease-out with a slight blur and no scale overshoot, but not R2's 2.5× slam.
-4. **Bare captions over footage (R5): decided, adopted.** The owner chose caption words with no
+1. **Italic serif accent word** (R2, R3, R4: "expensive", "every second", "indifference"): **adopted.**
+   Instrument Serif Italic, bundled in `assets/fonts/`, class `.nh-accent`. One orange word per line at
+   1.3× size, never on numbers (SKILL.md §3).
+2. **Condensed display face for one-word slams** (R3: "PEOPLE", "OWN MINDS"): **adopted.** Bebas Neue,
+   bundled, class `.nh-slam-word`. One word or number in capitals, 200–320 px, at most one per beat (SKILL.md §3).
+3. **Fast blurred slam entrances** (R2's "Attention"): **adopted** as §5's 04 Slam (`.nh-slam`). It lands from
+   2.5× with a 14 px blur in about 0.32 s, expo-out with no overshoot, for hook and slam words only.
+   See `templates/hook-slam.html`.
+4. **Bare captions over footage (R5): adopted.** The owner chose caption words with no
    glass, box or pill (2026-11-25). SKILL.md §6 now specifies bare white words with a soft shadow on
    footage, and ink words on light backgrounds.
 

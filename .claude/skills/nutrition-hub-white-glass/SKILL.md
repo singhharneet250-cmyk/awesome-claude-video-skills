@@ -66,9 +66,11 @@ Supporting tones sampled from the playbook:
 - The stage background is a soft gradient from white (top left) to ice (bottom right),
   plus large faint white discs for depth (`.nh-stage`, `.nh-orb`).
 
-## 3. Typography *(identified from the playbook as Inter)*
+## 3. Typography *(Inter from the playbook, plus two accent faces the owner approved)*
 
-Inter only (installed here at `/usr/share/fonts/opentype/inter`; use Google Fonts elsewhere).
+Inter for everything (installed here at `/usr/share/fonts/opentype/inter`; use Google Fonts elsewhere),
+plus two accent faces approved on 2026-11-25. Both are bundled in `assets/fonts/` (SIL OFL 1.1) and
+loaded by `assets/brand.css`.
 Sizes below are for a 1080×1920 canvas. Multiply by 0.85 for 1920×1080 (`.nh-landscape`).
 
 | Style | Size / weight | Tracking | Colour |
@@ -82,6 +84,21 @@ Sizes below are for a 1080×1920 canvas. Multiply by 0.85 for 1920×1080 (`.nh-l
 | Caption | 62 / 700 | 0 | bare words: white with a soft shadow on footage, ink on light backgrounds |
 
 Headlines are short, sentence case and end in a full stop ("Creatine, explained simply.").
+
+**Accent serif: Instrument Serif Italic** (`.nh-accent`)
+- One word per line, and at most one per beat, inside an Inter headline or kinetic line:
+  "Protein isn't the whole *story.*".
+- Always orange: #E66D2A as text on light backgrounds, #F0782B over footage.
+- Set it 1.3× the Inter words around it (the serif runs small).
+- Only in headlines and kinetic lines of 60 px or more. Never for numbers or units, captions,
+  body copy, labels or source notes. Numbers stay Inter so they read instantly.
+
+**Condensed slam: Bebas Neue** (`.nh-slam-word`)
+- One word or one number on its own line, in capitals, 200–320 px, ink or orange.
+- At most one per beat and about one every 5 s, so it stays a hit.
+- Never sentences, never on the same line as Inter, never in captions, and never with a unit
+  ("33 g" stays an Inter data metric).
+- In one frame, use either the slam word or the orange serif accent as the orange focal point, not both.
 
 ## 4. Graphic components
 
@@ -128,6 +145,7 @@ All of these are implemented in `assets/brand.css`.
 | 01 Glass reveal (`.nh-reveal`) | Opacity 0→100%, scale 96→100%, 0.6–0.9 s (default 0.75), edge-highlight sweep | ease-out `cubic-bezier(.22,1,.36,1)` |
 | 02 3D float (`.nh-float`) | Y drift ±12 px, rotation ±3°, 2.0–3.0 s loop (default 2.6) | sine in-out `cubic-bezier(.37,0,.63,1)` |
 | 03 Kinetic type (`.nh-type`) | Mask reveal per word, stagger 40–70 ms (default 55), 0.35–0.55 s each (default 0.45) | ease-out, **no bouncy overshoot** |
+| 04 Slam (`.nh-slam`) *(approved 2026-11-25)* | Lands from 2.5× with a 14 px motion blur clearing to sharp, opacity in over the first 55%, 0.28–0.36 s (default 0.32). Only for the hook word in the first 0.6 s and for condensed slam words; at most one per beat | expo-out `cubic-bezier(.16,1,.3,1)`, settles exactly at 1, **no overshoot** |
 | Exit *(derived)* | Reverse of the reveal: opacity →0, scale →0.98, 0.3–0.45 s | ease-in `cubic-bezier(.64,0,.78,0)` |
 
 - GSAP equivalents: `power3.out` or `expo.out` for reveals, `sine.inOut` for float. Never use `back`, `elastic` or `bounce`.
@@ -135,8 +153,9 @@ All of these are implemented in `assets/brand.css`.
 - Put the reveal and the float on different elements (a wrapper and its child), because both animate `transform`.
 - **Transitions between shots** *(derived)*: a straight cut by default, a 0.3–0.5 s soft
   dissolve, or a 0.3–0.5 s **dip to porcelain white** (ffmpeg `xfade=transition=fadewhite`).
-- **Banned:** whip pans, glitch or RGB split, zoom punches, camera shake, flash frames,
-  spins, bounces, light leaks, star wipes.
+- **Banned:** whip pans, glitch or RGB split, camera zoom punches on footage, camera shake,
+  flash frames, spins, bounces, light leaks, star wipes. The 04 Slam is a *type* entrance only:
+  never on the logo, cards, captions or footage.
 - **Pacing for high-retention reels** *(derived)*:
   - The hook headline is readable by 0.6 s.
   - Introduce a new visual beat every 1.5–3 s.
@@ -196,6 +215,7 @@ All of these are implemented in `assets/brand.css`.
    and copy. Keep `assets/brand.css` as the single source of truth.
    - `reel-9x16.html`: a full-frame branded reel (hook → data callout → logo end card).
    - `overlay-callout.html`: a transparent glass callout to lay over footage.
+   - `hook-slam.html`: a hook beat with a condensed slam word and a line ending on an orange serif accent.
    - `molecule-3d.html`: a realistic 3D molecule (pick it with `?molecule=<id>`). Set the copy in `SCENE`.
    - `product-hero-3d.html`: the real product photo in a 3D studio (`?photo=/path/pack.png`).
 5. **Render** (from this skill's folder):
@@ -217,6 +237,7 @@ All of these are implemented in `assets/brand.css`.
    audio, faststart, loudness, the logo hash, stray hues and black frames, writes a
    contact sheet, and exits 1 on any FAIL. Then look at the sheet and at full-size stills. Check that:
    - the logo is the original file, unaltered, with clear space and no name repeated beside it
+   - at most one serif accent word per line and one slam per beat; the serif is never on a number
    - the palette holds 55/20/15/10, there is one orange focal point, and no stray hues
    - no text is clipped, colliding with icons or bars, or outside the safe zones
    - motion has no overshoot, timings are within range, and beats don't overlap
@@ -254,10 +275,12 @@ tooling from companions, never their look:
 
 - **Look:** palette, Inter, glass components and the original logo file come from here.
   Ignore a companion's default theme, fonts, colours and style presets. Nutrition Hub
-  type is fixed as Inter, so don't run a font-picking step for it.
-- **Motion:** §5 overrides any motion advice. That means no zoom punches or snap-zooms,
+  type is fixed (Inter, plus the two §3 accent faces in `assets/fonts/`), so don't run a
+  font-picking step for it.
+- **Motion:** §5 overrides any motion advice. That means no camera zoom punches or snap-zooms,
   no whip pans, no pop, spring or bounce captions, no logo crash-ins from oversize, and no
-  glitch or flash frames, even when a companion recommends them for retention. A slow
+  glitch or flash frames, even when a companion recommends them for retention. The one
+  oversize entrance allowed is §5's 04 Slam, on a hook or slam word. A slow
   push-in of up to about 5% over a whole shot is fine.
 - **Captions:** §6 overrides karaoke, "Hormozi" and word-pop presets.
 - **Pacing:** retention advice from companions is welcome when it fits §5 (hook readable by 0.6 s, a beat every 1.5–3 s, text holds).
@@ -277,6 +300,8 @@ assets/logo/nutrition-hub-logo.png   ORIGINAL logo (never modify)
 assets/brand.css               tokens, components and motion primitives
 templates/reel-9x16.html       full branded reel (edit the SCENE object)
 templates/overlay-callout.html transparent glass callout for footage
+templates/hook-slam.html       hook beat: Bebas slam word + Inter line with an Instrument Serif accent
+assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
 assets/wg3d.js                 the 3D studio: PBR materials, light, shadow catcher, camera, builders

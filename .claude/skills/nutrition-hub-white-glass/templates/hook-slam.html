@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub hook slam</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; }
+  .safe { position: absolute; left: 72px; right: 72px; top: 250px; bottom: 420px; }
+  .slam-row { position: absolute; left: 0; right: 0; top: 300px; text-align: center; }
+  .line { position: absolute; left: 0; right: 0; top: 640px; text-align: center; font-size: 104px; }
+  .support { position: absolute; left: 0; right: 0; top: 930px; text-align: center; }
+</style>
+</head>
+<body>
+<!--
+  Hook beat (9:16, about 4 s). It shows the three styles the owner approved on 2026-11-25:
+    1. a condensed slam word (Bebas Neue) landing with the 04 / Slam entrance
+    2. an Inter line, revealed word by word, ending on ONE orange accent word in Instrument Serif Italic
+    3. a calm supporting line
+  Edit SCENE below. The copy is EXAMPLE text.
+  Render: node ../scripts/render.cjs hook-slam.html --out hook.mp4   (add --transparent for an overlay)
+-->
+<div class="nh-stage" id="stage">
+  <div class="nh-orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
+  <div class="nh-orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
+  <section class="nh-scene" id="s1">
+    <div class="safe">
+      <div class="slam-row"><span class="nh-slam-word nh-slam" id="slam" style="--at:.1s"></span></div>
+      <h1 class="nh-display nh-type line" id="line" style="--at:.62s"></h1>
+      <p class="nh-body nh-fade support" id="support" style="--at:1.7s"></p>
+    </div>
+  </section>
+</div>
+<script>
+/* ===== Edit this object ===== */
+const SCENE = {
+  duration: 4.2,
+  slam: "Protein",                     // one word or one number; shown in capitals
+  slamOrange: false,                   // true = orange slam word (then keep the accent word below ink-free)
+  line: "isn't the whole",             // Inter words
+  accent: "story.",                    // ONE word in the orange serif (never a number or unit)
+  support: "Read the label before you buy.",
+  out: 3.75,                           // scene exit time
+};
+
+/* ===== Runtime ===== */
+const esc = (t) => t.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const slam = document.getElementById("slam");
+slam.textContent = SCENE.slam;
+if (SCENE.slamOrange) slam.classList.add("is-orange");
+document.getElementById("support").textContent = SCENE.support;
+const line = document.getElementById("line");
+line.innerHTML = esc(SCENE.line) + ' <span class="nh-accent">' + esc(SCENE.accent) + "</span>";
+// kinetic type: wrap each word in a mask; the accent word keeps its class
+(function splitWords(el) {
+  const parts = [...el.childNodes]; el.textContent = ""; let i = 0;
+  const add = (text, cls) => text.split(/(\s+)/).forEach((tok) => {
+    if (!tok) return;
+    if (/^\s+$/.test(tok)) { el.appendChild(document.createTextNode(" ")); return; }
+    const w = document.createElement("span"); w.className = "nh-w";
+    const inner = document.createElement("span"); inner.textContent = tok;
+    if (cls) inner.className = cls;
+    inner.style.setProperty("--i", i++); w.appendChild(inner); el.appendChild(w);
+  });
+  parts.forEach((n) => (n.nodeType === 3 ? add(n.textContent) : add(n.textContent, n.className)));
+})(line);
+document.getElementById("s1").style.setProperty("--out", SCENE.out + "s");
+
+const params = new URLSearchParams(location.search);
+if (params.get("transparent") === "1") document.getElementById("stage").classList.add("is-transparent");
+window.__logoStatus = "none";                       // no logo in this beat
+window.__duration = SCENE.duration;
+window.__seek = (t) => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
+// fonts must be real before the first frame: a fallback face would ship silently
+document.fonts.load('italic 100px "Instrument Serif"').then(() => document.fonts.load('100px "Bebas Neue"')).then(() => {
+  const ok = document.fonts.check('italic 100px "Instrument Serif"') && document.fonts.check('100px "Bebas Neue"');
+  if (!ok) { window.__error = "accent fonts did not load (assets/fonts)"; console.error(window.__error); }
+  if (params.has("t")) window.__seek(parseFloat(params.get("t")));
+});
+</script>
+</body>
+</html>
