@@ -62,6 +62,14 @@ Supporting tones sampled from the playbook:
   Allow **one orange focal point per frame** *(derived)*.
 - No other hues: no greens, blues, neons or black backgrounds. Two exceptions: the logo, and a caption
   key word matched to the video's own colour (§6).
+- **Alternate colour schemes** (owner request, 2026-11-25). `templates/hook-slam.html` also renders in
+  three other schemes, chosen with `?scheme=`:
+  - `mint`: white with green
+  - `mustard`: cream with mustard
+  - `navy-lime`: dark navy with lime
+  Each keeps one accent colour, Inter plus the §3 accent faces, the motion rules and the original logo
+  (on a white plate on navy, because the logo's KHANNA line is dark). White Glass stays the default.
+  Use another scheme only when the owner asks or to match a video's colours, and keep one scheme per video.
 - White text on signal orange fails contrast, so don't use it for words. Calls to action
   are ink text on a white chip with an orange dot.
 - The stage background is a soft gradient from white (top left) to ice (bottom right),
@@ -229,7 +237,8 @@ All of these are implemented in `assets/brand.css`.
    and copy. Keep `assets/brand.css` as the single source of truth.
    - `reel-9x16.html`: a full-frame branded reel (hook → data callout → logo end card).
    - `overlay-callout.html`: a transparent glass callout to lay over footage.
-   - `hook-slam.html`: a hook beat with a condensed slam word and a line ending on an orange serif accent.
+   - `hook-slam.html`: a 10 s hook. Two condensed slam words 5 s apart, Inter lines ending on a serif accent
+     word, check pills, then the original logo. Colour schemes via `?scheme=` (see §2).
    - `molecule-3d.html`: a realistic 3D molecule (pick it with `?molecule=<id>`). Set the copy in `SCENE`.
    - `product-hero-3d.html`: the real product photo in a 3D studio (`?photo=/path/pack.png`).
 5. **Render** (from this skill's folder):
@@ -315,7 +324,7 @@ assets/logo/nutrition-hub-logo.png   ORIGINAL logo (never modify)
 assets/brand.css               tokens, components and motion primitives
 templates/reel-9x16.html       full branded reel (edit the SCENE object)
 templates/overlay-callout.html transparent glass callout for footage
-templates/hook-slam.html       hook beat: Bebas slam word + Inter line with an Instrument Serif accent
+templates/hook-slam.html       10 s hook: Bebas slams + Inter lines with a serif accent + pills + logo; ?scheme= colour schemes
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)

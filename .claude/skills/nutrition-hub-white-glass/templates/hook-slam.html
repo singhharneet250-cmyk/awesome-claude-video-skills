@@ -8,53 +8,86 @@
 <style>
   html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; }
   .safe { position: absolute; left: 72px; right: 72px; top: 250px; bottom: 420px; }
-  .slam-row { position: absolute; left: 0; right: 0; top: 300px; text-align: center; }
-  .line { position: absolute; left: 0; right: 0; top: 640px; text-align: center; font-size: 104px; }
-  .support { position: absolute; left: 0; right: 0; top: 930px; text-align: center; }
+  .slam-row { position: absolute; left: 0; right: 0; text-align: center; }
+  .line { position: absolute; left: 0; right: 0; text-align: center; font-size: 104px; }
+  .support { position: absolute; left: 40px; right: 40px; text-align: center; }
+  .chips { position: absolute; left: 0; right: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; }
+  .logo-slot { position: absolute; left: 0; right: 0; display: flex; justify-content: center; }
+  .logo-slot .nh-logo { width: 340px; margin: -48px 0 -14px; }
+  .plate { display: inline-block; border-radius: 28px; }
+  .logo-missing { outline: 4px dashed var(--nh-orange); min-height: 120px; }
+
+  /* dark scheme: glass chips and discs need a dark-glass treatment */
+  .nh-stage[data-scheme="navy-lime"] .nh-orb { background: radial-gradient(circle at 35% 30%, rgba(120,160,255,.10), rgba(120,160,255,.03) 60%, rgba(0,0,0,0)); box-shadow: none; }
+  /* the logo is made for light grounds (its KHANNA line is dark): on navy it sits on a white plate (SKILL.md §1) */
+  .nh-stage[data-scheme="navy-lime"] .plate { background: linear-gradient(160deg, #FFFFFF, #EEF2F7); padding: 26px 34px 18px;
+    box-shadow: 0 24px 60px -24px rgba(0,0,0,.55); }
+  .nh-stage[data-scheme="navy-lime"] .nh-chip { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); color: #E6EEFA; box-shadow: 0 10px 24px -14px rgba(0,0,0,.6); }
 </style>
 </head>
 <body>
 <!--
-  Hook beat (9:16, about 4 s). It shows the three styles the owner approved on 2026-11-25:
-    1. a condensed slam word (Bebas Neue) landing with the 04 / Slam entrance
-    2. an Inter line, revealed word by word, ending on ONE orange accent word in Instrument Serif Italic
-    3. a calm supporting line
-  Edit SCENE below. The copy is EXAMPLE text.
-  Render: node ../scripts/render.cjs hook-slam.html --out hook.mp4   (add --transparent for an overlay)
+  10-second hook (9:16). It uses the three styles the owner approved on 2026-11-25:
+    1. condensed slam words (Bebas Neue) landing with the 04 / Slam entrance, two slams 5 s apart
+    2. Inter lines revealed word by word, each ending on ONE serif accent word (Instrument Serif Italic)
+    3. calm supporting lines and check pills, then the ORIGINAL logo
+  Colour schemes: ?scheme=white-glass (brand default) | mint | mustard | navy-lime
+  Copy is EXAMPLE text; edit SCENE below.
+  Render: node ../scripts/render.cjs "hook-slam.html?scheme=mint" --out hook-mint.mp4
 -->
 <div class="nh-stage" id="stage">
   <div class="nh-orb" style="width:900px;height:900px;right:-420px;top:-260px"></div>
   <div class="nh-orb" style="width:760px;height:760px;left:-460px;bottom:120px"></div>
-  <section class="nh-scene" id="s1">
+
+  <section class="nh-scene" id="b1">
     <div class="safe">
-      <div class="slam-row"><span class="nh-slam-word nh-slam" id="slam" style="--at:.1s"></span></div>
-      <h1 class="nh-display nh-type line" id="line" style="--at:.62s"></h1>
-      <p class="nh-body nh-fade support" id="support" style="--at:1.7s"></p>
+      <div class="slam-row" style="top:300px"><span class="nh-slam-word nh-slam" id="slam1" style="--at:.1s"></span></div>
+      <h1 class="nh-display nh-type line" id="line1" style="top:640px;--at:.62s"></h1>
+      <p class="nh-body nh-fade support" id="support1" style="top:930px;--at:1.7s"></p>
+    </div>
+  </section>
+
+  <section class="nh-scene" id="b2">
+    <div class="safe">
+      <div class="slam-row" style="top:230px"><span class="nh-slam-word nh-slam" id="slam2" style="--at:4.9s"></span></div>
+      <h1 class="nh-display nh-type line" id="line2" style="top:560px;--at:5.4s"></h1>
+      <div class="chips" id="chips" style="top:800px"></div>
+      <div class="logo-slot nh-reveal" style="top:1010px;--at:8.1s;--dur:.85s"><span class="plate"><img class="nh-logo" data-nh-logo alt="Nutrition Hub Khanna logo"></span></div>
     </div>
   </section>
 </div>
 <script>
 /* ===== Edit this object ===== */
 const SCENE = {
-  duration: 4.2,
-  slam: "Protein",                     // one word or one number; shown in capitals
-  slamOrange: false,                   // true = orange slam word (then keep the accent word below ink-free)
-  line: "isn't the whole",             // Inter words
-  accent: "story.",                    // ONE word in the orange serif (never a number or unit)
-  support: "Read the label before you buy.",
-  out: 3.75,                           // scene exit time
+  duration: 10,
+  scheme: "white-glass",                      // overridden by ?scheme=
+  logo: "../assets/logo/nutrition-hub-logo.png",
+  beat1: { slam: "Protein", line: "isn't the whole", accent: "story.", support: "Most labels need a second look.", out: 4.35 },
+  beat2: { slam: "Label", line: "Read it", accent: "first.", chips: ["Serving size", "Protein per scoop", "Added sugar"] },
+};
+
+/* ===== Colour schemes (owner request, 2026-11-25). White Glass is the brand default. ===== */
+const SCHEMES = {
+  "white-glass": {},                                            // brand tokens from brand.css
+  "mint":      { "--nh-ink": "#111814", "--nh-slate": "#4E5F55", "--nh-orange": "#22C014", "--nh-orange-text": "#14960A",
+                 "--nh-stage-bg": "radial-gradient(70% 45% at 100% 8%, rgba(34,192,20,.10) 0%, rgba(34,192,20,0) 70%), linear-gradient(160deg, #FFFFFF 0%, #F7FBF7 50%, #E9F3EA 100%)" },
+  "mustard":   { "--nh-ink": "#1B1A17", "--nh-slate": "#5E584A", "--nh-orange": "#C9A227", "--nh-orange-text": "#A07C0A",
+                 "--nh-stage-bg": "radial-gradient(70% 45% at 100% 8%, rgba(201,162,39,.12) 0%, rgba(201,162,39,0) 70%), linear-gradient(160deg, #FFFDF7 0%, #FAF6EA 50%, #F1EAD6 100%)" },
+  "navy-lime": { "--nh-ink": "#FFFFFF", "--nh-slate": "#B6C4DC", "--nh-orange": "#C9F042", "--nh-orange-text": "#C9F042",
+                 "--nh-stage-bg": "radial-gradient(80% 50% at 80% 10%, rgba(64,120,255,.28) 0%, rgba(64,120,255,0) 70%), linear-gradient(170deg, #0F2550 0%, #0A1A3D 55%, #061129 100%)" },
 };
 
 /* ===== Runtime ===== */
+const params = new URLSearchParams(location.search);
+const stage = document.getElementById("stage");
+const schemeName = params.get("scheme") || SCENE.scheme;
+if (!SCHEMES[schemeName]) { window.__error = `unknown scheme "${schemeName}" (use ${Object.keys(SCHEMES).join(", ")})`; }
+stage.dataset.scheme = schemeName;
+Object.entries(SCHEMES[schemeName] || {}).forEach(([k, v]) => stage.style.setProperty(k, v));
+if (params.get("transparent") === "1") stage.classList.add("is-transparent");
+
 const esc = (t) => t.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
-const slam = document.getElementById("slam");
-slam.textContent = SCENE.slam;
-if (SCENE.slamOrange) slam.classList.add("is-orange");
-document.getElementById("support").textContent = SCENE.support;
-const line = document.getElementById("line");
-line.innerHTML = esc(SCENE.line) + ' <span class="nh-accent">' + esc(SCENE.accent) + "</span>";
-// kinetic type: wrap each word in a mask; the accent word keeps its class
-(function splitWords(el) {
+function splitWords(el) {            // kinetic type: one mask per word; the accent word keeps its class
   const parts = [...el.childNodes]; el.textContent = ""; let i = 0;
   const add = (text, cls) => text.split(/(\s+)/).forEach((tok) => {
     if (!tok) return;
@@ -65,12 +98,25 @@ line.innerHTML = esc(SCENE.line) + ' <span class="nh-accent">' + esc(SCENE.accen
     inner.style.setProperty("--i", i++); w.appendChild(inner); el.appendChild(w);
   });
   parts.forEach((n) => (n.nodeType === 3 ? add(n.textContent) : add(n.textContent, n.className)));
-})(line);
-document.getElementById("s1").style.setProperty("--out", SCENE.out + "s");
+}
+[["slam1", "line1", SCENE.beat1], ["slam2", "line2", SCENE.beat2]].forEach(([s, l, b]) => {
+  document.getElementById(s).textContent = b.slam;
+  const line = document.getElementById(l);
+  line.innerHTML = esc(b.line) + ' <span class="nh-accent">' + esc(b.accent) + "</span>";
+  splitWords(line);
+});
+document.getElementById("support1").textContent = SCENE.beat1.support;
+document.getElementById("chips").innerHTML = SCENE.beat2.chips.map((c, k) =>
+  `<span class="nh-chip nh-reveal" style="--at:${6.5 + k * .22}s"><span class="nh-dot"></span>${esc(c)}</span>`).join("");
+document.getElementById("b1").style.setProperty("--out", SCENE.beat1.out + "s");
 
-const params = new URLSearchParams(location.search);
-if (params.get("transparent") === "1") document.getElementById("stage").classList.add("is-transparent");
-window.__logoStatus = "none";                       // no logo in this beat
+/* original logo only; the render stops if it fails to load */
+window.__logoStatus = "loading";
+const probe = new Image();
+probe.onload = () => { document.querySelectorAll("img[data-nh-logo]").forEach((i) => (i.src = probe.src)); window.__logoStatus = "ok"; };
+probe.onerror = () => { window.__logoStatus = "missing"; document.querySelectorAll("img[data-nh-logo]").forEach((i) => i.classList.add("logo-missing")); };
+probe.src = params.get("logo") || SCENE.logo;
+
 window.__duration = SCENE.duration;
 window.__seek = (t) => document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
 // fonts must be real before the first frame: a fallback face would ship silently
