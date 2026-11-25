@@ -25,6 +25,12 @@ else does the heavy lifting under its rules.
 | `openchatcut` | [OpenChatCut](https://github.com/0xsline/OpenChatCut) (AGPL-3.0, use v0.2.17), a local video editor with a multi-track timeline. Claude Code edits an open project through a draft that you approve inside OpenChatCut (`approvalMode: "manual"`); it can't export, generate, delete or publish. No remote telemetry was found; AI calls go only to services you add keys for. It needs OpenChatCut running on your computer (`localhost:5199`): see `skills/nutrition-hub-white-glass/reference/openchatcut.md`. Nothing of its code is copied into this repo. |
 | `blender` | [MCP for Blender](https://github.com/ahujasid/mcp-for-blender) (MIT), pinned to 2.2.7. Claude Code drives a running Blender on your computer: it reads the scene, builds and lights it with Blender Python, looks through the camera and renders. Telemetry is off (`DISABLE_TELEMETRY`) and safe mode is on (scripts can't touch files, programs or the network). It needs Blender, uv and the add-on on your computer: see `skills/nutrition-hub-white-glass/reference/blender-mcp.md`. Claude Code asks you to approve it the first time you open the repo. In a cloud session it has no Blender to reach. |
 
+## Companion installed on your own computer
+
+| Tool | What it adds |
+|---|---|
+| [ghost-editor](https://github.com/kurbaitaev/ghost-editor) (MIT, commit `d71bdb6`) | Added at the owner's request on 2026-11-25, after first being left out. Only two parts are used: its raw cut (the best take of each line from a long multi-take recording, voice smoothed, faces checked) and its BiRefNet person matte for the frame escape. Its styles, memes, stock fetching and Google B-roll check are not used. It needs an Apple-silicon Mac: see `skills/nutrition-hub-white-glass/reference/ghost-editor.md`. Nothing of it is copied into this repo. |
+
 ## Plugins enabled from the Anthropic Directory
 
 These were added from the plugin catalog on claude.ai, not from files in this repo:
@@ -42,7 +48,6 @@ the White Glass rules or duplicate a plugin above:
 - `Tejashmakwana/motionmaxxing`: bans kickers, centred stat callouts, on-screen source notes and fades, which are core White Glass components.
 - `hughminhphan/motion-kit`: declares its motion rules override every other skill.
 - `iart-ai/tiktok-video-skills`: recommends zoom punches, whip pans and spring "pop" captions, all banned here.
-- `kurbaitaev/ghost-editor`: Apple-silicon only, sends frames to Google; IT Reelsmaker covers the same job.
 - `louisedesadeleer/cut-video`: macOS/Homebrew install; IT Reelsmaker cuts pauses and retakes.
 - `remotion-dev/skills`: no licence file to copy under; the official Remotion plugin is used instead.
 - `mromidev/claude-blender-skills`: realistic Blender drone, forest and car films; Windows-centred scripts and not supplement content. `use-3d-software` covers the Blender craft.

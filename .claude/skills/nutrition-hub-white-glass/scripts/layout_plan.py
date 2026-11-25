@@ -168,6 +168,8 @@ class Planner:
 
 
 def main():
+    if len(sys.argv) == 2 and sys.argv[1] in ("-h", "--help"):
+        print(__doc__.strip()); return
     if len(sys.argv) != 2:
         sys.exit("usage: python3 layout_plan.py footage.mp4")
     pl = Planner(sys.argv[1])

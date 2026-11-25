@@ -371,6 +371,12 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
 - `python3 scripts/timeline.py check edit.json --motion` tests it against the rules below and draws
   `edit.timeline.png`, an editor-style view with the hook zone, every track and the speaker's gesture moments.
   Show the owner the drawing before rendering.
+- `python3 scripts/timeline.py edit edit.json --motion` writes `edit.editor.html`, a drag-and-trim timeline the
+  owner edits **before the final render**:
+  - Clips move and trim, and each clip's content (which b-roll, orbit words, which sound) can change, but only
+    among brand-approved choices. Colours, fonts and the caption look can't be edited.
+  - The rules re-check live as clips move.
+  - "Copy edit.json" brings the edit back, to save over `edit.json`.
 - `python3 scripts/timeline.py render edit.json` builds the reel in the right order with the tested scripts
   and ends with `qa.py`.
 - The steps below still apply. The timeline is how they are written down and run.
@@ -425,6 +431,8 @@ inputs in the last column.
 
 | Job | Use | Give it |
 |---|---|---|
+| One long recording with many retakes → a clean raw cut (best take per line, voice smoothed, faces checked), on an Apple-silicon Mac | ghost-editor's raw-cut tools only, at commit `d71bdb6` (`reference/ghost-editor.md`) | Nothing else from it (no styles, memes, stock, Google images, other brands' logos); its `rawcut.mp4` becomes the `edit.json` source |
+| A person matte for the frame escape in a busy room | ghost-editor's `matte.py` (BiRefNet), or CapCut "Remove background" exported with transparency | `fx.py escape --matte matte.webm` reads the alpha channel |
 | Raw talking-head phone take → finished 9:16 reel (cut retakes and pauses, word-timed subs, face-aware layout) | `it-reelsmaker` plugin | A brand profile: Inter, §2 palette, the original logo file, §6 caption style, §5 motion. Its subtitles off or restyled to §6 (or burn ours with `scripts/captions.py`). |
 | Branded title cards, data callouts, lower thirds, end cards | This skill's `templates/` + `scripts/render.cjs` (first choice: tested and on-brand) | — |
 | An editable HyperFrames project or the HyperFrames desktop app | `hyperframes` plugin (project plugin, `.claude/settings.json`) | `assets/brand.css` tokens; grade footage with §2 numbers via its `media-treatment`. Its skill sends a usage note to HeyGen once per run and asks first; say no to skip. |
@@ -496,7 +504,8 @@ scripts/sfx.py                 original SFX kit (synthesised) + mixer: cue sheet
 scripts/fx.py                  person-aware effects: orbit (spheres or word chips around the head) and frame escape
 scripts/person_matte.py        person mattes for fx.py: head shape from the face track, plain-wall key, or a matte video
 scripts/motion_track.py        head (full frame rate) and hand tracking, gesture / hands-up / head-move moments, --preview
-scripts/timeline.py            one edit.json timeline for the whole edit: check (rules + timeline drawing) and render (every step, then qa.py)
+scripts/timeline.py            one edit.json timeline for the whole edit: check (rules + drawing), edit (drag-and-trim page), render (every step, then qa.py)
+templates/timeline-editor.html the drag-and-trim timeline page timeline.py edit fills in (style locked; live rule checks; copy edit.json)
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
@@ -506,5 +515,6 @@ reference/footage-editing.md   tested ffmpeg recipes for real footage
 reference/broll-shot-list.md   what to film in the store for b-roll, how to film it and how to name the files
 reference/blender-mcp.md       Blender MCP (the repo's .mcp.json): one-time set-up on the owner's computer and the rules for using it
 reference/openchatcut.md       OpenChatCut MCP (the repo's .mcp.json): timeline editing with draft approval, set-up, and the White Glass rules inside it
+reference/ghost-editor.md      ghost-editor on the owner's Mac: only its raw cut (retakes out) and its person matte for the frame escape
 reference/style-references.md  the owner's reference reels: techniques, caption layout and placement, open decisions
 ```

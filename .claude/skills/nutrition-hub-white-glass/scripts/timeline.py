@@ -5,6 +5,8 @@ against the White Glass rules, draws it like an editor's timeline, and renders t
 order with the tested scripts.
 
     python3 timeline.py check edit.json            # rules + edit.timeline.png (add --motion for gesture moments)
+    python3 timeline.py edit edit.json --motion    # edit.editor.html: drag and trim the edit before the final render;
+                                                   #   only timing and content change, the style is locked
     python3 timeline.py render edit.json           # build the reel: grade → b-roll → effects → blur → overlays
                                                    #   → captions → end card → SFX → qa.py
 
@@ -241,6 +243,44 @@ def draw(e, D, br, ov, moments, out):
     im.save(out)
 
 
+def clean(obj):
+    """edit.json without this script's private keys (those starting with _)."""
+    if isinstance(obj, dict):
+        return {k: clean(v) for k, v in obj.items() if not k.startswith("_")}
+    if isinstance(obj, list):
+        return [clean(v) for v in obj]
+    return obj
+
+
+def editor(e, motion=False):
+    """A drag-and-drop timeline page for this edit: only timing and content can change, the style can't."""
+    import base64
+    D, info, issues, png = check(e, motion)
+    every = max(0.5, round(D / 40, 2))
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-i", str(e["_src"]), "-vf", f"fps=1/{every},scale=54:96:force_original_aspect_ratio=increase,crop=54:96",
+                          "-c:v", "mjpeg", "-q:v", "6", "-f", "image2pipe", "-"], capture_output=True).stdout
+    thumbs = ["data:image/jpeg;base64," + base64.b64encode(b"\xff\xd8" + part).decode() for part in raw.split(b"\xff\xd8")[1:]]
+    words = []
+    if e.get("_words") and Path(e["_words"]).is_file():
+        sys.path.insert(0, str(HERE))
+        from captions import load_words
+        words = [{"text": w["text"], "start": round(w["start"], 3), "end": round(w["end"], 3)} for w in load_words(Path(e["_words"]))[0]]
+    moments = json.loads((e["_base"] / "motion.json").read_text())["moments"] if motion and (e["_base"] / "motion.json").is_file() else []
+    lib = sorted({str(p.relative_to(e["_base"])) for p in (e["_base"] / "broll").glob("*")
+                  if p.suffix.lower() in (".mp4", ".mov", ".m4v", ".jpg", ".jpeg", ".png", ".webp")} | {b["file"] for b in e.get("broll", [])})
+    sys.path.insert(0, str(HERE))
+    from sfx import KIT
+    data = {"name": Path(e["source"]).name, "D": round(D, 3), "endcard": round(e.get("endcard", {}).get("_dur", 0), 3),
+            "edit": clean({k: v for k, v in e.items()}), "words": words, "moments": moments,
+            "thumbs": {"every": every, "images": thumbs}, "library": lib,
+            "overlayDur": {o["template"]: round(o["_dur"], 3) for o in e.get("overlays", [])}, "kit": list(KIT),
+            "rules": {"hook": HOOK, "minShot": MIN_SHOT, "maxShot": MAX_SHOT, "minGap": MIN_GAP, "fxMin": FX_MIN, "maxShare": 0.45}}
+    page = (SK / "templates" / "timeline-editor.html").read_text()
+    out = e["_path"].with_suffix(".editor.html")
+    out.write_text(page.replace("/*EDIT_DATA*/", json.dumps(data).replace("</", "<\\/")))
+    return out, issues
+
+
 def render(e):
     D, info, issues, png = check(e)
     for lvl, msg in issues:
@@ -348,7 +388,7 @@ def render(e):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["check", "render"]); ap.add_argument("edit")
+    ap.add_argument("action", choices=["check", "edit", "render"]); ap.add_argument("edit")
     ap.add_argument("--motion", action="store_true", help="check: add head and hand moments to the drawing")
     a = ap.parse_args()
     e = load(a.edit)
@@ -360,6 +400,11 @@ def main():
         print(("no problems found" if not issues else f"{sum(1 for l, _ in issues if l == 'FAIL')} to fix, "
                f"{sum(1 for l, _ in issues if l == 'WARN')} to look at") + f"\ntimeline: {png}")
         sys.exit(1 if any(l == "FAIL" for l, _ in issues) else 0)
+    if a.action == "edit":
+        out, issues = editor(e, a.motion)
+        print(f"timeline editor: {out}\nOpen it in a browser: drag and trim, then Copy edit.json and save it over {e['_path'].name}"
+              f" (or paste it back to Claude). {len(issues)} rule note(s) now.")
+        return
     render(e)
 
 

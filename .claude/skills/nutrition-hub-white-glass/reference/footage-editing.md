@@ -25,6 +25,7 @@ Write the edit as an `edit.json` next to the footage. Paths are relative to it, 
 
 ```bash
 python3 $SK/scripts/timeline.py check edit.json --motion   # rules + edit.timeline.png (with gesture moments)
+python3 $SK/scripts/timeline.py edit edit.json --motion    # edit.editor.html: drag and trim before the final render
 python3 $SK/scripts/timeline.py render edit.json           # the finished reel, then qa.py
 ```
 
@@ -34,6 +35,13 @@ python3 $SK/scripts/timeline.py render edit.json           # the finished reel, 
     without word timings.
   - WARN lines are for a look: b-roll over 45%, an effect used twice.
   - It also draws the timeline. Show the owner that picture before rendering.
+- **`edit`:** an editor page with a filmstrip of the take, caption words, gesture moments and every track.
+  - Drag clips to move them and drag their edges to trim. Click one to change its b-roll clip, transition
+    (cut / dip to white / dissolve), effect, orbit words or sound.
+  - The brand rules re-check as you drag.
+  - Only timing and content change: colours, fonts and the caption look aren't editable there.
+  - "Copy edit.json", then save it over `edit.json` (or paste it to Claude) and render.
+  - Tested: drag, trim, word edits, undo and reset in a headless browser, at phone and desktop widths.
 - **`render`:** runs the recipes below in this order:
   1. reframe and grade (HDR is tone-mapped)
   2. b-roll (§2b)

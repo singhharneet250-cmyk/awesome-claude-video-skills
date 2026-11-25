@@ -10,13 +10,15 @@ download a model:
          quadratic fit, so light fall-off is fine), and everything that differs from it and
          joins the speaker becomes the person. Needs a locked camera and a plain, evenly lit
          wall that differs from hair and clothes (the "Free Space" set-up in the shot list).
-  FILE   A matte video made elsewhere (white = person), e.g. CapCut "Remove background" or
-         Runway, exported at the same length. It is resized to the footage.
+  FILE   A matte made elsewhere at the same length, resized to the footage: white-on-black, or a cut-out
+         with transparency (ghost-editor's matte.py WebM, CapCut "Remove background" exported as
+         ProRes 4444), whose alpha channel is used.
 
     python3 person_matte.py footage.mp4 --source wall --out matte.mp4 --at 3-6   # to check by eye
 Needs numpy, OpenCV 4.10 (opencv-python-headless==4.10.0.84) and ffmpeg.
 """
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -135,7 +137,19 @@ class FileMatte:
     def __init__(self, path, W, H, n_frames):
         if not Path(path).is_file():
             sys.exit(f"Matte file not found: {path}")
-        raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-vf", f"scale={W}:{H}", "-f", "rawvideo",
+        # a cut-out with transparency (ghost-editor's matte.py WebM, a CapCut ProRes 4444 export) carries the person
+        # in its alpha channel; a plain matte video carries it as white on black
+        pr = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=codec_name,pix_fmt:stream_tags=alpha_mode",
+                             "-of", "json", str(path)], capture_output=True, text=True)
+        try:
+            st = json.loads(pr.stdout)["streams"][0]
+        except (json.JSONDecodeError, KeyError, IndexError):
+            sys.exit(f"Could not read the matte video {path}.")
+        tags = {k.lower(): v for k, v in st.get("tags", {}).items()}        # WebM writes ALPHA_MODE in capitals
+        has_alpha = tags.get("alpha_mode") == "1" or any(a in st.get("pix_fmt", "") for a in ("yuva", "rgba", "argb", "bgra", "gbrap"))
+        dec = ["-c:v", "libvpx-vp9"] if st.get("codec_name") == "vp9" and has_alpha else []   # ffmpeg's own VP9 decoder drops alpha
+        vf = (f"alphaextract,scale={W}:{H}" if has_alpha else f"scale={W}:{H}")
+        raw = subprocess.run(["ffmpeg", "-v", "error", *dec, "-i", str(path), "-vf", vf, "-f", "rawvideo",
                               "-pix_fmt", "gray", "-"], capture_output=True).stdout
         self.frames = np.frombuffer(raw, np.uint8).reshape(-1, H, W)
         if len(self.frames) == 0:
