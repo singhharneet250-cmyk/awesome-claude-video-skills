@@ -217,6 +217,31 @@ All of these are implemented in `assets/brand.css`.
   - Introduce a new visual beat every 1.5–3 s.
   - Hold any text for at least 1 s plus 0.25 s per word.
   - Leave scenes fully before the next one reveals. Never overlap two glass reveals of different beats.
+- **Sound effects** *(owner request 2026-11-25)*: SFX are calm, glassy and sparse, the sound of the
+  motion above. `scripts/sfx.py` holds an original kit synthesised in code, so there are no samples
+  and no licence to check.
+
+  | Sound | Marks | Level under the voice |
+  |---|---|---|
+  | `thud` | a slam word landing (0.18 s into the 04 Slam) | 6 dB |
+  | `riser` | the lead-in to a slam (optional; ends on the cue) | 14 dB |
+  | `whoosh` | a dissolve or a scene change | 10 dB (13 on b-roll dissolves) |
+  | `swish` | a dip to white, including into b-roll | 10 dB |
+  | `pop` | a glass card or data callout appearing | 12 dB |
+  | `tick` | a check pill, badge or list item (a run steps up in pitch) | 14 dB |
+  | `glass` | the logo or end card | 11 dB |
+
+  - **Where:** only on structure: slams, dips to white, pills, cards and the logo.
+    - `render.cjs` writes a cue sheet (`<out>.sfx.json`) from the template's own animations.
+    - `broll.py --plan-out` gives the b-roll moments.
+    - Plain cuts into b-roll stay silent, and so do captions, kinetic type and ordinary cuts.
+    - About one sound beat every 2 s at most; a run of ticks counts as one beat.
+  - **Level:** each sound is set against the voice's measured loudness (above), and the mix is mastered to
+    −14 LUFS. Music, when there is any, sits 18–22 dB under the voice, so SFX sit above the music.
+  - **Banned:** cartoon boings, "vine boom" bass drops, record scratches, cash registers, glitch
+    stutters, laugh tracks, camera-shutter clicks, and any sound on every word.
+  - **Other libraries:** Epidemic Sound SFX only when the owner has a commercial plan that covers the
+    business account. Keep the same placement and level rules.
 
 ## 6. Captions *(derived)*
 
@@ -329,7 +354,8 @@ All of these are implemented in `assets/brand.css`.
    - Preview a 3D template in a browser through a local server, because ES modules don't load from
      `file://`: `python3 -m http.server -d . 8000`, then open `localhost:8000/templates/molecule-3d.html`.
 6. **Edit the footage:** reframe, grade, b-roll cutaways (§4 F), composite, caption, transition,
-   end card and loudness. Follow `reference/footage-editing.md`; every recipe in it has been tested.
+   end card, then sound effects and loudness (§5 Sound effects, `scripts/sfx.py`, run last). Follow
+   `reference/footage-editing.md`; every recipe in it has been tested.
 7. **QA before you deliver.** Run `python3 scripts/qa.py out.mp4` (add `--graphics` for an
    all-graphics piece, `--expect <s>` for the planned length). It checks format, codec,
    audio, faststart, loudness, the logo hash, stray hues and black frames, writes a
@@ -365,7 +391,8 @@ inputs in the last column.
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
 | Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a plain caption preset (no box, no pop) |
-| Licensed music and sound effects | Epidemic Sound connector | Calm, clean, under the voice by 18–22 dB |
+| Sound effects | `scripts/sfx.py` (original kit, §5): cue sheets from `render.cjs` and `broll.py` | — |
+| Licensed music (and SFX beyond the kit) | Epidemic Sound connector, only with a commercial plan for the business | Music calm and clean, 18–22 dB under the voice; SFX by §5 rules |
 | Fit a size cap (WhatsApp 16 MB, Gmail, Outlook) | `halfsize` skill (`--for whatsapp`), or the tested ffmpeg fallback in `reference/footage-editing.md` §9 | — |
 | Hooks, scripts, captions for the post | `social-media-skills` (hook-writer, reels-script, caption-writer) | §8 content rules |
 | Final check | `scripts/qa.py`, then §9.7 by eye | — |
@@ -413,6 +440,7 @@ scripts/captions.py            word timings / SRT → White Glass .ass captions 
 scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
 scripts/broll.py               b-roll cutaways over a talking head: on spoken words or set times; cut, white dip or dissolve
+scripts/sfx.py                 original SFX kit (synthesised) + mixer: cue sheets, b-roll plans, levels under the voice, -14 LUFS master
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)

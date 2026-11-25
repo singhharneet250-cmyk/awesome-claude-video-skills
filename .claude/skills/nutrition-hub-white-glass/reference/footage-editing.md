@@ -164,6 +164,38 @@ source is endless and needs the trim (tested).
 - Music sits about 18–22 dB under the voice. Use licensed music only.
 - Finish with loudness `loudnorm=I=-14:TP=-1.5:LRA=11` for social platforms.
 
+### 7b. Sound effects (run last)
+
+`sfx.py` adds the original kit (SKILL.md §5 Sound effects) to the finished video. It copies the
+picture unchanged, sets each sound against the voice's measured loudness, and re-masters the mix to
+−14 LUFS. So run it after the end card (§6), on `final.mp4`:
+
+```bash
+# cue sheets: render.cjs writes one next to every render (slams, pills, cards, logo)
+#   @1    the callout overlaid from second 1 (§3)
+#   @$OFF the end card, which starts at $OFF in final.mp4 (§6)
+python3 $SK/scripts/sfx.py final.mp4 final_sfx.mp4 \
+  --cues callout.sfx.json@1 \
+  --cues endcard.sfx.json@$OFF \
+  --broll broll_plan.json             # from broll.py --plan-out: a swish into each dip to white
+
+python3 $SK/scripts/sfx.py final.mp4 final_sfx.mp4 --at 4.9=thud --at 6.5=tick   # by hand
+```
+
+- **Several renders:** `--cues FILE@START` can be given several times. START is where that render begins
+  in this video (0 when left out).
+- **Check first:** `--dry-run` prints every sound with its level and why it is there.
+- **Adjust:** `--level -3` makes every sound quieter. `--kit DIR` exports the kit as WAV files (with
+  `kit.json` of hit times) for CapCut or Premiere.
+- **Tested:**
+  - Every sound landed on its cue to the sample.
+  - Levels came out within 0.5 dB of target against the voice.
+  - The mastered file passed `qa.py` loudness (−14.1 LUFS, true peak −1.5 dBTP).
+  - The video stream was byte-identical.
+- **Graphics-only pieces with no voice and no music:** the sounds sit where they would against a mastered
+  voice (−14 LUFS), and the file isn't mastered. `qa.py` will flag the low overall loudness; add music
+  or accept the warning.
+
 ## 8. QA
 
 ```bash
