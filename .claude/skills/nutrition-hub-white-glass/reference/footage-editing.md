@@ -6,6 +6,50 @@ are starting points: always judge a full-size still by eye.
 
 `SK` below means this skill's folder: `.claude/skills/nutrition-hub-white-glass`.
 
+## 0. One timeline for the whole edit
+
+Write the edit as an `edit.json` next to the footage. Paths are relative to it, and every track is optional:
+
+```json
+{
+  "source": "take.mp4", "out": "final.mp4", "grade": true, "words": "words.json",
+  "broll":    [{"start": 4.2, "end": 5.8, "file": "broll/shelf-pan-01.mp4", "transition": "white"}],
+  "effects":  [{"effect": "escape", "start": 1.0, "end": 3.4, "matte": "wall"},
+               {"effect": "orbit", "start": 6.6, "end": 9.4, "words": "Whey,Creatine,Omega-3", "tilt": 65}],
+  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],
+  "captions": {"position": "auto", "keywords": ["protein", "sugar"], "blur": true},
+  "sfx":      [{"t": 9.6, "sfx": "tick"}],
+  "endcard":  {"template": "reel-9x16.html", "from": 8.15}
+}
+```
+
+```bash
+python3 $SK/scripts/timeline.py check edit.json --motion   # rules + edit.timeline.png (with gesture moments)
+python3 $SK/scripts/timeline.py render edit.json           # the finished reel, then qa.py
+```
+
+- **`check`:**
+  - FAIL lines block the render: b-roll in the 1.5 s hook, shots outside 1–4 s or closer than 1 s, an effect
+    over b-roll, an effect shorter than 1.55 s, overlays on top of each other, a missing file, captions
+    without word timings.
+  - WARN lines are for a look: b-roll over 45%, an effect used twice.
+  - It also draws the timeline. Show the owner that picture before rendering.
+- **`render`:** runs the recipes below in this order:
+  1. reframe and grade (HDR is tone-mapped)
+  2. b-roll (§2b)
+  3. orbit / escape (§2d)
+  4. captions, with the blur band only when needed (§2c, §4)
+  5. overlays (§3)
+  6. burn the captions
+  7. end card through a dip to white (§6)
+  8. SFX from every cue sheet, then −14 LUFS (§7b)
+  9. `qa.py`
+  - Intermediate files go to `timeline_work/`.
+- **Tested** on a 10 s take:
+  - With every track except overlays, it took 1 min 37 s.
+  - With a chat-takeover overlay, it took 36 s.
+  - `qa.py` passed everything both times (−14.2 to −14.4 LUFS, true peak −1.9 dBTP).
+
 ## 1. Probe
 
 ```bash

@@ -366,6 +366,15 @@ All of these are implemented in `assets/brand.css`.
 
 ## 9. Workflow for any video edit
 
+**Plan every footage edit as one timeline** *(owner request 2026-11-25)*: an `edit.json` lists the take and
+every track (b-roll, effects, overlays, captions, SFX, end card).
+- `python3 scripts/timeline.py check edit.json --motion` tests it against the rules below and draws
+  `edit.timeline.png`, an editor-style view with the hook zone, every track and the speaker's gesture moments.
+  Show the owner the drawing before rendering.
+- `python3 scripts/timeline.py render edit.json` builds the reel in the right order with the tested scripts
+  and ends with `qa.py`.
+- The steps below still apply. The timeline is how they are written down and run.
+
 1. **Read the brief and probe the footage:**
    `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`.
 2. **Check that the logo exists and matches its sha256.** If not, ask for it.
@@ -487,6 +496,7 @@ scripts/sfx.py                 original SFX kit (synthesised) + mixer: cue sheet
 scripts/fx.py                  person-aware effects: orbit (spheres or word chips around the head) and frame escape
 scripts/person_matte.py        person mattes for fx.py: head shape from the face track, plain-wall key, or a matte video
 scripts/motion_track.py        head (full frame rate) and hand tracking, gesture / hands-up / head-move moments, --preview
+scripts/timeline.py            one edit.json timeline for the whole edit: check (rules + timeline drawing) and render (every step, then qa.py)
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
