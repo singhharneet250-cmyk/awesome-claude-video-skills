@@ -541,5 +541,6 @@ reference/broll-shot-list.md   what to film in the store for b-roll, how to film
 reference/blender-mcp.md       Blender MCP (the repo's .mcp.json): one-time set-up on the owner's computer and the rules for using it
 reference/openchatcut.md       OpenChatCut MCP (the repo's .mcp.json): timeline editing with draft approval, set-up, and the White Glass rules inside it
 reference/ghost-editor.md      ghost-editor on the owner's Mac: only its raw cut (retakes out) and its person matte for the frame escape
+reference/effect-names.md      every effect, style, sound and tool by the name the owner uses, mapped to its command
 reference/style-references.md  the owner's reference reels: techniques, caption layout and placement, open decisions
 ```
