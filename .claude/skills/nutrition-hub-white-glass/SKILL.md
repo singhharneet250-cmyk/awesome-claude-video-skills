@@ -40,6 +40,19 @@ marked *(derived)* below adapts the playbook to video. Unmarked values come stra
 - **Logo motion:** glass reveal only (opacity plus scale 0.96→1). Never spin, bounce,
   float, flip or slam the logo.
 
+**Instagram handle** (owner, 2026-11-25): **`@nutritionhubkhanna`**, at instagram.com/nutritionhubkhanna.
+- Spell it exactly like that: lowercase, one word, no dots, underscores or spaces. Never shorten it
+  to "@nutritionhub" or translate it.
+- **End cards:** always show it, under the logo and above the phone number. `templates/reel-9x16.html`
+  does this through `SCENE.handle`. Set it in Inter 700, about 44 px, in ink. It is information, not
+  an accent, so never set it in orange or the serif.
+- **CTA chips** may name it: "Follow @nutritionhubkhanna for more" (ink text, orange dot, §2).
+- **Lower thirds** may carry it as the second line under a name.
+- Show it as plain text only. Never add the Instagram glyph or its colours, because they break the
+  palette (§2). Never put it in captions or run it as a watermark through the video.
+- The handle is not the brand name, so it may sit near the logo. The logo rule above still holds:
+  don't set "Nutrition Hub Khanna" beside it.
+
 ## 2. Palette: a controlled, luminous palette
 
 | Token | Hex | Role | Share of frame |

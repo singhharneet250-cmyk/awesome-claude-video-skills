@@ -26,6 +26,9 @@
   /* the original PNG has transparent padding (top ~14%, bottom ~4%): trim it with margins, never by editing the file */
   .header .nh-logo { width: 300px; margin: -43px 0 -12px; }
   .end .nh-logo { width: 780px; margin: -77px 0 -22px; }
+  .end .end-lines { display: grid; gap: 12px; justify-items: center; }
+  /* the Instagram handle: plain Inter text in ink, never the Instagram glyph (SKILL.md §1) */
+  .end .handle { font-size: 44px; font-weight: 700; color: var(--nh-ink); letter-spacing: 0; }
   .end .contact { font-size: 40px; font-weight: 600; color: var(--nh-slate); font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 
   .logo-missing { outline: 4px dashed #E66D2A; }
@@ -110,8 +113,11 @@
       <img class="nh-logo nh-reveal" data-nh-logo alt="Nutrition Hub logo" style="--at:8.2s;--dur:.9s">
       <div class="nh-wordmark nh-type" data-if-no-wordmark data-text="brand" style="--at:8.5s;font-size:56px"></div>
       <div class="nh-label nh-fade" data-if-no-wordmark data-text="location" style="--at:8.75s"></div>
-      <div class="contact nh-fade" data-text="contact" style="--at:8.95s"></div>
-      <div class="nh-chip nh-chip--cta nh-reveal" style="--at:9.2s;margin-top:24px"><span class="nh-dot"></span><span data-text="cta"></span></div>
+      <div class="end-lines">
+        <div class="handle nh-fade" data-text="handle" style="--at:8.95s"></div>
+        <div class="contact nh-fade" data-text="contact" style="--at:9.1s"></div>
+      </div>
+      <div class="nh-chip nh-chip--cta nh-reveal" style="--at:9.3s;margin-top:24px"><span class="nh-dot"></span><span data-text="cta"></span></div>
     </div>
   </section>
 </div>
@@ -136,6 +142,7 @@ const SCENE = {
   facts: ["A loading phase is optional", "Without loading, stores fill in about 4 weeks"],
   brand: "Nutrition Hub",
   location: "Khanna",
+  handle: "@nutritionhubkhanna",     // the official Instagram handle: spell it exactly like this (SKILL.md §1)
   contact: "9914571175",
   cta: "Save this for your next stack",
   beats: { s1Out: 4.1, s2Out: 7.75 }, // scene exit times
