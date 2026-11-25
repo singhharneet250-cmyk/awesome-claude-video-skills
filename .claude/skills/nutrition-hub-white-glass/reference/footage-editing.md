@@ -39,8 +39,10 @@ python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4 --tone light  # fade t
 - **Tuning:** adjust with `--start`, `--full`, `--sigma` and `--fade`.
 - **Speed:** a 4 s 1080×1920 clip takes about 20 s.
 - **Captions:** then use `captions.py --position mic` (or `auto`), so they sit above the band.
-- **Following the person:** add `--auto` and the band starts just under the person's caption line, found
-  with `scripts/person_track.py` (needs `pip install opencv-python-headless==4.10.0.84`).
+- **Only when needed:** pass `--plan plan.json` from `captions.py --position auto --plan-out plan.json`. The band
+  then fades in only while captions sit on a busy bottom. Add `--when 3.0-5.5` for animations in the band.
+  Without either option it covers the whole clip. `--auto` starts it just under the person.
+  Needs `pip install opencv-python-headless==4.10.0.84`.
 
 ## 3. Brand graphics over footage
 

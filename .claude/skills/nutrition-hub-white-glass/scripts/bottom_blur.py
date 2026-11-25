@@ -16,6 +16,8 @@ Defaults reproduce that. Run it BEFORE burning captions, so the words stay sharp
   --sigma  blur strength at full (gaussian sigma, in px at 1080 wide)   default 26
   --fade   fade opacity at the bottom edge (0 = no fade)           default 0.85
   --tone   dark (fade to #0B1118) or light (fade to #FFFFFF)       default dark
+  --plan   only when needed: fade the band in for the windows captions.py --plan-out wrote
+  --when   extra windows, e.g. while an animation sits in the bottom band: 3.0-5.5,12-14
 Needs ffmpeg, Pillow and numpy. Audio is copied unchanged.
 """
 import argparse
@@ -63,6 +65,10 @@ def main():
     ap.add_argument("--tone", choices=["dark", "light"], default="dark")
     ap.add_argument("--auto", action="store_true",
                     help="start the band just under where captions go for the person in this video (scripts/person_track.py); --start/--full are then ignored")
+    ap.add_argument("--plan", metavar="PLAN.json",
+                    help="blur ONLY when needed: the band fades in for the time windows in this plan (written by captions.py --plan-out)")
+    ap.add_argument("--when", metavar="A-B,C-D",
+                    help="extra windows in seconds when the band is on, e.g. for animations in the bottom band: 3.0-5.5,12-14")
     ap.add_argument("--crf", type=int, default=18)
     a = ap.parse_args()
     if not (0 < a.start < a.full <= 1):
@@ -70,6 +76,28 @@ def main():
     if not (0 <= a.fade <= 1):
         sys.exit("--fade must be between 0 and 1.")
     w, h = probe(a.input)
+    windows = None                       # None = band on for the whole video
+    if a.plan or a.when:
+        windows = []
+        if a.plan:
+            import json
+            try:
+                plan = json.load(open(a.plan, encoding="utf-8"))
+            except (OSError, ValueError) as e:
+                sys.exit(f"Could not read the plan {a.plan}: {e}")
+            windows += [tuple(wi) for wi in plan.get("windows", [])]
+            if plan.get("band_top"):
+                a.start = float(plan["band_top"]); a.full = min(a.start + 0.10, 0.98)
+                a.fade_start = min(max(a.fade_start, a.start + 0.05), 0.95)
+        if a.when:
+            try:
+                windows += [tuple(float(v) for v in part.split("-")) for part in a.when.split(",") if part.strip()]
+            except ValueError:
+                sys.exit("--when must look like 3.0-5.5,12-14 (seconds).")
+        if not windows:
+            print("no window needs the blur band: copying the video unchanged")
+            r = subprocess.run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", a.input, "-c", "copy", a.output])
+            sys.exit(r.returncode)
     if a.auto:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from person_track import track
@@ -91,9 +119,26 @@ def main():
         Image.fromarray(np.repeat((blur_alpha * 255).astype(np.uint8)[:, None], w, 1), "L").save(mask)
         f = np.zeros((h, w, 4), np.uint8); f[..., :3] = tone; f[..., 3] = (fade_alpha * 255).astype(np.uint8)[:, None]
         Image.fromarray(f, "RGBA").save(fade)
-        graph = (f"[0:v]split=2[base][b];[b]gblur=sigma={sigma:.1f}:steps=3,format=yuva420p[bl];"
-                 f"[1:v]format=gray[m];[bl][m]alphamerge[blm];[base][blm]overlay=0:0:format=auto:shortest=1[soft];"
-                 f"[soft][2:v]overlay=0:0:format=auto:shortest=1,format=yuv420p[v]")
+        if windows is None:
+            graph = (f"[0:v]split=2[base][b];[b]gblur=sigma={sigma:.1f}:steps=3,format=yuva420p[bl];"
+                     f"[1:v]format=gray[m];[bl][m]alphamerge[blm];[base][blm]overlay=0:0:format=auto:shortest=1[soft];"
+                     f"[soft][2:v]overlay=0:0:format=auto:shortest=1,format=yuv420p[v]")
+        else:
+            # time envelope: the band fades in over 0.3 s at each window start and out at its end
+            cmds = os.path.join(td, "band.cmd")
+            with open(cmds, "w") as fh:
+                fh.write("0.000 colorchannelmixer@bl aa 0, colorchannelmixer@fd aa 0;\n")
+                for s0, s1 in sorted(windows):
+                    for k in range(10):
+                        v = (k + 1) / 10
+                        fh.write(f"{s0 + k * 0.03:.3f} colorchannelmixer@bl aa {v:.2f}, colorchannelmixer@fd aa {v:.2f};\n")
+                    for k in range(10):
+                        v = 1 - (k + 1) / 10
+                        fh.write(f"{max(s0 + 0.3, s1 - 0.3) + k * 0.03:.3f} colorchannelmixer@bl aa {v:.2f}, colorchannelmixer@fd aa {v:.2f};\n")
+            graph = (f"[0:v]split=2[base][b];[b]gblur=sigma={sigma:.1f}:steps=3,format=rgba[bl];"
+                     f"[1:v]format=gray[m];[bl][m]alphamerge,sendcmd=f='{cmds}',colorchannelmixer@bl=aa=0[blm];"
+                     f"[base][blm]overlay=0:0:format=auto:shortest=1[soft];"
+                     f"[2:v]format=rgba,colorchannelmixer@fd=aa=0[fd];[soft][fd]overlay=0:0:format=auto:shortest=1,format=yuv420p[v]")
         # the gradient images loop, so bound them to the clip length; otherwise a clip with no audio never ends
         dur = f"{duration(a.input):.3f}"
         cmd = ["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", a.input, "-loop", "1", "-t", dur, "-i", mask,
@@ -104,7 +149,8 @@ def main():
         r = subprocess.run(cmd)
         if r.returncode != 0:
             sys.exit("ffmpeg failed; see the message above.")
-    print(f"bottom blur → {a.output}  (blur {a.start:.0%}→{a.full:.0%}, sigma {sigma:.0f}px, {a.tone} fade {a.fade:.0%} from {a.fade_start:.0%})")
+    when = "the whole video" if windows is None else ", ".join(f"{s0:.1f}–{s1:.1f} s" for s0, s1 in sorted(windows))
+    print(f"bottom blur → {a.output}  (blur {a.start:.0%}→{a.full:.0%}, sigma {sigma:.0f}px, {a.tone} fade {a.fade:.0%} from {a.fade_start:.0%}; on during {when})")
 
 
 if __name__ == "__main__":

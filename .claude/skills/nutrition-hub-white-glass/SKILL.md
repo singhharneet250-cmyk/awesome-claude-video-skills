@@ -155,9 +155,15 @@ All of these are implemented in `assets/brand.css`.
   - White-stage pieces: add `--tone light` to fade to porcelain instead.
   - HTML templates: the `.nh-bottom-blur` element (`.is-light` for white).
   - Run it after the grade and **before** captions and cards, so they stay sharp.
-  - With the band on, put captions at `--position mic` or `auto`, above it.
-  - **Following the person:** `bottom_blur.py --auto` finds the person and starts the band just under
-    where their captions go (chest height), instead of a fixed 64%.
+  - **Only when needed** (owner request, 2026-11-25). Don't run the band for the whole video by default.
+    - Give `bottom_blur.py` the plan from `captions.py --position auto --plan-out plan.json` (`--plan plan.json`).
+      The band then fades in over 0.3 s just while captions sit in a busy bottom band, and fades out after.
+    - For animations placed in the bottom band (pills, cards, lower thirds), add their windows with
+      `--when 3.0-5.5,12-14`.
+    - Run with neither `--plan` nor `--when`, it covers the whole video. `--auto` starts it just under
+      the person.
+  - **The bottom band as a placement zone:** captions (`--prefer bottom`) and animations can sit there.
+    The blur switches on under them when the background there is busy; on calm ground, no blur is added.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -210,20 +216,29 @@ All of these are implemented in `assets/brand.css`.
   Don't use scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
 - **Position** (`captions.py --position`):
-  - **`auto`: captions follow the person** (owner request, 2026-11-25). It finds the face about twice a
-    second (`scripts/person_track.py`) and places each caption centred under the person, at chest height
-    (one face-height below the chin, calibrated on R5 and R6). Captions move when the person sits off-centre
-    or moves, and stay inside the 72 px side margins. Use it for every talking-head edit, together with
-    `--max-words 2` (one or two words on the voice, as R5 and R6 do), which leaves room to follow sideways.
-    With no face (a faceless video) it falls back to `bottom`.
+  - **`auto`: captions use the vacant space around the person** (owner request, 2026-11-25).
+    `scripts/layout_plan.py` tracks the face (`person_track.py`) and, for every caption, fits the text
+    into five candidate slots:
+    - left or right of the head, from the safe edge to 40 px off the face, at head-to-shoulder height
+    - above the head
+    - the chest, one face-height below the chin
+    - the bottom band under the person
+    It wraps and resizes the text from 62 px down to 46 px, at most 3 lines, and picks the calmest slot that
+    fits, measured by edge energy behind the text, with side slots preferred and the chest and bottom last.
+    It keeps the previous caption's slot unless another is clearly better, never covers the face, and
+    follows the person as they move. The words take the slot's own background: ink on a light wall,
+    white elsewhere, and a strong shadow on busy ground. Use it with `--max-words 2` or `3`.
+    `--prefer left|right|top|chest|bottom` uses one slot whenever the caption fits there; for example,
+    `--prefer bottom` puts captions in the blur band. With no face (a faceless video) it falls back to `bottom`.
   - `bottom` (default without a person): the text bottom at about y 1400 on 1920, above the platform UI.
   - `mic`: centred about 58%, for seated desk and mic shoots, above a bottom blur band (R6).
   - `chest`: centred about 50% (R5).
   `--match` reads the colours from the same band the captions sit in.
 - **Talking-head recipe:**
-  1. `python3 scripts/bottom_blur.py graded.mp4 blurred.mp4 --auto`
-  2. `python3 scripts/captions.py words.json --out c.ass --match blurred.mp4 --position auto --max-words 2 --keywords protein --serif-words really`
-  3. Burn in (below).
+  1. `python3 scripts/captions.py words.json --out c.ass --match graded.mp4 --position auto --max-words 3 --keywords protein --serif-words really --plan-out plan.json`
+  2. `python3 scripts/bottom_blur.py graded.mp4 blurred.mp4 --plan plan.json`. The band fades in **only
+     while** a caption sits on a busy bottom; with nothing there, the video is copied unchanged.
+  3. Burn `c.ass` into `blurred.mp4` (below).
   Needs `pip install opencv-python-headless==4.10.0.84`. The 4.x line ships the face model; 5.x does not.
 - Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein --match video.mp4`
   turns word timings (Whisper / faster-whisper JSON, Remotion captions, or an `.srt`) into
@@ -369,6 +384,7 @@ scripts/captions.py            word timings / SRT → White Glass .ass captions 
 scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
+scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass

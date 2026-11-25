@@ -60,7 +60,7 @@ def track(video, max_samples=240):
         t = round((k + 0.5) / fps, 2)
         if len(faces):
             x, y, w, h = max(faces, key=lambda f: f[2] * f[3])
-            pts.append({"t": t, "cx": (x + w / 2) / W, "top": y / H, "chin": (y + h) / H, "fh": h / H})
+            pts.append({"t": t, "cx": (x + w / 2) / W, "top": y / H, "chin": (y + h) / H, "fh": h / H, "fw": w / W})
         else:
             pts.append({"t": t, "cx": None})
     found = [p for p in pts if p["cx"] is not None]
@@ -70,7 +70,7 @@ def track(video, max_samples=240):
         return result
     result["person"] = True
     # fill gaps by nearest detection, then smooth with a 5-sample running median
-    keys = ("cx", "top", "chin", "fh")
+    keys = ("cx", "top", "chin", "fh", "fw")
     ft = np.array([p["t"] for p in found])
     filled = []
     for p in pts:
@@ -103,7 +103,17 @@ def at(result, start, end):
     pts = [p for p in result["timeline"] if start - 0.25 <= p["t"] <= end + 0.25]
     if not pts:
         pts = [min(result["timeline"], key=lambda p: abs(p["t"] - (start + end) / 2))]
-    return layout({k: float(np.median([p[k] for p in pts])) for k in ("cx", "top", "chin", "fh")})
+    return layout({k: float(np.median([p[k] for p in pts])) for k in ("cx", "top", "chin", "fh", "fw")})
+
+
+def face_at(result, start, end):
+    """Median face box (shares of the frame) during [start, end], or None without a person."""
+    if not result.get("person"):
+        return None
+    pts = [p for p in result["timeline"] if start - 0.25 <= p["t"] <= end + 0.25]
+    if not pts:
+        pts = [min(result["timeline"], key=lambda p: abs(p["t"] - (start + end) / 2))]
+    return {k: float(np.median([p[k] for p in pts])) for k in ("cx", "top", "chin", "fh", "fw")}
 
 
 def main():
