@@ -3,11 +3,23 @@
     "blender": {
       "type": "stdio",
       "command": "uvx",
-      "args": ["--python", "3.11", "mcp-for-blender==2.2.7"],
+      "args": [
+        "--python",
+        "3.11",
+        "mcp-for-blender==2.2.7"
+      ],
       "env": {
         "UV_PYTHON_PREFERENCE": "only-managed",
         "DISABLE_TELEMETRY": "true",
         "BLENDER_MCP_SAFE_MODE": "1"
+      }
+    },
+    "openchatcut": {
+      "type": "http",
+      "url": "http://localhost:5199/api/external-mcp/mcp",
+      "headers": {
+        "x-openchatcut-mcp-client": "claude-code",
+        "x-openchatcut-mcp-surface": "external"
       }
     }
   }

@@ -6,6 +6,58 @@ are starting points: always judge a full-size still by eye.
 
 `SK` below means this skill's folder: `.claude/skills/nutrition-hub-white-glass`.
 
+## 0. One timeline for the whole edit
+
+Write the edit as an `edit.json` next to the footage. Paths are relative to it, and every track is optional:
+
+```json
+{
+  "source": "take.mp4", "out": "final.mp4", "grade": true, "words": "words.json",
+  "broll":    [{"start": 4.2, "end": 5.8, "file": "broll/shelf-pan-01.mp4", "transition": "white"}],
+  "effects":  [{"effect": "escape", "start": 1.0, "end": 3.4, "matte": "wall"},
+               {"effect": "orbit", "start": 6.6, "end": 9.4, "words": "Whey,Creatine,Omega-3", "tilt": 65}],
+  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],
+  "captions": {"position": "auto", "keywords": ["protein", "sugar"], "blur": true},
+  "sfx":      [{"t": 9.6, "sfx": "tick"}],
+  "endcard":  {"template": "reel-9x16.html", "from": 8.15}
+}
+```
+
+```bash
+python3 $SK/scripts/timeline.py check edit.json --motion   # rules + edit.timeline.png (with gesture moments)
+python3 $SK/scripts/timeline.py edit edit.json --motion    # edit.editor.html: drag and trim before the final render
+python3 $SK/scripts/timeline.py render edit.json           # the finished reel, then qa.py
+```
+
+- **`check`:**
+  - FAIL lines block the render: b-roll in the 1.5 s hook, shots outside 1–4 s or closer than 1 s, an effect
+    over b-roll, an effect shorter than 1.55 s, overlays on top of each other, a missing file, captions
+    without word timings.
+  - WARN lines are for a look: b-roll over 45%, an effect used twice.
+  - It also draws the timeline. Show the owner that picture before rendering.
+- **`edit`:** an editor page with a filmstrip of the take, caption words, gesture moments and every track.
+  - Drag clips to move them and drag their edges to trim. Click one to change its b-roll clip, transition
+    (cut / dip to white / dissolve), effect, orbit words or sound.
+  - The brand rules re-check as you drag.
+  - Only timing and content change: colours, fonts and the caption look aren't editable there.
+  - "Copy edit.json", then save it over `edit.json` (or paste it to Claude) and render.
+  - Tested: drag, trim, word edits, undo and reset in a headless browser, at phone and desktop widths.
+- **`render`:** runs the recipes below in this order:
+  1. reframe and grade (HDR is tone-mapped)
+  2. b-roll (§2b)
+  3. orbit / escape (§2d)
+  4. captions, with the blur band only when needed (§2c, §4)
+  5. overlays (§3)
+  6. burn the captions
+  7. end card through a dip to white (§6)
+  8. SFX from every cue sheet, then −14 LUFS (§7b)
+  9. `qa.py`
+  - Intermediate files go to `timeline_work/`.
+- **Tested** on a 10 s take:
+  - With every track except overlays, it took 1 min 37 s.
+  - With a chat-takeover overlay, it took 36 s.
+  - `qa.py` passed everything both times (−14.2 to −14.4 LUFS, true peak −1.9 dBTP).
+
 ## 1. Probe
 
 ```bash
@@ -80,6 +132,43 @@ python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4 --tone light  # fade t
   then fades in only while captions sit on a busy bottom. Add `--when 3.0-5.5` for animations in the band.
   Without either option it covers the whole clip. `--auto` starts it just under the person.
   Needs `pip install opencv-python-headless==4.10.0.84`.
+
+## 2d. Orbit, frame escape and motion (SKILL.md §4 G, H, J)
+
+Run these after the grade and b-roll, and before captions:
+
+```bash
+python3 $SK/scripts/motion_track.py graded.mp4 --preview motion_check.mp4   # where the head and hands are, and the moments
+python3 $SK/scripts/fx.py orbit graded.mp4 orbit.mp4 --at 6.0-9.5                  # spheres around the head
+python3 $SK/scripts/fx.py orbit graded.mp4 orbit.mp4 --at 6-9.5 --words "Whey,Creatine,Omega-3" --tilt 65
+python3 $SK/scripts/fx.py escape orbit.mp4 escape.mp4 --at 1.0-4.0 --matte wall    # plain wall behind the speaker
+python3 $SK/scripts/fx.py escape orbit.mp4 escape.mp4 --at 1-4 --matte person_matte.mp4   # matte from CapCut / Runway
+```
+
+- **Timing:** start an effect on a `gesture` or `hands_up` moment from `motion_track.py`, so it answers the
+  speaker's movement. Give it 2.5–4 s, and use each effect at most once per reel.
+- **Check the outline first:** `person_matte.py graded.mp4 --source wall --out matte.mp4 --at 1-4`. The wall key
+  wants a locked camera and a plain, evenly lit wall that differs from the hair and clothes.
+- **Sound:** each run writes `<out>.sfx.json` with a soft whoosh. Add it with `sfx.py --cues orbit.sfx.json` at the end (§7b).
+- **Speed:** about 45 s for a 7 s 1080×1920 clip with the wall key; about 20–30 s with the head shape.
+  Only the effect window changes, and the audio is copied.
+- **Tested** on the reference reels:
+  - Orbit with spheres, flat and tilted word chips, and hands passing in front.
+  - The escape with the wall key on R4.
+  - The motion tracker: the head in 100% of frames on R4 and R5; hands in 99% on R4's plain wall, unreliable
+    in R5's warm, busy room.
+
+### Chat takeover (SKILL.md §4 I)
+
+```bash
+python3 $SK/scripts/person_track.py graded.mp4          # read "top" (the head top, as a share of the height)
+node $SK/scripts/render.cjs "$SK/templates/chat-takeover.html?bottom=560" --transparent --out chat.mov   # 40 px above the head
+node $SK/scripts/render.cjs "$SK/templates/chat-takeover.html?layout=full" --transparent --out chat.mov  # takeover
+```
+
+Composite it like any overlay (§3), at the second it should start. It writes `chat.sfx.json`: a pop for the
+panel and the send, and a tick for the reply. Edit the copy in its `SCENE` object, and keep the "Example chat"
+label unless the chat is real and shared with consent.
 
 ## 3. Brand graphics over footage
 

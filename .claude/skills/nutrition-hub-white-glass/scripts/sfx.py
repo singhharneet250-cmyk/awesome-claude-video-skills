@@ -27,7 +27,8 @@ The kit (each sound lands its "hit" exactly on the cue time):
   glass   the logo or end card (glass bell shimmer)        11 dB under
 
 Levels follow the voice: each sound's loudest 400 ms is set relative to the voice's integrated
-loudness (BS.1770 K-weighted). With a voice, the mix is mastered to -14 LUFS, true peak -1.5
+loudness (BS.1770 K-weighted). With a voice, the mix is mastered to -14 LUFS, true peak -2 (headroom so
+the AAC encode stays under qa.py's -1.5 limit)
 (skip with --no-master). With no voice, sounds sit where they would against a mastered voice
 (-14 LUFS) and nothing is mastered. Run it LAST, on the finished video, after the end card.
 The video stream is copied unchanged. Needs ffmpeg and numpy.
@@ -394,7 +395,7 @@ def main():
     master = voice is not None and not a.no_master
     if not master and np.max(np.abs(out)) > 0.89:        # keep a little headroom without a mastering pass
         out *= 0.89 / np.max(np.abs(out))
-    af = ["-af", "loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000"] if master else []
+    af = ["-af", "loudnorm=I=-14:TP=-2:LRA=11,aresample=48000"] if master else []
     cmd = ["ffmpeg", "-y", "-v", "error", "-i", str(a.video), "-f", "f32le", "-ar", str(SR), "-ac", "2", "-i", "-",
            "-map", "0:v", "-map", "1:a", "-c:v", "copy", *af, "-c:a", "aac", "-b:a", "192k", "-ar", str(SR),
            "-shortest", "-movflags", "+faststart", str(a.out)]
