@@ -10,7 +10,13 @@ are starting points: always judge a full-size still by eye.
 
 ```bash
 ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4
+ffprobe -v error -select_streams v:0 -show_entries stream=color_transfer -of csv=p=0 in.mp4
 ```
+
+If the second line prints `arib-std-b67` or `smpte2084`, the clip is HDR (iPhones record it by
+default) and looks washed out unless it is tone-mapped. Put this at the start of the §2 filter
+(tested): `zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,`.
+Better still, ask for the next takes with HDR video switched off (`reference/broll-shot-list.md`).
 
 ## 2. Reframe to 9:16 and apply the "soft studio light" grade
 
@@ -26,9 +32,40 @@ eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015,
 
 If the subject isn't centred, change the crop's x offset (for example `crop=1080:1920:(iw-1080)*0.35:0`).
 
-## 2b. Bottom blur band (R6 look)
+## 2b. B-roll cutaways (R5)
 
-Run this after the grade and before any overlay or captions, so they stay sharp:
+Cut away from the face to what is being said, and back. The voice track is copied unchanged,
+and each b-roll is filled to the frame, conformed and graded like the footage (SKILL.md §4 F).
+Run this after the grade:
+
+```bash
+# when a word is spoken (word timings from step 4)
+python3 $SK/scripts/broll.py graded.mp4 cut.mp4 --words words.json \
+  --map label=broll/label-closeup-whey-01.mp4 --map scoop=broll/scoop-01.mp4 --map store=broll/shelf-pan-01.mp4
+
+# at set times, with an in-point (@2.5) inside the b-roll file, through a dip to white
+python3 $SK/scripts/broll.py graded.mp4 cut.mp4 --at 3.2-5.0=broll/shelf-pan-01.mp4@2.5 --transition white
+```
+
+- **Spec file:** for full control, `--spec broll.json` with `[{"start", "end", "file", "in", "speed",
+  "x", "y", "grade", "transition"}]`.
+  - `"speed": 0.5` plays a 60 fps pour in slow motion.
+  - `"x"`/`"y"` (0–1) move the crop.
+  - `"grade": false` keeps a label close-up untouched.
+- **Check first:** `--dry-run` prints the placements and any rule notes without rendering.
+- **Keyword mode:**
+  - It uses each mapped file once, on the next time its word is spoken.
+  - It cuts back at the pause nearest to `--len` (2.2 s).
+  - It skips a shot that would break the rules.
+- **Stills:** `.jpg`/`.png` get a slow 4% push-in, sampled sub-pixel so it doesn't judder. A cut-out PNG
+  sits on an ice-mist stage.
+- **Tested:** cut, white dip and dissolve; 60 fps slow motion; an HLG HDR clip; a still and a cut-out;
+  29.97 fps and silent A-rolls. The audio stayed byte-identical. A 14 s 1080×1920 reel with four shots
+  takes about 12 s.
+
+## 2c. Bottom blur band (R6 look)
+
+Run this after the grade and b-roll and before any overlay or captions, so they stay sharp:
 
 ```bash
 python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4               # dark fade, like R6

@@ -164,6 +164,34 @@ All of these are implemented in `assets/brand.css`.
       the person.
   - **The bottom band as a placement zone:** captions (`--prefer bottom`) and animations can sit there.
     The blur switches on under them when the background there is busy; on calm ground, no blur is added.
+- **F · B-roll cutaways (R5, owner request 2026-11-25).** The voice keeps running while the picture cuts
+  away to what is being said, then back to the face. `scripts/broll.py` does it; what to film is in
+  `reference/broll-shot-list.md`.
+  - **Sources, in order:**
+    1. The owner's own store footage.
+    2. Graphic b-roll made here: a 3D molecule (§4 B), the product hero (§4 D), a real product or
+       label photo (a still gets a slow 4% push; a cut-out sits on an ice-mist stage).
+    3. Licensed stock.
+    4. AI video only with the owner's OK, never showing products, labels, logos, results or real
+       people's bodies, and disclosed where the platform asks.
+  - **Timing:**
+    - Start the b-roll on the word it shows (`--words` + `--map label=label-closeup-01.mp4`), or at set
+      times (`--at 3.2-5.0=file`).
+    - Shots last 1.5–3 s (4 s at most), with at least 1 s of face between shots.
+    - No b-roll in the first 1.5 s (the hook shows the face). Keep b-roll under about 45% of the runtime.
+    - The script enforces these.
+  - **Transitions:** a cut by default. Use `--transition white` (a 0.4 s dip to porcelain white, peaking on
+    the cut, R5) for a change of topic, or `soft` (a 0.25 s dissolve) for calm pieces. Never whip, zoom
+    punch or glitch (§5).
+  - **Look:**
+    - B-roll gets the same soft studio grade as the face shots, conformed to the reel's size and
+      frame rate.
+    - Label close-ups and product photos are never graded (`"grade": false`; stills are off by
+      default), so packaging stays accurate.
+    - HDR phone clips are tone-mapped.
+  - **Sound and captions:** the b-roll's own sound is dropped and the voice track is copied unchanged.
+    Captions stay on during b-roll; run `captions.py --match` on the cut, so colours match the b-roll too.
+  - **Order:** grade → b-roll → bottom blur band → captions → end card.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -300,8 +328,8 @@ All of these are implemented in `assets/brand.css`.
      with a GPU it is much faster. Add `--transparent` for an overlay that keeps the shadow.
    - Preview a 3D template in a browser through a local server, because ES modules don't load from
      `file://`: `python3 -m http.server -d . 8000`, then open `localhost:8000/templates/molecule-3d.html`.
-6. **Edit the footage:** reframe, grade, composite, caption, transition, end card and
-   loudness. Follow `reference/footage-editing.md`; every recipe in it has been tested.
+6. **Edit the footage:** reframe, grade, b-roll cutaways (§4 F), composite, caption, transition,
+   end card and loudness. Follow `reference/footage-editing.md`; every recipe in it has been tested.
 7. **QA before you deliver.** Run `python3 scripts/qa.py out.mp4` (add `--graphics` for an
    all-graphics piece, `--expect <s>` for the planned length). It checks format, codec,
    audio, faststart, loudness, the logo hash, stray hues and black frames, writes a
@@ -332,7 +360,8 @@ inputs in the last column.
 | A realistic protein or enzyme film from a PDB / AlphaFold structure | `molecular-film` skill (Blender, GPU machine) | Its White Glass look constants; labels from our callouts |
 | A realistic product hero shot | `templates/product-hero-3d.html` (§4 D) | The real cut-out product photo, never a regenerated one |
 | Any step inside Blender or three.js (materials, glass, lighting, HDRI, depth of field, headless render) | `use-3d-software` skill | §2 palette and §5 motion as the targets |
-| Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router) | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
+| Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
+| Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
 | Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a plain caption preset (no box, no pop) |
@@ -383,11 +412,13 @@ scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Pla
 scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
 scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
+scripts/broll.py               b-roll cutaways over a talking head: on spoken words or set times; cut, white dip or dissolve
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage
+reference/broll-shot-list.md   what to film in the store for b-roll, how to film it and how to name the files
 reference/style-references.md  the owner's reference reels: techniques, caption layout and placement, open decisions
 ```
