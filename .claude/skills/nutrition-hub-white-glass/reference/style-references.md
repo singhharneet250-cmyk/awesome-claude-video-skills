@@ -228,6 +228,11 @@ These refs used type, motion and colour that White Glass had ruled out. The owne
    - **The rest:** numbered markers, app tiles and glass cards (already adopted above).
    - **Not adopted:** the all-blue grade stays optional, and footage keeps the soft studio light grade unless
      the shoot itself is blue-lit.
+   - **Follows the person** (owner request, same day): `captions.py --position auto --max-words 2` and
+     `bottom_blur.py --auto` read the person's position (`person_track.py`). Captions sit one face-height
+     below the chin, centred on the person and moving with them, and the blur band starts just under them.
+     Tested on R4 (off-centre: captions at x 660 px), R5, R6 (close-up) and a synthetic camera pan, where the
+     captions followed from x 339 to 756 px.
    - **About the owner's Instagram link** (instagram.com/reel/Des4fRaP8-B): it could not be opened here, because
      the network blocks Instagram. The bottom blur was matched from R6, which is very likely the same creator.
 

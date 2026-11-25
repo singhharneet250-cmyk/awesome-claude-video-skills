@@ -15,8 +15,10 @@ How it decides:
   accent  The video's dominant saturated hue, ignoring skin tones and greys, even when it covers
           only a small area (a minimal white video with one green accent counts). It is
           re-coloured in two readable shades: a bright one for white words and a deeper one for
-          ink words. With no clear colour, or one already close to the brand orange, it uses
-          signal orange (#F0782B bright, #E66D2A deep).
+          ink words. It uses signal orange (#F0782B bright, #E66D2A deep) instead when the video
+          has no clear colour, or when its colour is already close to orange. Per caption, it also
+          switches to orange when the same colour sits right behind that caption at that moment
+          (a blue key word on a blue shirt would vanish).
 Captions only: the logo, cards and callouts keep the brand palette.
 Needs ffmpeg, ffprobe and numpy.
 """
@@ -96,7 +98,7 @@ def shade(hue, light, step, test):
 
 def analyse(video, zone="bottom"):
     fr, times = frames(video)
-    y0, y1 = (int(z * H) for z in ZONES[zone])
+    y0, y1 = (int(z * H) for z in (ZONES[zone] if isinstance(zone, str) else zone))   # a name or a (top, bottom) pair
     lum = rel_lum(fr[:, y0:y1, int(.1 * W):int(.9 * W)])
     light = [bool(np.median(f) > 0.55 and np.mean(f < 0.18) < 0.08) for f in lum]
     # busy: plenty of both light and dark behind the words, so white needs a stronger shadow
@@ -127,6 +129,19 @@ def analyse(video, zone="bottom"):
         scheme["hue"] = round(float(np.rad2deg(np.arctan2((np.sin(ang) * w).sum(), (np.cos(ang) * w).sum())) % 360), 1)
     scheme["dominance"] = round(dominance, 2)
 
+    # hue of whatever sits directly behind the captions, per sample (a blue shirt, a green wall...)
+    zhues = []
+    for f in fr[:, y0:y1, int(.1 * W):int(.9 * W)]:
+        zp = f.reshape(-1, 3); zmx, zmn = zp.max(1), zp.min(1)
+        zs = np.where(zmx > 0, (zmx - zmn) / np.maximum(zmx, 1e-6), 0); zd = np.maximum(zmx - zmn, 1e-6)
+        zh = np.where(zmx == zp[:, 0], (zp[:, 1] - zp[:, 2]) / zd % 6, np.where(zmx == zp[:, 1], (zp[:, 2] - zp[:, 0]) / zd + 2, (zp[:, 0] - zp[:, 1]) / zd + 4)) * 60
+        zv = (zs >= 0.35) & (zmx >= 0.25)
+        if zv.mean() >= 0.15:
+            za = np.deg2rad(zh[zv]); zw = (zs * zmx)[zv]
+            zhues.append(round(float(np.rad2deg(np.arctan2((np.sin(za) * zw).sum(), (np.cos(za) * zw).sum())) % 360), 1))
+        else:
+            zhues.append(None)
+
     if scheme["hue"] is None or dominance < 0.45:
         scheme.update(accent_bright=BRAND_BRIGHT, accent_deep=BRAND_DEEP, source="brand orange (no clear colour in the video)")
     elif hue_dist(scheme["hue"], 24) <= 18:
@@ -137,7 +152,10 @@ def analyse(video, zone="bottom"):
             accent_bright=shade(hue, 0.60, +0.01, lambda x: contrast(x, SHADOW) >= 4.5),
             accent_deep=shade(hue, 0.45, -0.01, lambda x: contrast(x, WHITE) >= 3.0),
             source="the video's own colour")
-    scheme["timeline"] = [{"t": t, "light": l, "busy": b} for t, l, b in zip(times, light, busy)]
+    scheme["timeline"] = [{"t": t, "light": l, "busy": b, "zhue": z} for t, l, b, z in zip(times, light, busy, zhues)]
+    if scheme["source"] == "the video's own colour":
+        n_clash = sum(1 for z in zhues if z is not None and hue_dist(z, scheme["hue"]) <= 35)
+        scheme["clash_share"] = round(n_clash / max(len(zhues), 1), 2)
     return scheme
 
 
@@ -150,6 +168,14 @@ def is_light_at(scheme, start, end):
     """Is the caption zone light for most of [start, end]?"""
     pts = _window(scheme, start, end)
     return sum(p["light"] for p in pts) / len(pts) >= 0.5
+
+
+def clashes_at(scheme, start, end):
+    """Is the key-word colour the same hue as what sits behind this caption (so it would vanish)?"""
+    if scheme.get("source") != "the video's own colour" or scheme.get("hue") is None:
+        return False
+    pts = _window(scheme, start, end)
+    return sum(1 for p in pts if p["zhue"] is not None and hue_dist(p["zhue"], scheme["hue"]) <= 35) / len(pts) >= 0.5
 
 
 def is_busy_at(scheme, start, end):
@@ -172,6 +198,8 @@ def main():
     print(f"base    {base} (caption zone light in {sc['light_share']*100:.0f}% of samples)")
     print(f"accent  {sc['accent_bright']} on white words, {sc['accent_deep']} on ink words, from {sc['source']}"
           + (f" (hue {sc['hue']}°, {sc['dominance']*100:.0f}% of the colour)" if sc["hue"] is not None else ""))
+    if sc.get("clash_share"):
+        print(f"note    the same colour sits behind the captions in {sc['clash_share']*100:.0f}% of samples; those captions switch to orange")
     print(f"use:    python3 captions.py words.json --out captions.ass --match {a.video}")
 
 

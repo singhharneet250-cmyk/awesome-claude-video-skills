@@ -209,6 +209,19 @@ def group(words):
     return [c for run in phrases(words) for c in split_phrase(run)]
 
 
+def split_words(cap, n):
+    """Short captions (R5/R6 style): at most n words each, never splitting a number from its unit."""
+    out, cur = [], []
+    for k, w in enumerate(cap):
+        cur.append(w)
+        nxt = cap[k + 1]["text"] if k + 1 < len(cap) else ""
+        if len(cur) >= n and not (is_number(w["text"], nxt) and is_unit(nxt)):
+            out.append(cur); cur = []
+    if cur:
+        out.append(cur)
+    return out
+
+
 def fix_timing(caps):
     out = []
     for i, c in enumerate(caps):
@@ -328,8 +341,10 @@ def main():
                     help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
     ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
     ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
-    ap.add_argument("--position", choices=sorted(POSITIONS), default="bottom",
-                    help="bottom (default, y about 73%%), mic (about 58%%, R6 desk shoots, use with a bottom blur band) or chest (about 50%%, R5)")
+    ap.add_argument("--position", choices=sorted(POSITIONS) + ["auto"], default="bottom",
+                    help="bottom (default, y about 73%%), mic (about 58%%, R6), chest (about 50%%, R5), or auto: follow the person in the --match video (scripts/person_track.py)")
+    ap.add_argument("--max-words", type=int, choices=[1, 2, 3], default=None,
+                    help="short captions of 1-3 words on the voice (R5/R6 style); pairs well with --position auto, mic or chest")
     ap.add_argument("--serif-words", default="",
                     help="comma-separated words to set in Instrument Serif Italic in the caption colour (R6 typeface accent, at most one per caption)")
     args = ap.parse_args()
@@ -339,11 +354,23 @@ def main():
     for flag, val in (("--accent", args.accent),):
         if val and not re.fullmatch(r"#[0-9A-Fa-f]{6}", val):
             sys.exit(f"{flag} must look like #F0782B, not {val!r}")
-    scheme = None
+    scheme, person = None, None
+    if args.position == "auto" and not args.match:
+        sys.exit("--position auto needs --match VIDEO (the video the captions go on).")
     if args.match:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from caption_colors import analyse, is_light_at, is_busy_at
-        scheme = analyse(args.match, zone=args.position)
+        from caption_colors import analyse, is_light_at, is_busy_at, clashes_at
+        zone = args.position
+        if args.position == "auto":
+            from person_track import track, at
+            person = track(args.match)
+            if person["person"]:
+                cy = person["layout"]["caption_y"]
+                zone = (cy - 0.04, cy + 0.04)
+            else:
+                print("  note: no person found in the video, so captions use the fixed bottom position.")
+                args.position, zone = "bottom", "bottom"
+        scheme = analyse(args.match, zone=zone)
 
     def pick(start, end):
         """(style key, key-word colour) for one caption."""
@@ -359,6 +386,8 @@ def main():
             style = "strong" if is_busy_at(scheme, start, end) else "footage"
         if args.accent:
             acc = args.accent
+        elif scheme and clashes_at(scheme, start, end):
+            acc = "#E66D2A" if style == "ink" else "#F0782B"     # its own colour is right behind it: use orange
         elif scheme:
             acc = scheme["accent_deep"] if style == "ink" else scheme["accent_bright"]
         else:
@@ -367,10 +396,13 @@ def main():
 
     keywords = {k.strip().lower() for k in args.keywords.split(",") if k.strip()}
     words, from_srt = load_words(args.input)
-    caps = fix_timing(group(words))
+    groups = group(words)
+    if args.max_words:
+        groups = [c for g in groups for c in split_words(g, args.max_words)]
+    caps = fix_timing(groups)
 
     events, srt_blocks, highlighted = [], [], 0
-    used = {"footage": 0, "ink": 0, "strong": 0}; accents = set()
+    used = {"footage": 0, "ink": 0, "strong": 0}; accents = set(); placed = []
     for n, (start, end, cap) in enumerate(caps, 1):
         tokens = [w["text"] for w in cap]
         span = key_span(tokens, keywords)
@@ -380,7 +412,17 @@ def main():
         ORANGE = "{\\c&H00" + acc[5:7] + acc[3:5] + acc[1:3] + "&}"
         used[style] += 1
         if span: accents.add(acc)
-        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,{POSITIONS[args.position]},,{render_ass_text(tokens, span)}")
+        text = render_ass_text(tokens, span)
+        margin_v = POSITIONS.get(args.position, POSITIONS["bottom"])
+        if person and person["person"]:
+            L = at(person, s, e)
+            lines = wrap(tokens)
+            half_w = max(len(" ".join(l)) for l in lines) * 0.56 * 62 / 2 + 20    # Inter Bold 62 px, about 0.56 em per character
+            x = min(max(L["caption_x"] * 1080, 72 + half_w), 1008 - half_w)
+            y = L["caption_y"] * 1920
+            text = "{\\an5\\pos(" + f"{x:.0f},{y:.0f}" + ")}" + text
+            placed.append((x, y))
+        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,{margin_v},,{text}")
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")
@@ -392,6 +434,9 @@ def main():
     print(f"{len(caps)} captions → {args.out}" + (f" and {args.srt}" if args.srt else ""))
     print(f"  colours: {used['footage']} white, {used['strong']} white with a strong shadow, {used['ink']} ink; key word {', '.join(sorted(accents)) or '-'}"
           + (f" (matched to {Path(args.match).name}: {scheme['source']})" if scheme else ""))
+    if placed:
+        xs, ys = [p[0] for p in placed], [p[1] for p in placed]
+        print(f"  placement: following the person, centre x {min(xs):.0f}–{max(xs):.0f} px, y {min(ys):.0f}–{max(ys):.0f} px (of 1080×1920)")
     print(f"  duration {min(durs):.2f}–{max(durs):.2f} s, longest {longest} chars, {highlighted} with a coloured key word")
     if from_srt:
         print("  note: input was sentence-level SRT, so word timing is estimated. Check the sync on a preview.")

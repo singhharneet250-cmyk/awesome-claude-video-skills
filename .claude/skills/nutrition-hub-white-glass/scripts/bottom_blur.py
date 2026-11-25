@@ -38,6 +38,15 @@ def probe(path):
         sys.exit(f"Could not read the video size of {path}. Is it a video file?")
 
 
+def duration(path):
+    out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+                         capture_output=True, text=True).stdout.strip()
+    try:
+        return float(out)
+    except ValueError:
+        sys.exit(f"Could not read the duration of {path}. Is it a video file?")
+
+
 def smooth(x):
     x = np.clip(x, 0, 1)
     return x * x * (3 - 2 * x)          # smoothstep: no visible edge where the ramp starts or ends
@@ -52,6 +61,8 @@ def main():
     ap.add_argument("--fade", type=float, default=0.85)
     ap.add_argument("--fade-start", type=float, default=0.72, help="where the fade begins (default 0.72)")
     ap.add_argument("--tone", choices=["dark", "light"], default="dark")
+    ap.add_argument("--auto", action="store_true",
+                    help="start the band just under where captions go for the person in this video (scripts/person_track.py); --start/--full are then ignored")
     ap.add_argument("--crf", type=int, default=18)
     a = ap.parse_args()
     if not (0 < a.start < a.full <= 1):
@@ -59,6 +70,16 @@ def main():
     if not (0 <= a.fade <= 1):
         sys.exit("--fade must be between 0 and 1.")
     w, h = probe(a.input)
+    if a.auto:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from person_track import track
+        r = track(a.input)
+        if r["person"]:
+            a.start, a.full = r["layout"]["blur_start"], r["layout"]["blur_full"]
+            a.fade_start = min(max(a.fade_start, a.start + 0.06), 0.95)
+            print(f"auto: person found; band from {a.start:.0%} to {a.full:.0%}")
+        else:
+            print("auto: no person found, so the band uses the default heights")
     sigma = a.sigma * w / 1080
     y = (np.arange(h, dtype=np.float32) + .5) / h
     blur_alpha = smooth((y - a.start) / (a.full - a.start))
@@ -71,10 +92,13 @@ def main():
         f = np.zeros((h, w, 4), np.uint8); f[..., :3] = tone; f[..., 3] = (fade_alpha * 255).astype(np.uint8)[:, None]
         Image.fromarray(f, "RGBA").save(fade)
         graph = (f"[0:v]split=2[base][b];[b]gblur=sigma={sigma:.1f}:steps=3,format=yuva420p[bl];"
-                 f"[1:v]format=gray[m];[bl][m]alphamerge[blm];[base][blm]overlay=0:0:format=auto[soft];"
-                 f"[soft][2:v]overlay=0:0:format=auto,format=yuv420p[v]")
-        cmd = ["ffmpeg", "-y", "-v", "error", "-i", a.input, "-loop", "1", "-i", mask, "-loop", "1", "-i", fade,
-               "-filter_complex", graph, "-map", "[v]", "-map", "0:a?", "-shortest",
+                 f"[1:v]format=gray[m];[bl][m]alphamerge[blm];[base][blm]overlay=0:0:format=auto:shortest=1[soft];"
+                 f"[soft][2:v]overlay=0:0:format=auto:shortest=1,format=yuv420p[v]")
+        # the gradient images loop, so bound them to the clip length; otherwise a clip with no audio never ends
+        dur = f"{duration(a.input):.3f}"
+        cmd = ["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", a.input, "-loop", "1", "-t", dur, "-i", mask,
+               "-loop", "1", "-t", dur, "-i", fade,
+               "-filter_complex", graph, "-map", "[v]", "-map", "0:a?", "-t", dur,
                "-c:v", "libx264", "-crf", str(a.crf), "-preset", "medium", "-pix_fmt", "yuv420p",
                "-c:a", "copy", "-movflags", "+faststart", a.output]
         r = subprocess.run(cmd)

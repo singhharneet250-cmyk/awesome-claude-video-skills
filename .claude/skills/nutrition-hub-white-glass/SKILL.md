@@ -155,7 +155,9 @@ All of these are implemented in `assets/brand.css`.
   - White-stage pieces: add `--tone light` to fade to porcelain instead.
   - HTML templates: the `.nh-bottom-blur` element (`.is-light` for white).
   - Run it after the grade and **before** captions and cards, so they stay sharp.
-  - With the band on, put captions at `--position mic`, above it.
+  - With the band on, put captions at `--position mic` or `auto`, above it.
+  - **Following the person:** `bottom_blur.py --auto` finds the person and starts the band just under
+    where their captions go (chest height), instead of a fixed 64%.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -199,16 +201,30 @@ All of these are implemented in `assets/brand.css`.
     white words, deep on ink words (3:1 or better for large text).
   - **Fallback:** signal orange (#F0782B, or #E66D2A on ink words) when the video has no clear
     colour or its colour is already warm or orange.
+  - **Per caption:** a caption switches to orange when the video's colour sits right behind it at
+    that moment (a blue key word on a blue shirt would vanish). Tested on R6, where the blue shirt
+    sends every caption to orange.
   - Caption words only. The logo, glass cards, callouts, kickers, data metrics and the serif
     accent keep the §2 palette.
 - One key word per caption (a number, a unit or a claim word) goes in that key-word colour.
   Don't use scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
 - **Position** (`captions.py --position`):
-  - `bottom` (default): the text bottom at about y 1400 on 1920, above the platform UI.
+  - **`auto`: captions follow the person** (owner request, 2026-11-25). It finds the face about twice a
+    second (`scripts/person_track.py`) and places each caption centred under the person, at chest height
+    (one face-height below the chin, calibrated on R5 and R6). Captions move when the person sits off-centre
+    or moves, and stay inside the 72 px side margins. Use it for every talking-head edit, together with
+    `--max-words 2` (one or two words on the voice, as R5 and R6 do), which leaves room to follow sideways.
+    With no face (a faceless video) it falls back to `bottom`.
+  - `bottom` (default without a person): the text bottom at about y 1400 on 1920, above the platform UI.
   - `mic`: centred about 58%, for seated desk and mic shoots, above a bottom blur band (R6).
   - `chest`: centred about 50% (R5).
   `--match` reads the colours from the same band the captions sit in.
+- **Talking-head recipe:**
+  1. `python3 scripts/bottom_blur.py graded.mp4 blurred.mp4 --auto`
+  2. `python3 scripts/captions.py words.json --out c.ass --match blurred.mp4 --position auto --max-words 2 --keywords protein --serif-words really`
+  3. Burn in (below).
+  Needs `pip install opencv-python-headless==4.10.0.84`. The 4.x line ships the face model; 5.x does not.
 - Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein --match video.mp4`
   turns word timings (Whisper / faster-whisper JSON, Remotion captions, or an `.srt`) into
   captions that follow every rule above, using the `reference/captions.ass` style. It never
@@ -351,7 +367,8 @@ scripts/make_molecule.py       SMILES → verified 3D molecule JSON (needs RDKit
 scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
 scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
 scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
-scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade
+scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
+scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
