@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""
+Bottom blur band (R6 style): the lower part of the frame melts into a progressive blur and a
+soft fade, so captions and cards above it stand out and desk clutter disappears.
+
+    python3 bottom_blur.py in.mp4 out.mp4                       # dark fade (footage, R6 look)
+    python3 bottom_blur.py in.mp4 out.mp4 --tone light          # fade to porcelain white (white-stage pieces)
+    python3 bottom_blur.py in.mp4 out.mp4 --start 0.64 --full 0.76 --sigma 26 --fade 0.85
+
+Measured on R6 (1080x1920 equivalent): sharp down to about 62% of the height, a soft ramp to
+fully blurred by about 70–76%, then darkening toward the bottom edge (about 85% at 100%).
+Defaults reproduce that. Run it BEFORE burning captions, so the words stay sharp.
+
+  --start  where the blur begins (share of frame height)          default 0.64
+  --full   where the blur reaches full strength                    default 0.76
+  --sigma  blur strength at full (gaussian sigma, in px at 1080 wide)   default 26
+  --fade   fade opacity at the bottom edge (0 = no fade)           default 0.85
+  --tone   dark (fade to #0B1118) or light (fade to #FFFFFF)       default dark
+Needs ffmpeg, Pillow and numpy. Audio is copied unchanged.
+"""
+import argparse
+import os
+import subprocess
+import sys
+import tempfile
+
+import numpy as np
+from PIL import Image
+
+
+def probe(path):
+    out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height",
+                          "-of", "csv=p=0", path], capture_output=True, text=True).stdout.strip()
+    try:
+        w, h = (int(v) for v in out.split(",")[:2])
+        return w, h
+    except ValueError:
+        sys.exit(f"Could not read the video size of {path}. Is it a video file?")
+
+
+def smooth(x):
+    x = np.clip(x, 0, 1)
+    return x * x * (3 - 2 * x)          # smoothstep: no visible edge where the ramp starts or ends
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("input"); ap.add_argument("output")
+    ap.add_argument("--start", type=float, default=0.64)
+    ap.add_argument("--full", type=float, default=0.76)
+    ap.add_argument("--sigma", type=float, default=26.0)
+    ap.add_argument("--fade", type=float, default=0.85)
+    ap.add_argument("--fade-start", type=float, default=0.72, help="where the fade begins (default 0.72)")
+    ap.add_argument("--tone", choices=["dark", "light"], default="dark")
+    ap.add_argument("--crf", type=int, default=18)
+    a = ap.parse_args()
+    if not (0 < a.start < a.full <= 1):
+        sys.exit("--start must be below --full, both between 0 and 1 (shares of the frame height).")
+    if not (0 <= a.fade <= 1):
+        sys.exit("--fade must be between 0 and 1.")
+    w, h = probe(a.input)
+    sigma = a.sigma * w / 1080
+    y = (np.arange(h, dtype=np.float32) + .5) / h
+    blur_alpha = smooth((y - a.start) / (a.full - a.start))
+    fade_alpha = a.fade * smooth((y - a.fade_start) / (1 - a.fade_start)) ** 1.2
+    tone = (11, 17, 24) if a.tone == "dark" else (255, 255, 255)
+
+    with tempfile.TemporaryDirectory() as td:
+        mask = os.path.join(td, "mask.png"); fade = os.path.join(td, "fade.png")
+        Image.fromarray(np.repeat((blur_alpha * 255).astype(np.uint8)[:, None], w, 1), "L").save(mask)
+        f = np.zeros((h, w, 4), np.uint8); f[..., :3] = tone; f[..., 3] = (fade_alpha * 255).astype(np.uint8)[:, None]
+        Image.fromarray(f, "RGBA").save(fade)
+        graph = (f"[0:v]split=2[base][b];[b]gblur=sigma={sigma:.1f}:steps=3,format=yuva420p[bl];"
+                 f"[1:v]format=gray[m];[bl][m]alphamerge[blm];[base][blm]overlay=0:0:format=auto[soft];"
+                 f"[soft][2:v]overlay=0:0:format=auto,format=yuv420p[v]")
+        cmd = ["ffmpeg", "-y", "-v", "error", "-i", a.input, "-loop", "1", "-i", mask, "-loop", "1", "-i", fade,
+               "-filter_complex", graph, "-map", "[v]", "-map", "0:a?", "-shortest",
+               "-c:v", "libx264", "-crf", str(a.crf), "-preset", "medium", "-pix_fmt", "yuv420p",
+               "-c:a", "copy", "-movflags", "+faststart", a.output]
+        r = subprocess.run(cmd)
+        if r.returncode != 0:
+            sys.exit("ffmpeg failed; see the message above.")
+    print(f"bottom blur → {a.output}  (blur {a.start:.0%}→{a.full:.0%}, sigma {sigma:.0f}px, {a.tone} fade {a.fade:.0%} from {a.fade_start:.0%})")
+
+
+if __name__ == "__main__":
+    main()

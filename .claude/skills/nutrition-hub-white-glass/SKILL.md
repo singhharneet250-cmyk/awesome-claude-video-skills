@@ -101,6 +101,9 @@ Headlines are short, sentence case and end in a full stop ("Creatine, explained 
 - Set it 1.3× the Inter words around it (the serif runs small).
 - Only in headlines and kinetic lines of 60 px or more. Never for numbers or units, captions,
   body copy, labels or source notes. Numbers stay Inter so they read instantly.
+- **Exception, captions (R6 typeface accent, owner request 2026-11-25):** one word per caption may
+  switch to Instrument Serif Italic **in the caption's own colour** (white or ink, not orange), at about 1.3×.
+  Use `captions.py --serif-words carefully,really`. Never on the coloured key word or on a number.
 
 **Condensed slam: Bebas Neue** (`.nh-slam-word`)
 - One word or one number on its own line, in capitals, 200–320 px, ink or orange.
@@ -145,6 +148,14 @@ All of these are implemented in `assets/brand.css`.
   comes from the light around it: a silhouette shadow, a contact shadow, a satin floor
   reflection and a slow ±6° parallax orbit. It refuses a photo with a solid background.
 - **Chips:** `● FROSTED GLASS` style tags and the CTA (`.nh-chip`, `.nh-chip--cta`).
+- **E · Bottom blur band (R6, owner request 2026-11-25).** The lower frame melts into a progressive blur
+  (sharp to about 64% of the height, full blur by 76%) and a fade (from 72% to about 85% at the bottom edge).
+  Desk clutter disappears and captions and cards above it stand out.
+  - Footage files: `python3 scripts/bottom_blur.py in.mp4 out.mp4` (dark fade, the R6 look).
+  - White-stage pieces: add `--tone light` to fade to porcelain instead.
+  - HTML templates: the `.nh-bottom-blur` element (`.is-light` for white).
+  - Run it after the grade and **before** captions and cards, so they stay sharp.
+  - With the band on, put captions at `--position mic`, above it.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -193,7 +204,11 @@ All of these are implemented in `assets/brand.css`.
 - One key word per caption (a number, a unit or a claim word) goes in that key-word colour.
   Don't use scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
-- The bottom of the caption text sits at about y 1400 on 1920, above the platform UI.
+- **Position** (`captions.py --position`):
+  - `bottom` (default): the text bottom at about y 1400 on 1920, above the platform UI.
+  - `mic`: centred about 58%, for seated desk and mic shoots, above a bottom blur band (R6).
+  - `chest`: centred about 50% (R5).
+  `--match` reads the colours from the same band the captions sit in.
 - Quick path: `python3 scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein --match video.mp4`
   turns word timings (Whisper / faster-whisper JSON, Remotion captions, or an `.srt`) into
   captions that follow every rule above, using the `reference/captions.ass` style. It never
@@ -201,7 +216,8 @@ All of these are implemented in `assets/brand.css`.
   second, and leaves a caption one colour when it has neither. `--match` picks the colours
   from the video. Without it, captions are white with an orange key word; `--style` and
   `--accent #RRGGBB` override by hand. Burn in with
-  `ffmpeg -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter"`.
+  `ffmpeg -vf "ass=captions.ass:fontsdir=<skill>/assets/fonts"`. That folder holds the serif; Inter comes
+  from the system fonts, so Inter must be installed.
 - For animated captions (kinetic type), build them as an HTML overlay of bare Inter words with a
   soft `text-shadow`, no chip or glass, and render it with `--transparent`.
 - Source notes go in a glass callout (`templates/overlay-callout.html`), not in captions.
@@ -335,6 +351,7 @@ scripts/make_molecule.py       SMILES → verified 3D molecule JSON (needs RDKit
 scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
 scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
 scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
+scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass

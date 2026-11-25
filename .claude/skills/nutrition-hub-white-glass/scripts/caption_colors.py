@@ -31,7 +31,7 @@ import numpy as np
 BRAND_BRIGHT, BRAND_DEEP = "#F0782B", "#E66D2A"
 INK, WHITE, SHADOW = "#202B38", "#FFFFFF", "#0B1118"
 W, H = 180, 320                     # analysis size (9:16)
-ZONES = {"bottom": (0.655, 0.735), "chest": (0.47, 0.55)}  # where caption text sits, share of frame height
+ZONES = {"bottom": (0.655, 0.735), "mic": (0.54, 0.62), "chest": (0.47, 0.55)}  # where caption text sits, share of frame height
 MAX_SAMPLES = 240
 
 

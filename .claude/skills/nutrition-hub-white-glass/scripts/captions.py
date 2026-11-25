@@ -7,7 +7,7 @@ White Glass captions: word timings -> libass captions (and an optional .srt side
     python3 captions.py cues.srt   --out captions.ass            # sentence-level cues (less exact)
 
 Then burn in:
-    ffmpeg -i in.mp4 -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter" -c:a copy out.mp4
+    ffmpeg -i in.mp4 -vf "ass=captions.ass:fontsdir=<skill>/assets/fonts" -c:a copy out.mp4   (Inter from the system fonts)
 
 Input (any of):
   - Whisper / faster-whisper JSON with word timestamps: {"segments": [{"words": [{"word", "start", "end"}]}]}
@@ -36,6 +36,13 @@ BLUR = r"{\blur6}"              # softens the shadow border; the words themselve
 ORANGE = r"{\c&H2B78F0&}"
 RESET = r"{\r\blur6}"          # back to the style colour; {\r} also clears blur, so re-apply it
 STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink", "strong": "NH-Caption-Strong"}
+# vertical position: event MarginV (distance from the frame bottom to the caption bottom, on 1920)
+POSITIONS = {"bottom": 520,   # §6 default: text bottom at y 1400 (73%)
+             "mic": 731,      # R6 desk/mic shoots: caption centred about 58%, above a bottom blur band
+             "chest": 885}    # R5 chest line: caption centred about 50%
+# typeface accent (R6): one word per caption in Instrument Serif Italic, same colour as the caption
+SERIF = r"{\fnInstrument Serif\b0\i1\fs80}"
+SERIF_WORDS = set()
 
 LINE_CHARS = 28
 MAX_CHARS = 2 * LINE_CHARS
@@ -267,7 +274,7 @@ def ass_escape(s: str) -> str:
 
 def render_ass_text(tokens, span):
     lines = wrap(tokens)
-    out_lines, idx = [], 0
+    out_lines, idx, serif_used = [], 0, False
     for line in lines:
         parts = []
         for t in line:
@@ -277,6 +284,11 @@ def render_ass_text(tokens, span):
             if span and idx == span[1] - 1:
                 core = word.rstrip(".,!?;:\"')”’")
                 word = core + RESET + word[len(core):]
+            elif not (span and span[0] <= idx < span[1]) and not serif_used and \
+                    t.lower().strip(".,!?;:\"'()”’") in SERIF_WORDS:
+                core = word.rstrip(".,!?;:\"')”’")
+                word = SERIF + core + RESET + word[len(core):]
+                serif_used = True
             parts.append(word)
             idx += 1
         out_lines.append(" ".join(parts))
@@ -316,9 +328,14 @@ def main():
                     help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
     ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
     ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
+    ap.add_argument("--position", choices=sorted(POSITIONS), default="bottom",
+                    help="bottom (default, y about 73%%), mic (about 58%%, R6 desk shoots, use with a bottom blur band) or chest (about 50%%, R5)")
+    ap.add_argument("--serif-words", default="",
+                    help="comma-separated words to set in Instrument Serif Italic in the caption colour (R6 typeface accent, at most one per caption)")
     args = ap.parse_args()
 
-    global ORANGE
+    global ORANGE, SERIF_WORDS
+    SERIF_WORDS = {w.strip().lower() for w in args.serif_words.split(",") if w.strip()}
     for flag, val in (("--accent", args.accent),):
         if val and not re.fullmatch(r"#[0-9A-Fa-f]{6}", val):
             sys.exit(f"{flag} must look like #F0782B, not {val!r}")
@@ -326,7 +343,7 @@ def main():
     if args.match:
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from caption_colors import analyse, is_light_at, is_busy_at
-        scheme = analyse(args.match)
+        scheme = analyse(args.match, zone=args.position)
 
     def pick(start, end):
         """(style key, key-word colour) for one caption."""
@@ -363,7 +380,7 @@ def main():
         ORANGE = "{\\c&H00" + acc[5:7] + acc[3:5] + acc[1:3] + "&}"
         used[style] += 1
         if span: accents.add(acc)
-        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,0,,{render_ass_text(tokens, span)}")
+        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,{POSITIONS[args.position]},,{render_ass_text(tokens, span)}")
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")

@@ -1,10 +1,10 @@
 # Style references (shared by the owner, 2026-11-25)
 
-The owner shared five reels as direction for future Nutrition Hub edits (R1–R4 on 2026-11-25, then R5). They are another creator's
+The owner shared six reels as direction for future Nutrition Hub edits (R1–R4 on 2026-11-25, then R5 and R6). They are another creator's
 portfolio work, so **the videos are not stored in this repo**. Only this breakdown is. Use it for the
 *techniques*. The look still comes from SKILL.md: palette, Inter, glass components and the original logo.
 
-All five are 9:16 Instagram exports: 720×1280, 30 fps, mastered at about −14 LUFS.
+All six are 9:16 Instagram exports: 720×1280, 30 fps, mastered at about −14 LUFS.
 
 | # | File the owner shared | Length | Cuts | Type |
 |---|---|---|---|---|
@@ -13,6 +13,7 @@ All five are 9:16 Instagram exports: 720×1280, 30 fps, mastered at about −14 
 | R3 | `Less revealed. More anticipated…mp4` | 26.7 s | 10 (mostly one take, a few hard cuts) | Faceless kinetic type on white, one mustard accent, photo cut-outs |
 | R4 | `Performance marketing brings leads…mp4` | 36.2 s | 0 (one take) | Talking head on a light grey studio wall + frosted white UI cards |
 | R5 | `I'll be honest with you. This video is packed with information…mp4` | 65.6 s | 15 (a shot about every 4 s: jump cuts, b-roll) | Talking head in a bright real interior; two-tier captions with text behind the head |
+| R6 | `AI is replacing video editing... Or is it.mp4` | 61.6 s | 0 (one take) | Talking head at a desk mic, blue studio grade; running white word captions + script-accent lockups + app tiles and glass cards |
 
 R2, R3 and R4 are already close to White Glass: a white or light stage, near-black type, **one**
 accent colour, frosted white cards. Swap their accent for signal orange #F0782B and they fit.
@@ -78,6 +79,21 @@ accent colour, frosted white cards. Swap their accent for signal orange #F0782B 
   - an Instagram profile card, app screenshots, fanned photo cards, chrome spheres orbiting
 - **Pace:** a shot about every 4 s; the caption word changes with every spoken word.
 
+**R6: desk-mic talking head, typeface accents.** One take of a speaker at a podcast mic, under an all-blue studio grade.
+- **Running caption:** one or two bold white words at a time on the voice ("is it", "two", "3D").
+  - Centred, at mic and chest height: vertical centre about 57–60%, measured.
+  - No box, a soft shadow only.
+- **Lockups:** a big bold word with small stacked words, where the accent is a *typeface* change, not a colour.
+  - A swashy italic script word sits in the same white as the rest: "**AI** is *completely* going to",
+    "*The* most *common question* … editors", "*People*".
+  - The lockups sit at chest height, left of the mic.
+- **Graphics:**
+  - AI-app icon tiles (ChatGPT, Gemini, Claude, DeepSeek) in the top band
+  - an app-badge row (ChatGPT, Ps, Ae, Pr) on a glass chip
+  - numbered diamond markers ("1", "2") with labels for a list
+  - glass cards over the lower body ("Design", "Programs"), an App Store card and YouTube thumbnails
+- **Pace:** the caption word changes with every spoken word; a lockup or card about every 5–8 s.
+
 ## Captions: arrangement, font styles and placement (measured)
 
 Measured by sampling each reel 3 times a second and reading every word's box with OCR
@@ -93,6 +109,7 @@ confirmed.
 | R2 faceless | 0% | 22% | 60% | 5% | 13% | One line on the **exact vertical centre** (y 50%). Small supporting lines sit low, around 75–85%. |
 | R3 faceless | 2% | 32% | 42% | 21% | 4% | Type-only beats are centred around y 47–52%. With a photo, the headline moves to a top-left block (y 20–30%) and the image fills the middle. |
 | R5 talking head | 0% | 36% | 28% | 27% | 9% | **Two tiers**: a headline behind the head at about 25–35%, and one small word on the chest at about 51%. (The lower bands include text on photo cards and b-roll.) |
+| R6 talking head | 0% | 3% | 19% | 78% | 0% | Almost everything at **mic and chest height** (vertical centre about 57–60%), plus app tiles in the top band. Lockups and cards sit lower than in R4. |
 
 **R4's two caption slots (the talking-head system):**
 1. **Beside the head, left side.** The big word's left edge is at about x 120 px (11% of the width).
@@ -122,6 +139,7 @@ confirmed.
 | R3 | Bold geometric sans; condensed heavy display for one-word slams (it looks like Bebas Neue or Anton): "PEOPLE", "CARING." | *Italic serif* (it looks like Playfair Display Italic): "The narrative.", "Building", "indifference" | Three-tier stacks alternating size and colour ("**Familiarity** / doesn't create / **excitement.**"); highlighter bar behind a phrase |
 | R1 | Regular neo-grotesk, white on dark | Glowing italic script word ("*tasks*"), huge rounded bold word ("costs") | Lead line + big word, centred above the head |
 | R5 | Heavy neo-grotesk for headline words, upper or lower case (it looks like Helvetica Neue Bold or Inter Bold); bold white sans for the chest captions | Small lowercase lead words, white | Lead words above-left + big word behind the head; separate one-word chest captions |
+| R6 | Bold white neo-grotesk (it looks like SF Pro or Inter Bold) | A *swashy italic script/serif* in the **same white**: accent by typeface, not colour | Running one-word line at mic height; big-word + stacked small words + script word lockups |
 
 ### White Glass version (Inter, plus the two approved accent faces)
 
@@ -133,7 +151,7 @@ confirmed.
 | Slot B: top band | Vertical centre 15–22%, kept below the top 250 px platform zone. For sentence ends and when slot A is busy. |
 | Faceless beats | One line centred at y 50% (R2), or a top-left block at y 20–30% when an image fills the middle (R3). |
 | Slot C: behind the head (R5) | Only with a clean person cut-out. Key word Inter Display 800 at 140–200 px, vertical centre 25–35%, centred on the head, in ink or orange. Lead words Inter 500 at 0.35×, above-left. |
-| Chest line (R5) | One word at a time on the voice, Inter 700 at 40–48 px, centred, vertical centre about 50%. Bare white words with a soft shadow, no pill or glass (§6). Use it *instead of* the §6 bottom captions, never both. |
+| Chest line (R5, R6) | One word at a time on the voice, Inter 700 at 40–48 px, centred, vertical centre about 50% (R5) or 56–60% for a seated desk or mic setup (R6), kept off the face, hands and mic. Bare white words with a soft shadow, no pill or glass (§6). Use it *instead of* the §6 bottom captions, never both. |
 | Rhythm | A new key word about every 1 s, on the voice. Kinetic type reveal (§5); no pops or bounces. |
 | Never | Text over the face or hands, or in the bottom 420 px platform zone. The chest line is the only text allowed on the body. |
 
@@ -144,6 +162,8 @@ confirmed.
 | Running one-word captions at chest height (R5) | The "chest line" caption in the R5 section below. Small, centred, one word on the voice. |
 | White flash into b-roll and back (R5) | Our dip to porcelain white (§5), 0.3–0.5 s. |
 | Fanned photo cards and app screenshots beside the speaker (R5, R4) | Real photos in glass cards, with no face covered. |
+| Numbered markers for a list (R6: "1", "2" diamonds) | Orange diamond or circle with the number in ink, plus an Inter label; glass-reveal in. |
+| App or tool icon tiles in the top band (R6) | Glass tiles with the real, unaltered icons, only when the video names the tool. |
 | One continuous camera, no hard cuts (R2, R4) | The scene holds while elements build, then a slow camera move or a dip to white leads into the next idea. §5 transitions. |
 | Word-by-word build with one accent word (R2, R4) | Kinetic type (`.nh-type`). The accent word goes signal orange, in Inter. |
 | Frosted white UI cards that act out the story (R4, R1) | `.nh-glass` cards: lists, call logs, chat bubbles with a typing cursor, cost bars, step trackers. Keep them above or beside the face. |
@@ -170,6 +190,9 @@ confirmed.
 
 ## Leave out (conflicts with White Glass)
 
+- **An all-blue studio grade (R6):** footage keeps the soft studio light grade (footage-editing.md §2).
+- **Cards covering the hands or mic (R6):** cards sit above, beside or below the speaker's gestures.
+
 - **Dark navy, red and lime full-screen scenes (R1):** no dark backgrounds or extra hues (§2).
 - **Whip pushes and camera whips (R2's clock whip):** banned by §5 (no whip pans). R2's type slam itself is adopted (decision 3).
 - **Pixel-block glitch reveals (R1)** and the **black flash frame (R3):** banned by §5.
@@ -195,6 +218,18 @@ These refs used type, motion and colour that White Glass had ruled out. The owne
    strong-shadow white, chosen from what is behind each caption. Signal orange is the fallback.
    Tested on all five refs and the label reel: R1 lime, R2 green, R3 mustard, R4 and R5 orange (warm
    interiors), and the label reel orange with ink or white per caption.
+
+6. **R6's style: adopted** (owner: "adopt his style", 2026-11-25), including:
+   - **Accent by typeface in captions:** one word per caption in Instrument Serif Italic, in the caption's own
+     colour (`captions.py --serif-words`).
+   - **Mic-height captions:** `--position mic`, about 58%.
+   - **Bottom blur band:** `scripts/bottom_blur.py`, `.nh-bottom-blur`. Measured on R6: sharp to about 62%, a
+     ramp through about 62–70%, full blur and a darkening fade below.
+   - **The rest:** numbered markers, app tiles and glass cards (already adopted above).
+   - **Not adopted:** the all-blue grade stays optional, and footage keeps the soft studio light grade unless
+     the shoot itself is blue-lit.
+   - **About the owner's Instagram link** (instagram.com/reel/Des4fRaP8-B): it could not be opened here, because
+     the network blocks Instagram. The bottom blur was matched from R6, which is very likely the same creator.
 
 ## Pacing targets taken from the refs
 

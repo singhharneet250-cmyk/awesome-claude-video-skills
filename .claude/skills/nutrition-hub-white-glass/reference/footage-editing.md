@@ -26,6 +26,20 @@ eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015,
 
 If the subject isn't centred, change the crop's x offset (for example `crop=1080:1920:(iw-1080)*0.35:0`).
 
+## 2b. Bottom blur band (R6 look)
+
+Run this after the grade and before any overlay or captions, so they stay sharp:
+
+```bash
+python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4               # dark fade, like R6
+python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4 --tone light  # fade to white
+```
+
+- **Defaults:** blur from 64% of the height, full by 76%, sigma 26 px at 1080 wide, fade from 72% to 85% at the bottom.
+- **Tuning:** adjust with `--start`, `--full`, `--sigma` and `--fade`.
+- **Speed:** a 4 s 1080×1920 clip takes about 20 s.
+- **Captions:** then use `captions.py --position mic`, so they sit above the band.
+
 ## 3. Brand graphics over footage
 
 Render a transparent overlay from a template, then composite it starting at the right
@@ -63,7 +77,7 @@ python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt
 3. Burn the captions in:
 
 ```bash
-ffmpeg -i over.mp4 -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter" \
+ffmpeg -i over.mp4 -vf "ass=captions.ass:fontsdir=$SK/assets/fonts" \
   -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a copy capped.mp4
 ```
 
