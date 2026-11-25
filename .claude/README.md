@@ -18,10 +18,11 @@ else does the heavy lifting under its rules.
 |---|---|
 | `hyperframes@hyperframes` | HeyGen's HyperFrames skills (Apache-2.0): editable HTML-to-video projects, the CLI, the block registry, media, captions and Remotion ports. Claude Code offers to install it when you open this repo. Its main skill asks before sending HeyGen a usage note; say no to skip. |
 
-## Project MCP server (`.mcp.json` at the repo root)
+## Project MCP servers (`.mcp.json` at the repo root)
 
 | Server | What it adds |
 |---|---|
+| `openchatcut` | [OpenChatCut](https://github.com/0xsline/OpenChatCut) (AGPL-3.0, use v0.2.17), a local video editor with a multi-track timeline. Claude Code edits an open project through a draft that you approve inside OpenChatCut (`approvalMode: "manual"`); it can't export, generate, delete or publish. No remote telemetry was found; AI calls go only to services you add keys for. It needs OpenChatCut running on your computer (`localhost:5199`): see `skills/nutrition-hub-white-glass/reference/openchatcut.md`. Nothing of its code is copied into this repo. |
 | `blender` | [MCP for Blender](https://github.com/ahujasid/mcp-for-blender) (MIT), pinned to 2.2.7. Claude Code drives a running Blender on your computer: it reads the scene, builds and lights it with Blender Python, looks through the camera and renders. Telemetry is off (`DISABLE_TELEMETRY`) and safe mode is on (scripts can't touch files, programs or the network). It needs Blender, uv and the add-on on your computer: see `skills/nutrition-hub-white-glass/reference/blender-mcp.md`. Claude Code asks you to approve it the first time you open the repo. In a cloud session it has no Blender to reach. |
 
 ## Plugins enabled from the Anthropic Directory

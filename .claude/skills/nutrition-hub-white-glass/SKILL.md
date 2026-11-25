@@ -428,6 +428,7 @@ inputs in the last column.
 | Live control of Blender on the owner's computer: read the scene, build and light it, look through the camera, render a still | `blender` MCP server (`.mcp.json`, set-up and rules in `reference/blender-mcp.md`) | Real product photos only (never `generate_3d` for products, labels or logos); White Glass look constants from `molecular-film`; safe mode stays on |
 | Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
 | Orbit, frame escape, chat takeover; head and hand motion | `scripts/fx.py`, `templates/chat-takeover.html`, `scripts/motion_track.py` (§4 G–J) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
+| A rough cut on a real timeline the owner can see and tweak: transcript cuts, pause removal, beat order, b-roll placement, FCPXML | OpenChatCut v0.2.17 on the owner's computer, through the `openchatcut` MCP server (`.mcp.json`; set-up and rules in `reference/openchatcut.md`) | `approvalMode: "manual"`; §5 transitions only (no glitch or zoom punch); captions per §6 or burned after export; then the White Glass finishing pass and `qa.py` |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
@@ -494,5 +495,6 @@ reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage
 reference/broll-shot-list.md   what to film in the store for b-roll, how to film it and how to name the files
 reference/blender-mcp.md       Blender MCP (the repo's .mcp.json): one-time set-up on the owner's computer and the rules for using it
+reference/openchatcut.md       OpenChatCut MCP (the repo's .mcp.json): timeline editing with draft approval, set-up, and the White Glass rules inside it
 reference/style-references.md  the owner's reference reels: techniques, caption layout and placement, open decisions
 ```
