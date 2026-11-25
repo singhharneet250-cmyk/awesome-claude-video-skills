@@ -192,6 +192,43 @@ All of these are implemented in `assets/brand.css`.
   - **Sound and captions:** the b-roll's own sound is dropped and the voice track is copied unchanged.
     Captions stay on during b-roll; run `captions.py --match` on the cut, so colours match the b-roll too.
   - **Order:** grade → b-roll → bottom blur band → captions → end card.
+- **G · Orbit (R5, owner request 2026-11-25).** Ceramic spheres (one signal orange) burst out from behind the
+  speaker's head onto a thin white ring, turn slowly (30°/s), then fold back behind the head.
+  - Command: `scripts/fx.py orbit --at 3-6`.
+  - A tilted ring (`--tilt 65`) is centred at the chin: its front half crosses the chest, its back half passes
+    behind the head, and it never crosses the face.
+  - Word chips (`--words "Whey,Creatine,Omega-3"`): up to 4 short words, Inter on frosted pills.
+  - Occlusion: a head-and-shoulders matte from the face track hides what passes behind, and detected hands
+    pass in front.
+  - Use it for one signature beat per reel, 2.5–4 s.
+- **H · Frame escape (owner request 2026-11-25).** The picture closes into a porcelain-bordered frame on the
+  White Glass stage, while the speaker's head and raised hands stay outside it.
+  - Command: `scripts/fx.py escape --at 2-5`.
+  - It needs a real outline of the speaker. Two sources:
+    - `--matte wall` keys a plain, evenly lit wall (the "Free Space" set-up).
+    - `--matte FILE` takes a matte video from CapCut ("Remove background") or Runway, white = person.
+  - A busy room needs one of those files. The AI segmenter (MediaPipe) wasn't allowed to install in the
+    cloud session.
+  - Use it for a hook or a reveal, 2.5–4 s, at most once per reel.
+- **I · Chat takeover (R4, owner request 2026-11-25).** `templates/chat-takeover.html`, rendered `--transparent`.
+  - The sequence: a contact list → one contact picked (the rest blur away) → a message types out with an
+    orange caret → the orange send button → typing dots → a reply.
+  - `?layout=top` sits above the head: pass `?bottom=` (head top − 40 px) so it can't cover the face.
+  - `?layout=full` takes over the frame with a frosted wash.
+  - Honesty:
+    - The "Example chat" label stays unless the chat is real and shared with the person's written OK, with
+      their name and number hidden.
+    - Never a WhatsApp or Instagram logo or look-alike.
+    - Never a made-up customer testimonial.
+- **J · Head and hand motion (owner request 2026-11-25).** `scripts/motion_track.py` follows the head at the
+  full frame rate (face detection plus optical flow) and finds the hands (the speaker's own skin tone, movement,
+  within arm's reach), with no model download.
+  - It lists moments to time effects on: `gesture`, `hands_up`, `head_move`.
+  - `--preview` draws what it found.
+  - The orbit and escape use it automatically.
+  - Reliable on a plain wall with contrasting clothes (R4: hands in 99% of frames, no false hands). Warm,
+    busy rooms, wooden furniture and blonde hair can fool the hand finder (R5), so check the preview.
+    The head track is reliable in both.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -341,6 +378,8 @@ All of these are implemented in `assets/brand.css`.
      word, check pills, then the original logo. Colour schemes via `?scheme=` (see §2).
    - `molecule-3d.html`: a realistic 3D molecule (pick it with `?molecule=<id>`). Set the copy in `SCENE`.
    - `product-hero-3d.html`: the real product photo in a 3D studio (`?photo=/path/pack.png`).
+   - `chat-takeover.html`: a chat sequence (list → pick → typed message → send → reply), above the head or
+     taking over the frame (§4 I).
 5. **Render** (from this skill's folder):
    - Full video: `node scripts/render.cjs templates/reel-9x16.html --out out.mp4`
    - Overlay for footage: `node scripts/render.cjs templates/overlay-callout.html --transparent --out callout.mov`
@@ -388,6 +427,7 @@ inputs in the last column.
 | Any step inside Blender or three.js (materials, glass, lighting, HDRI, depth of field, headless render) | `use-3d-software` skill | §2 palette and §5 motion as the targets |
 | Live control of Blender on the owner's computer: read the scene, build and light it, look through the camera, render a still | `blender` MCP server (`.mcp.json`, set-up and rules in `reference/blender-mcp.md`) | Real product photos only (never `generate_3d` for products, labels or logos); White Glass look constants from `molecular-film`; safe mode stays on |
 | Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
+| Orbit, frame escape, chat takeover; head and hand motion | `scripts/fx.py`, `templates/chat-takeover.html`, `scripts/motion_track.py` (§4 G–J) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
@@ -429,6 +469,7 @@ assets/brand.css               tokens, components and motion primitives
 templates/reel-9x16.html       full branded reel (edit the SCENE object)
 templates/overlay-callout.html transparent glass callout for footage
 templates/hook-slam.html       10 s hook: Bebas slams + Inter lines with a serif accent + pills + logo; ?scheme= colour schemes
+templates/chat-takeover.html   chat sequence overlay (R4): ?layout=top (above the head, ?bottom=) or ?layout=full (takeover)
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
@@ -442,6 +483,9 @@ scripts/caption_colors.py      reads a video and picks caption colours to match 
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
 scripts/broll.py               b-roll cutaways over a talking head: on spoken words or set times; cut, white dip or dissolve
 scripts/sfx.py                 original SFX kit (synthesised) + mixer: cue sheets, b-roll plans, levels under the voice, -14 LUFS master
+scripts/fx.py                  person-aware effects: orbit (spheres or word chips around the head) and frame escape
+scripts/person_matte.py        person mattes for fx.py: head shape from the face track, plain-wall key, or a matte video
+scripts/motion_track.py        head (full frame rate) and hand tracking, gesture / hands-up / head-move moments, --preview
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)

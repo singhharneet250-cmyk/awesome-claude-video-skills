@@ -81,6 +81,43 @@ python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4 --tone light  # fade t
   Without either option it covers the whole clip. `--auto` starts it just under the person.
   Needs `pip install opencv-python-headless==4.10.0.84`.
 
+## 2d. Orbit, frame escape and motion (SKILL.md §4 G, H, J)
+
+Run these after the grade and b-roll, and before captions:
+
+```bash
+python3 $SK/scripts/motion_track.py graded.mp4 --preview motion_check.mp4   # where the head and hands are, and the moments
+python3 $SK/scripts/fx.py orbit graded.mp4 orbit.mp4 --at 6.0-9.5                  # spheres around the head
+python3 $SK/scripts/fx.py orbit graded.mp4 orbit.mp4 --at 6-9.5 --words "Whey,Creatine,Omega-3" --tilt 65
+python3 $SK/scripts/fx.py escape orbit.mp4 escape.mp4 --at 1.0-4.0 --matte wall    # plain wall behind the speaker
+python3 $SK/scripts/fx.py escape orbit.mp4 escape.mp4 --at 1-4 --matte person_matte.mp4   # matte from CapCut / Runway
+```
+
+- **Timing:** start an effect on a `gesture` or `hands_up` moment from `motion_track.py`, so it answers the
+  speaker's movement. Give it 2.5–4 s, and use each effect at most once per reel.
+- **Check the outline first:** `person_matte.py graded.mp4 --source wall --out matte.mp4 --at 1-4`. The wall key
+  wants a locked camera and a plain, evenly lit wall that differs from the hair and clothes.
+- **Sound:** each run writes `<out>.sfx.json` with a soft whoosh. Add it with `sfx.py --cues orbit.sfx.json` at the end (§7b).
+- **Speed:** about 45 s for a 7 s 1080×1920 clip with the wall key; about 20–30 s with the head shape.
+  Only the effect window changes, and the audio is copied.
+- **Tested** on the reference reels:
+  - Orbit with spheres, flat and tilted word chips, and hands passing in front.
+  - The escape with the wall key on R4.
+  - The motion tracker: the head in 100% of frames on R4 and R5; hands in 99% on R4's plain wall, unreliable
+    in R5's warm, busy room.
+
+### Chat takeover (SKILL.md §4 I)
+
+```bash
+python3 $SK/scripts/person_track.py graded.mp4          # read "top" (the head top, as a share of the height)
+node $SK/scripts/render.cjs "$SK/templates/chat-takeover.html?bottom=560" --transparent --out chat.mov   # 40 px above the head
+node $SK/scripts/render.cjs "$SK/templates/chat-takeover.html?layout=full" --transparent --out chat.mov  # takeover
+```
+
+Composite it like any overlay (§3), at the second it should start. It writes `chat.sfx.json`: a pop for the
+panel and the send, and a tick for the reply. Edit the copy in its `SCENE` object, and keep the "Example chat"
+label unless the chat is real and shared with consent.
+
 ## 3. Brand graphics over footage
 
 Render a transparent overlay from a template, then composite it starting at the right

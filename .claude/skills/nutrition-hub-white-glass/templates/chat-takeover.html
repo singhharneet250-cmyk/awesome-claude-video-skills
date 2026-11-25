@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub chat takeover</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; overflow: hidden; }
+  #backdrop { position: absolute; inset: 0; opacity: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .94) 0%, rgba(234, 240, 246, .93) 100%); }
+  #panel { position: absolute; left: 72px; right: 72px; padding: 28px 28px 30px; transform-origin: 50% 0;
+    display: grid; gap: 18px; opacity: 0; font-family: var(--nh-font); color: var(--nh-ink); }
+  .head { display: flex; align-items: center; justify-content: space-between; padding: 0 6px; }
+  .head .nh-kicker { margin: 0; }
+  .label { font: 600 20px/1 var(--nh-font); color: var(--nh-slate); background: var(--nh-ice); border-radius: 99px; padding: 9px 16px; letter-spacing: .02em; }
+  .list { position: relative; display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: 76px 1fr auto; gap: 20px; align-items: center; padding: 14px 18px;
+    border-radius: 22px; background: rgba(255, 255, 255, .55); will-change: transform, opacity, filter; }
+  .row.is-picked { box-shadow: 0 1px 2px rgba(32, 43, 56, .05), 0 14px 30px -18px rgba(32, 43, 56, .35); }
+  .avatar { width: 76px; height: 76px; border-radius: 50%; background: var(--nh-ice); display: grid; place-items: center; }
+  .avatar svg { width: 40px; height: 40px; color: var(--nh-slate); }
+  .name { font: 650 34px/1.15 var(--nh-font); letter-spacing: -.01em; }
+  .preview { font: 400 26px/1.3 var(--nh-font); color: var(--nh-slate); margin-top: 4px; }
+  .meta { display: grid; justify-items: end; gap: 10px; font: 500 22px/1 var(--nh-font); color: var(--nh-mist); }
+  .dot { width: 16px; height: 16px; border-radius: 50%; background: var(--nh-orange); }
+  .thread { display: grid; gap: 14px; }
+  .bubble { max-width: 78%; padding: 22px 28px; border-radius: 30px; font: 500 32px/1.32 var(--nh-font); opacity: 0; }
+  .bubble.sent { justify-self: end; background: var(--nh-ice); border-bottom-right-radius: 10px; }
+  .bubble.reply { justify-self: start; background: #FFFFFF; border: 2px solid var(--nh-hairline); border-bottom-left-radius: 10px; }
+  .dots { display: flex; gap: 10px; padding: 26px 30px; }
+  .dots i { width: 14px; height: 14px; border-radius: 50%; background: var(--nh-mist); display: block; }
+  .compose { display: grid; grid-template-columns: 1fr 84px; gap: 14px; align-items: center; opacity: 0; }
+  .input { min-height: 84px; box-sizing: border-box; padding: 0 30px; border-radius: 42px; background: #FFFFFF;
+    border: 2px solid var(--nh-hairline); display: flex; align-items: center; font: 500 32px/1.2 var(--nh-font); white-space: nowrap; overflow: hidden; }
+  .input .ph { color: var(--nh-mist); }
+  .caret { display: inline-block; width: 3px; height: 38px; margin-left: 3px; background: var(--nh-orange); vertical-align: middle; }
+  .send { width: 84px; height: 84px; border-radius: 50%; background: var(--nh-orange-grad); display: grid; place-items: center; opacity: 0; }
+  .send svg { width: 38px; height: 38px; color: #FFFFFF; }
+</style>
+</head>
+<body>
+<!--
+  Chat takeover (R4): a contact list → one contact picked → a message types out → send → reply.
+  layout "top"  sits above the speaker's head (R4). Pass ?bottom=<head top − 40 px> so it can't cover the face.
+  layout "full" takes over the frame: a frosted wash covers the footage, the chat sits in the middle.
+  Render: node ../scripts/render.cjs "chat-takeover.html?layout=full" --transparent --out chat.mov
+  Then overlay it on the footage at the right second (reference/footage-editing.md §3).
+  HONESTY (SKILL.md §4 I): the copy below is an EXAMPLE. A chat that shows a customer must be a real
+  one, shared with their written OK and with their name and number hidden; otherwise keep the
+  "Example chat" label. Never a WhatsApp/Instagram logo or look-alike: this is White Glass UI.
+-->
+<div class="nh-stage is-transparent" id="stage">
+  <div id="backdrop"></div>
+  <div id="panel" class="nh-glass">
+    <div class="head"><div class="nh-kicker" id="kicker"></div><div class="label" id="label"></div></div>
+    <div class="list" id="list"></div>
+    <div class="thread" id="thread">
+      <div class="bubble sent" id="sent"></div>
+      <div class="bubble reply dots" id="dots"><i></i><i></i><i></i></div>
+      <div class="bubble reply" id="reply"></div>
+    </div>
+    <div class="compose" id="compose">
+      <div class="input" id="input"></div>
+      <div class="send" id="send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg></div>
+    </div>
+  </div>
+</div>
+<script>
+/* ===== Edit this object ===== */
+const SCENE = {
+  layout: "top",              // "top" (above the head, R4) or "full" (takes over the frame)
+  top: 210,                   // panel top in "top" layout (px on 1920); "full" centres it
+  bottom: null,               // or anchor the panel's BOTTOM here (px), e.g. 40 px above the head top from
+                              // person_track.py / motion_track.py; it then grows upward and never covers the face
+  kicker: "Chats",
+  label: "Example chat",      // keep unless the chat is real and shared with consent ("" hides it)
+  contacts: [
+    { name: "Nutrition Hub Khanna", preview: "Supplement store, Khanna", time: "now", icon: "store", pick: true },
+    { name: "Gym group", preview: "Leg day at 7?", time: "9:41", icon: "group" },
+    { name: "Coach", preview: "Send me today's meals", time: "Mon", icon: "person" },
+  ],
+  message: "Hi! How do I check if my whey is original?",
+  reply: "Bring the tub or send a photo of the batch code. We'll check it with you.",   // "" for no reply
+  start: 0.15,                // panel appears
+  cps: 17,                    // typing speed, characters per second
+  hold: 1.6,                  // time to read the last bubble before the exit
+};
+/* ============================ */
+const P = new URLSearchParams(location.search);
+if (P.get("layout")) SCENE.layout = P.get("layout");
+if (P.get("top")) SCENE.top = parseFloat(P.get("top"));
+if (P.get("bottom")) SCENE.bottom = parseFloat(P.get("bottom"));
+const full = SCENE.layout === "full";
+
+const ICONS = {
+  person: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  group: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="9.5" r="2.5"/><path d="M2.5 20c1.2-3.6 3.6-5.4 6.5-5.4s5.3 1.8 6.5 5.4M15 14.6c2.6 0 4.6 1.5 5.6 4.4"/></svg>',
+  store: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 10v10h16V10M3 10l2-6h14l2 6zM10 20v-5h4v5"/></svg>',
+};
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+document.getElementById("kicker").textContent = SCENE.kicker;
+const label = document.getElementById("label");
+if (SCENE.label) label.textContent = SCENE.label; else label.remove();
+const pick = Math.max(0, SCENE.contacts.findIndex((c) => c.pick));
+document.getElementById("list").innerHTML = SCENE.contacts.map((c, i) => `
+  <div class="row${i === pick ? " is-picked" : ""}">
+    <div class="avatar">${ICONS[c.icon] || ICONS.person}</div>
+    <div><div class="name">${esc(c.name)}</div><div class="preview">${esc(c.preview)}</div></div>
+    <div class="meta"><span>${esc(c.time)}</span>${i === pick ? '<span class="dot"></span>' : ""}</div>
+  </div>`).join("");
+document.getElementById("sent").textContent = SCENE.message;
+document.getElementById("reply").textContent = SCENE.reply;
+const panel = document.getElementById("panel");
+if (full) { panel.style.transform = ""; }
+
+/* ---- timeline (seconds) ---- */
+const T = {};
+T.panel = SCENE.start;
+T.pick = T.panel + 0.85;
+T.compose = T.pick + 0.5;
+T.type = T.compose + 0.35;
+T.typed = T.type + SCENE.message.length / SCENE.cps;
+T.send = T.typed + 0.3;
+T.sent = T.send + 0.35;
+T.dots = SCENE.reply ? T.sent + 0.5 : null;
+T.reply = SCENE.reply ? T.dots + 0.9 : null;
+T.out = (SCENE.reply ? T.reply : T.sent) + SCENE.hold + 0.45;
+T.end = T.out + 0.45;
+
+/* cubic-bezier easing, as in brand.css */
+function bezier(x1, y1, x2, y2) {
+  return (x) => {
+    if (x <= 0) return 0; if (x >= 1) return 1;
+    let t = x;
+    for (let i = 0; i < 8; i++) {
+      const cx = 3 * x1 * t * (1 - t) ** 2 + 3 * x2 * t * t * (1 - t) + t ** 3 - x;
+      const d = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t;
+      if (Math.abs(d) < 1e-6) break;
+      t = Math.min(1, Math.max(0, t - cx / d));
+    }
+    return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3;
+  };
+}
+const easeOut = bezier(0.22, 1, 0.36, 1), easeIn = bezier(0.64, 0, 0.78, 0);
+const prog = (t, a, d) => Math.min(1, Math.max(0, (t - a) / d));
+const reveal = (el, t, at, dur = 0.6, lift = 0) => {
+  const p = easeOut(prog(t, at, dur));
+  el.style.opacity = p;
+  el.style.transform = `translateY(${(1 - p) * lift}px) scale(${0.96 + 0.04 * p})`;
+};
+
+const rows = [...document.querySelectorAll(".row")];
+const els = { backdrop: document.getElementById("backdrop"), sent: document.getElementById("sent"), dots: document.getElementById("dots"),
+  reply: document.getElementById("reply"), compose: document.getElementById("compose"), input: document.getElementById("input"),
+  send: document.getElementById("send"), list: document.getElementById("list") };
+
+function render(t) {
+  // panel in / out
+  const pin = easeOut(prog(t, T.panel, 0.75));
+  const pout = easeIn(prog(t, T.out, 0.45));
+  panel.style.opacity = pin * (1 - pout);
+  panel.style.transform = `scale(${FIT * (0.96 + 0.04 * pin) * (1 - 0.02 * pout)})`;
+  els.backdrop.style.opacity = full ? easeOut(prog(t, T.panel - 0.1, 0.5)) * (1 - pout) : 0;
+  // pick: the others blur away, the picked row slides to the top
+  const pk = easeOut(prog(t, T.pick, 0.45));
+  rows.forEach((r, i) => {
+    if (i === pick) {
+      r.style.background = `rgba(255,255,255,${0.55 + 0.45 * pk})`;
+      const shift = rows.slice(0, pick).reduce((s, x) => s + x.offsetHeight + 10, 0);
+      r.style.transform = `translateY(${-shift * pk}px)`;
+    } else {
+      r.style.opacity = 1 - pk;
+      r.style.filter = `blur(${8 * pk}px)`;
+    }
+  });
+  // after the pick, the list keeps only the picked row's height
+  const keep = rows[pick].offsetHeight;
+  const fullH = rows.reduce((s, x) => s + x.offsetHeight, 0) + 10 * (rows.length - 1);
+  els.list.style.height = `${fullH - (fullH - keep) * easeOut(prog(t, T.pick + 0.2, 0.45))}px`;
+  // compose + typing
+  reveal(els.compose, t, T.compose, 0.45, 10);
+  const n = Math.max(0, Math.min(SCENE.message.length, Math.floor((t - T.type) * SCENE.cps)));
+  const sentP = easeOut(prog(t, T.sent, 0.45));
+  const blinkOn = t < T.type || ((t - T.type) % 0.9) < 0.55 || t < T.typed;
+  const typed = t >= T.sent ? "" : esc(SCENE.message.slice(0, n));
+  els.input.innerHTML = (n === 0 || t >= T.sent ? '<span class="ph">Message</span>' : `<span>${typed}</span>`) +
+    (t >= T.compose && t < T.sent && blinkOn ? '<span class="caret"></span>' : "");
+  els.input.style.opacity = 1;
+  const sp = easeOut(prog(t, T.send, 0.3));
+  els.send.style.opacity = sp;
+  els.send.style.transform = `scale(${0.85 + 0.15 * sp})`;
+  // sent bubble, typing dots, reply
+  els.sent.style.display = t >= T.sent ? "" : "none";
+  reveal(els.sent, t, T.sent, 0.45, 14);
+  if (SCENE.reply) {
+    const dotsOn = t >= T.dots && t < T.reply;
+    els.dots.style.display = dotsOn ? "" : "none";
+    if (dotsOn) {
+      reveal(els.dots, t, T.dots, 0.35, 10);
+      [...els.dots.children].forEach((d, i) => { d.style.opacity = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin((t - T.dots) * 7 - i * 0.9)); });
+    }
+    els.reply.style.display = t >= T.reply ? "" : "none";
+    reveal(els.reply, t, T.reply, 0.5, 14);
+  } else { els.dots.style.display = "none"; els.reply.style.display = "none"; }
+  // place the panel: above the head, or centred over the takeover wash
+  if (full) panel.style.top = `${Math.round((1920 - panel.offsetHeight) / 2 - 80)}px`;
+  else if (SCENE.bottom) panel.style.top = `${Math.round(SCENE.bottom - panel.offsetHeight * FIT)}px`;
+  else panel.style.top = `${SCENE.top}px`;
+}
+
+/* with ?bottom=, shrink the whole panel if its tallest moment wouldn't fit above the head (top margin 120 px) */
+let FIT = 1;
+function fitPanel() {
+  FIT = 1;
+  if (full || !SCENE.bottom) return;
+  let tallest = 0;
+  for (const t of [T.panel + 0.2, T.pick - 0.05, T.end - 0.5]) { render(t); tallest = Math.max(tallest, panel.offsetHeight); }
+  FIT = Math.min(1, (SCENE.bottom - 120) / tallest);
+}
+window.__logoStatus = "none";
+window.__duration = T.end;
+window.__sfx = [{ t: T.panel + 0.06, sfx: "pop", what: "chat panel" }, { t: T.send + 0.05, sfx: "pop", what: "message sent" }]
+  .concat(SCENE.reply ? [{ t: T.reply + 0.04, sfx: "tick", what: "reply" }] : []);
+window.__seek = render;
+fitPanel();
+render(0);
+document.fonts.ready.then(() => { fitPanel(); render(P.has("t") ? parseFloat(P.get("t")) : 0); });
+</script>
+</body>
+</html>
