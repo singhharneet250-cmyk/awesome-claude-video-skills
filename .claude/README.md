@@ -18,6 +18,12 @@ else does the heavy lifting under its rules.
 |---|---|
 | `hyperframes@hyperframes` | HeyGen's HyperFrames skills (Apache-2.0): editable HTML-to-video projects, the CLI, the block registry, media, captions and Remotion ports. Claude Code offers to install it when you open this repo. Its main skill asks before sending HeyGen a usage note; say no to skip. |
 
+## Project MCP server (`.mcp.json` at the repo root)
+
+| Server | What it adds |
+|---|---|
+| `blender` | [MCP for Blender](https://github.com/ahujasid/mcp-for-blender) (MIT), pinned to 2.2.7. Claude Code drives a running Blender on your computer: it reads the scene, builds and lights it with Blender Python, looks through the camera and renders. Telemetry is off (`DISABLE_TELEMETRY`) and safe mode is on (scripts can't touch files, programs or the network). It needs Blender, uv and the add-on on your computer: see `skills/nutrition-hub-white-glass/reference/blender-mcp.md`. Claude Code asks you to approve it the first time you open the repo. In a cloud session it has no Blender to reach. |
+
 ## Plugins enabled from the Anthropic Directory
 
 These were added from the plugin catalog on claude.ai, not from files in this repo:
