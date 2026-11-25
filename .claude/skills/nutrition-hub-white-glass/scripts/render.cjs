@@ -14,6 +14,7 @@
  *          --logo <path>  (original logo file, if not at assets/logo/)  --crf 16
  *
  * The page must expose window.__seek(t) and window.__duration (see templates/).
+ * Video renders also write <out>.sfx.json, the sound-effect cue sheet for scripts/sfx.py (SKILL.md §5).
  * The render FAILS if the original logo did not load: there is no fallback mark.
  */
 const { chromium } = require("playwright");
@@ -84,6 +85,32 @@ async function main() {
   const duration = Number(o.duration ?? (await page.evaluate(() => window.__duration)) - from);
   const frames = Math.round(duration * fps);
   const ext = path.extname(o.out).toLowerCase();
+
+  // SFX cue sheet (SKILL.md §5 Sound) for scripts/sfx.py: read from the page's own animations,
+  // or from window.__sfx = [{t, sfx, what}] when a page lists its cues itself
+  const cues = await page.evaluate(() => {
+    if (Array.isArray(window.__sfx)) return window.__sfx;
+    const at = (el) => parseFloat(getComputedStyle(el).getPropertyValue("--at")) || 0;
+    const name = (el) => (el.textContent || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    const out = [];
+    // a slam is fully opaque and near full size 0.18 s into its 0.32 s entrance (measured): the thud lands there
+    document.querySelectorAll(".nh-slam").forEach((el) => out.push({ t: at(el) + 0.18, sfx: "thud", what: "slam: " + name(el) }));
+    document.querySelectorAll(".nh-reveal").forEach((el) => {
+      if (el.matches(".nh-logo, :has(.nh-logo)")) {   // glass marks the logo reveal (end card), not a header logo there from the start
+        if (at(el) >= 1.0) out.push({ t: at(el) + 0.1, sfx: "glass", what: "logo" });
+      }
+      else if (el.matches(".nh-chip, .nh-check, .fact")) out.push({ t: at(el) + 0.06, sfx: "tick", what: name(el) });
+      else if (el.matches(".nh-glass, .nh-callout")) out.push({ t: at(el) + 0.06, sfx: "pop", what: "card: " + name(el) });
+    });
+    return out.sort((a, b) => a.t - b.t);
+  });
+  const inWindow = cues.filter((c) => c.t >= from && c.t < from + duration)
+    .map((c) => ({ ...c, t: Math.round((c.t - from) * 1000) / 1000 }));
+  if (inWindow.length) {
+    const cueFile = o.out.replace(/\.[^.]+$/, "") + ".sfx.json";
+    fs.writeFileSync(cueFile, JSON.stringify(inWindow, null, 2));
+    console.log(`${inWindow.length} SFX cues → ${cueFile} (add them with scripts/sfx.py --cues)`);
+  }
   let codec;
   if (o.transparent && ext === ".mov") codec = ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le", "-vendor", "apl0"];
   else if (o.transparent && ext === ".webm") codec = ["-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", "24", "-row-mt", "1"];

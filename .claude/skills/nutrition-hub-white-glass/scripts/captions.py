@@ -7,7 +7,7 @@ White Glass captions: word timings -> libass captions (and an optional .srt side
     python3 captions.py cues.srt   --out captions.ass            # sentence-level cues (less exact)
 
 Then burn in:
-    ffmpeg -i in.mp4 -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter" -c:a copy out.mp4
+    ffmpeg -i in.mp4 -vf "ass=captions.ass:fontsdir=<skill>/assets/fonts" -c:a copy out.mp4   (Inter from the system fonts)
 
 Input (any of):
   - Whisper / faster-whisper JSON with word timestamps: {"segments": [{"words": [{"word", "start", "end"}]}]}
@@ -19,8 +19,9 @@ Rules applied (SKILL.md section 6):
   - at most 2 lines, about 28 characters per line
   - each caption on screen 1-3 s; a new caption starts at a pause or a sentence end
   - one key word per caption goes signal orange: a number with its unit first, then a word from
-    --keywords; if neither is present the caption stays ink (never a random word)
-  - graphite ink on an opaque white box, style copied from reference/captions.ass
+    --keywords; if neither is present the caption stays one colour (never a random word)
+  - bare words, no box or pill: white with a soft shadow over footage (default), or ink with a
+    soft white glow on light walls (--style ink); styles copied from reference/captions.ass
 """
 import argparse
 import json
@@ -31,8 +32,17 @@ from pathlib import Path
 SKILL = Path(__file__).resolve().parent.parent
 STYLE_FILE = SKILL / "reference" / "captions.ass"
 
+BLUR = r"{\blur6}"              # softens the shadow border; the words themselves stay sharp
 ORANGE = r"{\c&H2B78F0&}"
-INK = r"{\c&H382B20&}"
+RESET = r"{\r\blur6}"          # back to the style colour; {\r} also clears blur, so re-apply it
+STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink", "strong": "NH-Caption-Strong"}
+# vertical position: event MarginV (distance from the frame bottom to the caption bottom, on 1920)
+POSITIONS = {"bottom": 520,   # §6 default: text bottom at y 1400 (73%)
+             "mic": 731,      # R6 desk/mic shoots: caption centred about 58%, above a bottom blur band
+             "chest": 885}    # R5 chest line: caption centred about 50%
+# typeface accent (R6): one word per caption in Instrument Serif Italic, same colour as the caption
+SERIF = r"{\fnInstrument Serif\b0\i1\fs80}"
+SERIF_WORDS = set()
 
 LINE_CHARS = 28
 MAX_CHARS = 2 * LINE_CHARS
@@ -199,6 +209,19 @@ def group(words):
     return [c for run in phrases(words) for c in split_phrase(run)]
 
 
+def split_words(cap, n):
+    """Short captions (R5/R6 style): at most n words each, never splitting a number from its unit."""
+    out, cur = [], []
+    for k, w in enumerate(cap):
+        cur.append(w)
+        nxt = cap[k + 1]["text"] if k + 1 < len(cap) else ""
+        if len(cur) >= n and not (is_number(w["text"], nxt) and is_unit(nxt)):
+            out.append(cur); cur = []
+    if cur:
+        out.append(cur)
+    return out
+
+
 def fix_timing(caps):
     out = []
     for i, c in enumerate(caps):
@@ -262,9 +285,11 @@ def ass_escape(s: str) -> str:
     return s.replace("\\", "＼").replace("{", "(").replace("}", ")")
 
 
-def render_ass_text(tokens, span):
-    lines = wrap(tokens)
-    out_lines, idx = [], 0
+def render_ass_text(tokens, span, lines=None, fs=62):
+    lines = lines or wrap(tokens)
+    reset = RESET if fs == 62 else RESET[:-1] + f"\\fs{fs}}}"
+    serif = SERIF if fs == 62 else SERIF.replace("\\fs80", f"\\fs{round(fs * 1.3)}")
+    out_lines, idx, serif_used = [], 0, False
     for line in lines:
         parts = []
         for t in line:
@@ -273,11 +298,16 @@ def render_ass_text(tokens, span):
                 word = ORANGE + word
             if span and idx == span[1] - 1:
                 core = word.rstrip(".,!?;:\"')”’")
-                word = core + INK + word[len(core):]
+                word = core + reset + word[len(core):]
+            elif not (span and span[0] <= idx < span[1]) and not serif_used and \
+                    t.lower().strip(".,!?;:\"'()”’") in SERIF_WORDS:
+                core = word.rstrip(".,!?;:\"')”’")
+                word = serif + core + reset + word[len(core):]
+                serif_used = True
             parts.append(word)
             idx += 1
         out_lines.append(" ".join(parts))
-    return r"\N".join(out_lines)
+    return (BLUR if fs == 62 else BLUR[:-1] + f"\\fs{fs}}}") + r"\N".join(out_lines)
 
 
 def ass_time(t: float) -> str:
@@ -309,19 +339,101 @@ def main():
     ap.add_argument("--srt", type=Path, help="also write a plain .srt sidecar")
     ap.add_argument("--keywords", default="", help="comma-separated claim words to highlight when a caption has no number")
     ap.add_argument("--offset", type=float, default=0.0, help="shift every caption by this many seconds")
+    ap.add_argument("--style", choices=sorted(STYLES), default=None,
+                    help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
+    ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
+    ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
+    ap.add_argument("--position", choices=sorted(POSITIONS) + ["auto"], default="bottom",
+                    help="bottom (default, y about 73%%), mic (about 58%%, R6), chest (about 50%%, R5), or auto: the vacant space around the person in the --match video (left, right, above, chest or the bottom band; scripts/layout_plan.py)")
+    ap.add_argument("--prefer", choices=["left", "right", "top", "chest", "bottom"], default=None,
+                    help="with --position auto: favour one slot when it fits, e.g. bottom to use the blur band for captions")
+    ap.add_argument("--plan-out", type=Path, metavar="PLAN.json",
+                    help="with --position auto: write where each caption went and when the bottom blur band is needed (for bottom_blur.py --plan)")
+    ap.add_argument("--max-words", type=int, choices=[1, 2, 3], default=None,
+                    help="short captions of 1-3 words on the voice (R5/R6 style); pairs well with --position auto, mic or chest")
+    ap.add_argument("--serif-words", default="",
+                    help="comma-separated words to set in Instrument Serif Italic in the caption colour (R6 typeface accent, at most one per caption)")
     args = ap.parse_args()
+
+    global ORANGE, SERIF_WORDS
+    SERIF_WORDS = {w.strip().lower() for w in args.serif_words.split(",") if w.strip()}
+    for flag, val in (("--accent", args.accent),):
+        if val and not re.fullmatch(r"#[0-9A-Fa-f]{6}", val):
+            sys.exit(f"{flag} must look like #F0782B, not {val!r}")
+    scheme, person = None, None
+    if args.position == "auto" and not args.match:
+        sys.exit("--position auto needs --match VIDEO (the video the captions go on).")
+    if args.match:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from caption_colors import analyse, is_light_at, is_busy_at, clashes_at
+        zone = args.position
+        if args.position == "auto":
+            from layout_plan import Planner
+            person = Planner(args.match, prefer=args.prefer)
+            if person.person.get("person"):
+                zone = (0.30, 0.78)                       # captions can go anywhere around the person
+            else:
+                print("  note: no person found in the video, so captions use the fixed bottom position.")
+                args.position, zone, person = "bottom", "bottom", None
+        scheme = analyse(args.match, zone=zone)
+
+    def pick(start, end):
+        """(style key, key-word colour) for one caption."""
+        if args.style:
+            style = args.style
+        elif scheme is None:
+            style = "footage"
+        elif scheme["base"] == "ink":
+            style = "ink"
+        elif scheme["base"] == "mixed" and is_light_at(scheme, start, end):
+            style = "ink"                       # mixed video: follow what is behind this caption
+        else:
+            style = "strong" if is_busy_at(scheme, start, end) else "footage"
+        if args.accent:
+            acc = args.accent
+        elif scheme and clashes_at(scheme, start, end):
+            acc = "#E66D2A" if style == "ink" else "#F0782B"     # its own colour is right behind it: use orange
+        elif scheme:
+            acc = scheme["accent_deep"] if style == "ink" else scheme["accent_bright"]
+        else:
+            acc = "#E66D2A" if style == "ink" else "#F0782B"
+        return style, acc.upper()
 
     keywords = {k.strip().lower() for k in args.keywords.split(",") if k.strip()}
     words, from_srt = load_words(args.input)
-    caps = fix_timing(group(words))
+    groups = group(words)
+    if args.max_words:
+        groups = [c for g in groups for c in split_words(g, args.max_words)]
+    caps = fix_timing(groups)
 
     events, srt_blocks, highlighted = [], [], 0
+    used = {"footage": 0, "ink": 0, "strong": 0}; accents = set(); placed = []
     for n, (start, end, cap) in enumerate(caps, 1):
         tokens = [w["text"] for w in cap]
         span = key_span(tokens, keywords)
         highlighted += bool(span)
         s, e = max(0.0, start + args.offset), max(0.0, end + args.offset)
-        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},NH-Caption,,0,0,0,,{render_ass_text(tokens, span)}")
+        style, acc = pick(s, e)
+        slot = person.place(tokens, s, e) if person else None
+        if slot and not args.style:
+            # the slot's own background decides the word colour: ink on light, strong shadow on busy
+            style = "ink" if slot["light"] else "strong" if slot["busy"] else "footage"
+            if not args.accent:
+                if scheme and clashes_at(scheme, s, e):
+                    acc = "#E66D2A" if style == "ink" else "#F0782B"
+                elif scheme:
+                    acc = scheme["accent_deep"] if style == "ink" else scheme["accent_bright"]
+                acc = acc.upper()
+        ORANGE = "{\\c&H00" + acc[5:7] + acc[3:5] + acc[1:3] + "&}"
+        used[style] += 1
+        if span: accents.add(acc)
+        margin_v = POSITIONS.get(args.position, POSITIONS["bottom"])
+        if slot:
+            text = "{\\an5\\pos(" + f"{slot['x']},{slot['y']}" + ")}" + render_ass_text(tokens, span, slot["lines"], slot["fs"])
+            placed.append(slot)
+        else:
+            text = render_ass_text(tokens, span)
+        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,{margin_v},,{text}")
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")
@@ -331,7 +443,25 @@ def main():
     longest = max((len(" ".join(w["text"] for w in c)) for _, _, c in caps), default=0)
     durs = [e - s for s, e, _ in caps]
     print(f"{len(caps)} captions → {args.out}" + (f" and {args.srt}" if args.srt else ""))
-    print(f"  duration {min(durs):.2f}–{max(durs):.2f} s, longest {longest} chars, {highlighted} with an orange key word")
+    print(f"  colours: {used['footage']} white, {used['strong']} white with a strong shadow, {used['ink']} ink; key word {', '.join(sorted(accents)) or '-'}"
+          + (f" (matched to {Path(args.match).name}: {scheme['source']})" if scheme else ""))
+    if placed:
+        from collections import Counter
+        c = Counter(p["slot"] for p in placed)
+        print("  placement: " + ", ".join(f"{k} {v}" for k, v in c.most_common()) + " (vacant space around the person)")
+        band = person.band_plan()
+        if band["windows"]:
+            print(f"  blur band needed: {len(band['windows'])} window(s), " + ", ".join(f"{a:.1f}–{b:.1f} s" for a, b in band["windows"]))
+        else:
+            print("  blur band: not needed (no caption sits on a busy bottom)")
+        if args.plan_out:
+            import json
+            args.plan_out.write_text(json.dumps({**band, "captions": [{k: p[k] for k in ("slot", "x", "y", "fs", "blur")} for p in placed]}, indent=1))
+            print(f"  plan → {args.plan_out} (use: bottom_blur.py in.mp4 out.mp4 --plan {args.plan_out})")
+    elif args.plan_out:
+        import json
+        args.plan_out.write_text(json.dumps({"windows": [], "band_top": None, "captions": []}))
+    print(f"  duration {min(durs):.2f}–{max(durs):.2f} s, longest {longest} chars, {highlighted} with a coloured key word")
     if from_srt:
         print("  note: input was sentence-level SRT, so word timing is estimated. Check the sync on a preview.")
     if highlighted < len(caps):

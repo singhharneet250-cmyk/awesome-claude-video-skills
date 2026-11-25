@@ -10,7 +10,13 @@ are starting points: always judge a full-size still by eye.
 
 ```bash
 ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4
+ffprobe -v error -select_streams v:0 -show_entries stream=color_transfer -of csv=p=0 in.mp4
 ```
+
+If the second line prints `arib-std-b67` or `smpte2084`, the clip is HDR (iPhones record it by
+default) and looks washed out unless it is tone-mapped. Put this at the start of the §2 filter
+(tested): `zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,`.
+Better still, ask for the next takes with HDR video switched off (`reference/broll-shot-list.md`).
 
 ## 2. Reframe to 9:16 and apply the "soft studio light" grade
 
@@ -26,6 +32,55 @@ eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015,
 
 If the subject isn't centred, change the crop's x offset (for example `crop=1080:1920:(iw-1080)*0.35:0`).
 
+## 2b. B-roll cutaways (R5)
+
+Cut away from the face to what is being said, and back. The voice track is copied unchanged,
+and each b-roll is filled to the frame, conformed and graded like the footage (SKILL.md §4 F).
+Run this after the grade:
+
+```bash
+# when a word is spoken (word timings from step 4)
+python3 $SK/scripts/broll.py graded.mp4 cut.mp4 --words words.json \
+  --map label=broll/label-closeup-whey-01.mp4 --map scoop=broll/scoop-01.mp4 --map store=broll/shelf-pan-01.mp4
+
+# at set times, with an in-point (@2.5) inside the b-roll file, through a dip to white
+python3 $SK/scripts/broll.py graded.mp4 cut.mp4 --at 3.2-5.0=broll/shelf-pan-01.mp4@2.5 --transition white
+```
+
+- **Spec file:** for full control, `--spec broll.json` with `[{"start", "end", "file", "in", "speed",
+  "x", "y", "grade", "transition"}]`.
+  - `"speed": 0.5` plays a 60 fps pour in slow motion.
+  - `"x"`/`"y"` (0–1) move the crop.
+  - `"grade": false` keeps a label close-up untouched.
+- **Check first:** `--dry-run` prints the placements and any rule notes without rendering.
+- **Keyword mode:**
+  - It uses each mapped file once, on the next time its word is spoken.
+  - It cuts back at the pause nearest to `--len` (2.2 s).
+  - It skips a shot that would break the rules.
+- **Stills:** `.jpg`/`.png` get a slow 4% push-in, sampled sub-pixel so it doesn't judder. A cut-out PNG
+  sits on an ice-mist stage.
+- **Tested:** cut, white dip and dissolve; 60 fps slow motion; an HLG HDR clip; a still and a cut-out;
+  29.97 fps and silent A-rolls. The audio stayed byte-identical. A 14 s 1080×1920 reel with four shots
+  takes about 12 s.
+
+## 2c. Bottom blur band (R6 look)
+
+Run this after the grade and b-roll and before any overlay or captions, so they stay sharp:
+
+```bash
+python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4               # dark fade, like R6
+python3 $SK/scripts/bottom_blur.py graded.mp4 blurred.mp4 --tone light  # fade to white
+```
+
+- **Defaults:** blur from 64% of the height, full by 76%, sigma 26 px at 1080 wide, fade from 72% to 85% at the bottom.
+- **Tuning:** adjust with `--start`, `--full`, `--sigma` and `--fade`.
+- **Speed:** a 4 s 1080×1920 clip takes about 20 s.
+- **Captions:** then use `captions.py --position mic` (or `auto`), so they sit above the band.
+- **Only when needed:** pass `--plan plan.json` from `captions.py --position auto --plan-out plan.json`. The band
+  then fades in only while captions sit on a busy bottom. Add `--when 3.0-5.5` for animations in the band.
+  Without either option it covers the whole clip. `--auto` starts it just under the person.
+  Needs `pip install opencv-python-headless==4.10.0.84`.
+
 ## 3. Brand graphics over footage
 
 Render a transparent overlay from a template, then composite it starting at the right
@@ -39,7 +94,8 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
 ```
 
 - `--transparent` writes ProRes 4444 (`.mov`) or VP9 with alpha (`.webm`).
-- Over footage the glass goes near-opaque automatically. Never put ink type straight on video.
+- Over footage the glass goes near-opaque automatically. Keep callout text on its glass card;
+  only caption words go straight on video (§4).
 - The callout sits in the upper safe area (y about 270) so it never meets the captions.
 
 ## 4. Captions
@@ -51,19 +107,26 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
    per line, 1–3 s each, one orange key word, never across a sentence end or a pause.
 
 ```bash
-python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery
+python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery --match over.mp4
 ```
 
-   To fix a single caption by hand, the orange word is written `{\c&H2B78F0&}word{\c&H382B20&}`.
+   `--match` reads the video the captions go on. It picks white, ink or strong-shadow words from
+   what is behind each caption, and takes the key-word colour from the video's own dominant colour
+   (signal orange when it has none). Check what it picked with
+   `python3 $SK/scripts/caption_colors.py over.mp4`. To fix a single caption by hand, the key word
+   is written `{\c&H002B78F0&}word{\r\blur6}` (colour as `&H00BBGGRR`).
 3. Burn the captions in:
 
 ```bash
-ffmpeg -i over.mp4 -vf "ass=captions.ass:fontsdir=/usr/share/fonts/opentype/inter" \
+ffmpeg -i over.mp4 -vf "ass=captions.ass:fontsdir=$SK/assets/fonts" \
   -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a copy capped.mp4
 ```
 
-Keep the box opaque. A translucent `BorderStyle=3` box stripes wherever a colour change
-splits the line (this was tested). `BorderStyle=4` leaves blobby halos.
+Captions have no box (SKILL.md §6). The style uses `BorderStyle=1` with a semi-transparent
+border softened by `{\blur6}`, which reads as a soft shadow while the words stay sharp. This
+was tested on a busy test pattern and on real footage. Don't switch back to a box: a
+translucent `BorderStyle=3` box stripes wherever a colour change splits the line, and
+`BorderStyle=4` leaves blobby halos.
 
 ## 5. Transitions between shots
 
@@ -100,6 +163,38 @@ source is endless and needs the trim (tested).
 - Speech: `highpass=f=80`, plus a gentle `acompressor` if levels jump around.
 - Music sits about 18–22 dB under the voice. Use licensed music only.
 - Finish with loudness `loudnorm=I=-14:TP=-1.5:LRA=11` for social platforms.
+
+### 7b. Sound effects (run last)
+
+`sfx.py` adds the original kit (SKILL.md §5 Sound effects) to the finished video. It copies the
+picture unchanged, sets each sound against the voice's measured loudness, and re-masters the mix to
+−14 LUFS. So run it after the end card (§6), on `final.mp4`:
+
+```bash
+# cue sheets: render.cjs writes one next to every render (slams, pills, cards, logo)
+#   @1    the callout overlaid from second 1 (§3)
+#   @$OFF the end card, which starts at $OFF in final.mp4 (§6)
+python3 $SK/scripts/sfx.py final.mp4 final_sfx.mp4 \
+  --cues callout.sfx.json@1 \
+  --cues endcard.sfx.json@$OFF \
+  --broll broll_plan.json             # from broll.py --plan-out: a swish into each dip to white
+
+python3 $SK/scripts/sfx.py final.mp4 final_sfx.mp4 --at 4.9=thud --at 6.5=tick   # by hand
+```
+
+- **Several renders:** `--cues FILE@START` can be given several times. START is where that render begins
+  in this video (0 when left out).
+- **Check first:** `--dry-run` prints every sound with its level and why it is there.
+- **Adjust:** `--level -3` makes every sound quieter. `--kit DIR` exports the kit as WAV files (with
+  `kit.json` of hit times) for CapCut or Premiere.
+- **Tested:**
+  - Every sound landed on its cue to the sample.
+  - Levels came out within 0.5 dB of target against the voice.
+  - The mastered file passed `qa.py` loudness (−14.1 LUFS, true peak −1.5 dBTP).
+  - The video stream was byte-identical.
+- **Graphics-only pieces with no voice and no music:** the sounds sit where they would against a mastered
+  voice (−14 LUFS), and the file isn't mastered. `qa.py` will flag the low overall loudness; add music
+  or accept the warning.
 
 ## 8. QA
 

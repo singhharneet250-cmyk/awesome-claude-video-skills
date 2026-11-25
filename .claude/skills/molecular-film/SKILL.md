@@ -79,6 +79,16 @@ Motion stays the framework's (measured thermal motion, one clock): it is physics
 moves calm: no whip moves, no zoom punches (§5). Keep its depth of field: it is the "shallow depth of field" the
 brand asks for.
 
+## Live control with the Blender MCP
+
+The repo's `.mcp.json` adds a `blender` server, so Claude Code on the same computer can work inside the open
+Blender. It can read the scene, set the White Glass materials and light below, check the framing by looking
+through the camera, and render a test still.
+- **Set up once:** `nutrition-hub-white-glass/reference/blender-mcp.md`.
+- **Use it for:** look-dev and framing.
+- **Keep the pipeline for the rest:** the science steps and the full render stay in `pipeline.py` from the
+  terminal. Safe mode blocks file access inside Blender, and a long render would freeze the live session.
+
 ## Back into the Nutrition Hub pipeline
 
 - Labels, evidence tags and the source go on White Glass callouts, not burned in by Blender:
