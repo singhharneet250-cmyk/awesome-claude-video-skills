@@ -158,6 +158,9 @@ All of these are implemented in `assets/brand.css`.
 - For rounded frosted plates, build the captions as an HTML overlay with `.nh-chip` styling
   and render it with `--transparent`.
 - Source notes go in a glass callout (`templates/overlay-callout.html`), not in captions.
+- **Talking-head kinetic captions** (one big key word plus small italic connector words, placed beside the head
+  or in the top band) are specified in `reference/style-references.md` ("Captions: arrangement, font styles and
+  placement"), measured from the owner's reference reels.
 
 ## 7. Formats and safe zones *(derived)*
 
@@ -280,4 +283,5 @@ scripts/qa.py                  automated delivery QA (specs, loudness, logo hash
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage
+reference/style-references.md  the owner's reference reels: techniques, caption layout and placement, open decisions
 ```
