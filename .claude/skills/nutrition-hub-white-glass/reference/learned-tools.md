@@ -85,4 +85,13 @@ Apple's guidance (Human Interface Guidelines: Materials; WWDC25 "Meet Liquid Gla
 - **iOS 27 (WWDC 2026)** refined Liquid Glass after a year of readability complaints: a system slider from fully
   opaque to completely clear, a more legible default, new rendering, and adaptation to Reduce Transparency and
   Increase Contrast → `glass.py --strength` (0 opaque … 1 clear), house default 0.4, readable by design.
+- **Clear variant, from the HIG (Materials) and SwiftUI `Glass.clear`, read 2026-11-26**: clear is "highly
+  translucent", for components that float over photos and video, and only over visually rich backgrounds; regular
+  "blurs and adjusts the luminosity" and suits text-heavy components. Clear needs a layer underneath for
+  legibility: the HIG suggests a dark dimming layer of 35% when the content behind is bright (none when it is
+  already dark); the SwiftUI example uses 30% black. Apple's clear glass carries no halo or shadow around words.
+- **Owner's decision (2026-11-26)**: clear glass for all cards and animations from now on, shown with iOS-style
+  white text and with brand ink text; the owner chose **ink text** (so our legibility layer is light porcelain,
+  not dark), **no shadows**, and a **liquid, glossy** finish → `glass.py` defaults: strength 0.9, `--liquid 1.0`,
+  `--gloss 1.0`, 32 px rim.
 - Not taken: Apple's look-alike controls, icons or system UI (never in a Nutrition Hub video).

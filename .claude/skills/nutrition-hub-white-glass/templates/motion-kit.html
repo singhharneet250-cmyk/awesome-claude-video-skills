@@ -226,7 +226,7 @@ const SCENES = {
     const m = m0 * (FS / (112 * S)), sp = FS * 0.27;
     const a = words(stage, A, { font: font(), letterSpacing: "-.035em" }), b = words(stage, B, { font: font(), letterSpacing: "-.035em" });
     const ins = el(stage, "mk", { width: px(wi), height: px(FS * 1.0), borderRadius: px(FS * 0.5), display: "grid", placeItems: "center", overflow: "hidden",
-      background: pic ? "#FFFFFF" : "var(--nh-orange-grad)", boxShadow: "0 14px 30px -14px rgba(240,120,43,.7)" });
+      background: pic ? "#FFFFFF" : "var(--nh-orange-grad)" });
     if (pic) ins.appendChild(img(pic, { width: "100%", height: "100%", objectFit: "cover" }));
     else if (chip) ins.innerHTML = `<span style="font:800 ${FS * 0.42}px/1 var(--nh-font);color:#FFFFFF;letter-spacing:-.01em">${esc(chip)}</span>`;
     else ins.innerHTML = `<div style="width:${FS * 0.5}px;height:${FS * 0.5}px">${checkSvg("#FFFFFF", 3.4)}</div>`;
@@ -490,7 +490,7 @@ const SCENES = {
   tracking: { overlay: true, build() {
     const text = str("text", "ORIGINAL"), D = parseFloat(str("dur", "3.0"));
     const y = TRANSPARENT ? (LAND ? H * 0.2 : H * 0.24) : CY;
-    const chip = TRANSPARENT ? el(stage, "mk", { height: px(108 * S), borderRadius: px(54 * S), background: "rgba(255,255,255,.94)", boxShadow: "var(--nh-shadow-sm)" }) : null;
+    const chip = TRANSPARENT ? el(stage, "mk", { height: px(108 * S), borderRadius: px(54 * S), background: "rgba(255,255,255,.94)" }) : null;
     const word = el(stage, "mk", { font: `600 ${56 * S}px/1 var(--nh-font)`, color: INK, textTransform: "uppercase" }, esc(text));
     return { dur: D, sfx: [{ t: 0.1, sfx: "whoosh", gain: -8, what: "tracking reveal" }],
       seek(t) {
@@ -507,7 +507,7 @@ const SCENES = {
     const y = Math.max(300 * S, LAND ? H * 0.12 : 300 * S);
     const a = el(stage, "mk", { padding: `${16 * S}px ${28 * S}px`, borderRadius: px(14 * S), background: INK, color: "#FFFFFF", display: "flex", alignItems: "center", gap: px(14 * S),
       font: `800 ${38 * S}px/1 var(--nh-font)`, letterSpacing: ".06em", textTransform: "uppercase" }, `<i class="nh-dot"></i>${esc(top)}`);
-    const b = el(stage, "mk", { padding: `${16 * S}px ${28 * S}px`, borderRadius: px(14 * S), background: "#FFFFFF", color: INK, boxShadow: "var(--nh-shadow-sm)",
+    const b = el(stage, "mk", { padding: `${16 * S}px ${28 * S}px`, borderRadius: px(14 * S), background: "#FFFFFF", color: INK,
       font: `700 ${36 * S}px/1 var(--nh-font)`, letterSpacing: "-.005em" }, esc(line).replace(/\*(.+?)\*/g, `<b style="color:var(--nh-orange-text);font-weight:800">“$1”</b>`));
     return { dur: D, sfx: [{ t: 0.12, sfx: "pop", what: "comment banner" }],
       seek(t) {
@@ -524,7 +524,7 @@ const SCENES = {
       `<div style="font:800 ${64 * S}px/1.05 var(--nh-font);letter-spacing:-.035em;color:${INK}">${esc(title)}</div>
        <div style="margin-top:${12 * S}px;font:500 ${32 * S}px/1.3 var(--nh-font);color:${SLATE}">${esc(sub)}</div>`);
     const pill = el(stage, "mk", { padding: `${26 * S}px ${54 * S}px`, borderRadius: px(60 * S), background: "var(--nh-orange-grad)", color: "#FFFFFF",
-      font: `700 ${40 * S}px/1 var(--nh-font)`, boxShadow: "0 18px 36px -16px rgba(240,120,43,.7), inset 0 1.5px 0 rgba(255,255,255,.45)" },
+      font: `700 ${40 * S}px/1 var(--nh-font)`, boxShadow: "inset 0 1.5px 0 rgba(255,255,255,.45)" },
       P.has("pill") ? esc(P.get("pill")) : `Comment <b style="font-weight:800;letter-spacing:.04em;margin-left:.25em">${esc(key)}</b>`);   // ?pill= for any other ask
     const chip = el(stage, "mk nh-chip", { fontSize: px(24 * S) }, esc(handle));
     const ch = card.offsetHeight;

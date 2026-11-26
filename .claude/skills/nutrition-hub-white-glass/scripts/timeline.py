@@ -22,7 +22,7 @@ edit.json (paths are relative to the file; every track is optional):
                {"start": 8.0, "end": 11.2, "template": "motion-kit.html?scene=wheel&pick=Creatine"}],   a motion-kit beat
   "effects":  [{"effect": "orbit", "start": 6, "end": 9.5, "words": "Whey,Creatine"},
                {"effect": "escape", "start": 1, "end": 4, "matte": "wall"}],
-  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels; "glass_strength": 0-1 (0 opaque, 1 clear)
+  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels; "glass_strength": 0-1 (0 opaque, 0.9 clear default, 1 clear)
   "captions": {"position": "auto", "keywords": ["protein"], "blur": true},   "max_words": 3 by default with auto
   "sfx":      [{"t": 4.9, "sfx": "thud"}],
   "endcard":  {"template": "reel-9x16.html", "from": 8.15},

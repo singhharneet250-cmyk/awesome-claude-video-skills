@@ -82,7 +82,7 @@ async function main() {
   // Real-glass passes (SKILL.md §4 A): the content pass leaves glass panels clear; the mask pass draws only them
   if (o["real-glass"] !== undefined) await page.addStyleTag({ content: `
     .nh-glass { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
-      border-color: transparent !important; box-shadow: 0 30px 70px -30px rgba(32, 43, 56, .30) !important; }` });
+      border-color: transparent !important; box-shadow: none !important; }` });   /* clear glass: no drop shadow */
   if (o["glass-mask"] !== undefined) await page.addStyleTag({ content: `
     html, body, .nh-stage { background: transparent !important; }
     body * { visibility: hidden !important; }

@@ -15,6 +15,11 @@ liquid glass (clearer, light bending at a rigid rim, after Apple's Liquid Glass 
 the system in the docs. The palette, type and rules are unchanged, and the skill keeps its id
 (`nutrition-hub-white-glass`, `?scheme=white-glass`) so every command still works. The name describes the look:
 never use Apple's logos, icons or system controls in a Nutrition Hub video.
+**Clear, liquid, glossy** *(owner, 2026-11-26, for every edit from now on)*: cards, chips and handles are **clear**
+Liquid Glass (strength 0.9): see-through, with a thick rounded edge that bends the picture like a drop of water and
+polished highlights. Text on the glass stays brand **ink** (owner's choice over iOS's white text). **No drop
+shadows** under glass, chips, pills or stickers, and **no glow or shadow beside words** on them (caption words keep
+their §6 legibility shadow).
 
 `reference/playbook.png` is the source playbook. Look at it when in doubt. Everything
 marked *(derived)* below adapts the playbook to video. Unmarked values come straight from it.
@@ -124,8 +129,9 @@ Headlines are short, sentence case and end in a full stop ("Creatine, explained 
 
 All of these are implemented in `assets/brand.css`.
 
-- **A · Liquid glass panels:** clear-frosted information cards with a rigid rim that catches the light (brightest
-  top-left and bottom-right), a lens edge and lower-edge thickness, a soft shadow and an 18–28 px radius
+- **A · Liquid glass panels:** clear information cards with a thick rounded rim that bends the light and catches it
+  (brightest top-left, a fainter line bottom-right), a lens edge and lower-edge thickness, no drop shadow and an
+  18–28 px radius
   (`.nh-glass`, `.nh-glass--sm`). Inner corners are concentric (an element inside a panel takes the panel's radius
   minus its padding), and glass never sits on glass. Over footage they go near-opaque
   automatically (`.is-transparent`). **Every word over footage sits on a panel**, except caption
@@ -133,11 +139,17 @@ All of these are implemented in `assets/brand.css`.
   - **Real glass over footage** *(owner reference "liquid glass", 2026-11-26)*: CSS blur only smears, and an
     overlay rendered on its own can't see the footage. `scripts/glass.py` does the glass at composite time:
     under every `.nh-glass` panel the footage is refracted through a rounded rim (IOR 1.5), split a little in
-    colour at the edge, frosted, tinted porcelain until ink text reads (auto, about 0.86 luminance), with a
-    thin specular rim lit from the top left. Two passes of the overlay feed it (`render.cjs --real-glass` and
-    `--glass-mask`). `timeline.py render` uses it for every overlay; `"glass": "flat"` keeps the old panels.
-    `--strength` (or `"glass_strength"` on an overlay) is the iOS 27 Liquid Glass slider: 0 opaque porcelain,
-    0.4 the house default, 1 completely clear. Keep small text at 0.6 or below.
+    colour at the edge, lightly frosted and tinted porcelain just enough for ink text (auto), with gloss: a crisp
+    specular on the rim facing the light with a little bloom, a fainter line on the far rim, fresnel on every
+    edge and a soft curved sheen across the face that moves with the panel. Two passes of the overlay feed it
+    (`render.cjs --real-glass` and `--glass-mask`). `timeline.py render` uses it for every overlay; `"glass":
+    "flat"` keeps the old near-opaque panels. `--strength` (or `"glass_strength"` on an overlay) is the iOS 27
+    Liquid Glass slider: 0 opaque porcelain … **0.9 the house default (clear)** … 1 completely clear;
+    `--variant regular` (0.4) is the frosted fallback for a long paragraph over very busy footage. `--liquid`
+    (1.0) sets how far the 32 px edge bends the picture, `--gloss` (1.0) the highlights. The orbit chips and the
+    wipe handle (`fx.py`) get the same glass. Apple's guidance, followed here: clear glass is for components
+    over photos and video (our cards over the speaker); keep it legible with a layer under the glass (iOS
+    dims it for white text; ours is a light porcelain layer for ink text).
 - **B · 3D science:** molecular science visuals with realistic materials and controlled
   detail. The SVG atom in `reel-9x16.html` is a stand-in; use a real 3D render:
   - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,

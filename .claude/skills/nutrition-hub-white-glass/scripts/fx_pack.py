@@ -51,7 +51,7 @@ def text_sprite(text, px, color, font_path=None, shadow=0.35, pad=None):
 
 
 def sticker(text, height, badge=None):
-    """A porcelain sticker with ink text and an optional orange badge, RGBA float."""
+    """A porcelain sticker with ink text and an optional orange badge, no shadow, RGBA float."""
     from PIL import Image, ImageDraw, ImageFilter, ImageFont
     ss = 2
     hp = int(height * ss)
@@ -62,9 +62,7 @@ def sticker(text, height, badge=None):
     w = tw + int(hp * 0.7) + (bw + int(hp * 0.18) if badge else 0)
     pad = int(hp * 0.45)
     im = Image.new("RGBA", (w + 2 * pad, hp + 2 * pad), (0, 0, 0, 0))
-    sh = Image.new("RGBA", im.size, (0, 0, 0, 0))
-    ImageDraw.Draw(sh).rounded_rectangle((pad, pad + hp * 0.14, pad + w, pad + hp + hp * 0.14), int(hp * 0.28), fill=(32, 43, 56, 70))
-    im = Image.alpha_composite(im, sh.filter(ImageFilter.GaussianBlur(hp * 0.14)))
+    # no drop shadow beside the words (owner, 2026-11-26)
     d = ImageDraw.Draw(im)
     d.rounded_rectangle((pad, pad, pad + w, pad + hp), int(hp * 0.28), fill=(255, 255, 255, 250), outline=(32, 43, 56, 22), width=ss)
     x = pad + int(hp * 0.32)
@@ -131,7 +129,7 @@ class Sticky:
         p = np.array(target, np.float32)
         self.pos = p if self.pos is None else self.pos + 0.35 * (p - self.pos)   # sticks, with a little lag
         spr = rotate(self.spr, -5 - 5 * (1 - k), 0.9 + 0.1 * k)
-        spr = spr.copy(); spr[..., 3] *= k
+        spr = spr.copy(); spr[..., 3:] *= k
         x = np.clip(self.pos[0], spr.shape[1] / 2 + 72 * W / 1080, W - spr.shape[1] / 2 - 72 * W / 1080)
         y = np.clip(self.pos[1], 250 * H / 1920, 1500 * H / 1920)
         fx.over(f, spr, x - spr.shape[1] / 2, y - spr.shape[0] / 2)
@@ -161,22 +159,22 @@ class Wipe:
 
     @staticmethod
     def _handle(d):
-        """A porcelain glass knob with two ink chevrons, RGBA float."""
-        from PIL import Image, ImageDraw, ImageFilter
+        """A clear Liquid Glass knob with two ink chevrons, no shadow: RGBA plus the knob's shape (fx.over puts glass
+        under it)."""
+        from PIL import Image, ImageDraw
         ss, pad = 3, d // 3
         D, P = d * ss, pad * ss
-        im = Image.new("RGBA", (D + 2 * P, D + 2 * P), (0, 0, 0, 0))
-        sh = Image.new("RGBA", im.size, (0, 0, 0, 0))
-        ImageDraw.Draw(sh).ellipse((P, P + D * 0.1, P + D, P + D * 1.1), fill=(32, 43, 56, 70))
-        im = Image.alpha_composite(im, sh.filter(ImageFilter.GaussianBlur(D * 0.1)))
+        im = Image.new("RGBA", (D + 2 * P, D + 2 * P), (0, 0, 0, 0))   # no drop shadow (owner, 2026-11-26)
+        knob = Image.new("L", im.size, 0)
+        ImageDraw.Draw(knob).ellipse((P, P, P + D, P + D), fill=255)
         g = ImageDraw.Draw(im)
-        g.ellipse((P, P, P + D, P + D), fill=(255, 255, 255, 240), outline=(255, 255, 255, 255), width=ss * 2)
         c, r, w = P + D / 2, D * 0.13, int(ss * 2.6)
         for sgn in (-1, 1):
             x = c + sgn * D * 0.13
             g.line([(x + sgn * -r * 0.0, c - r), (x + sgn * r * 0.8, c), (x, c + r)], fill=(32, 43, 56, 255), width=w, joint="curve")
-        im = im.resize((im.width // ss, im.height // ss), Image.LANCZOS)
-        return np.asarray(im).astype(np.float32) / 255
+        size = (im.width // ss, im.height // ss)
+        im = im.resize(size, Image.LANCZOS)
+        return np.dstack([np.asarray(im).astype(np.float32) / 255, np.asarray(knob.resize(size, Image.LANCZOS)).astype(np.float32) / 255])
 
     def __call__(self, f, matte, face, t, **_):
         a, W, H = self.a, self.W, self.H
@@ -196,15 +194,15 @@ class Wipe:
             d = np.abs(self.xs - bar)
             glow = (np.exp(-(d / 2.2) ** 2) * 0.95 + np.exp(-(d / 40) ** 2) * 0.16)[None, :, None] * k
             out = out * (1 - glow) + fx.WHITE * glow
-            hd = self.handle.copy(); hd[..., 3] *= k
+            hd = self.handle.copy(); hd[..., 3:] *= k
             fx.over(out, hd, bar - hd.shape[1] / 2, 0.52 * H - hd.shape[0] / 2)           # chest height: clear of the face and the lower overlays
             cb, ca = self.chip_b.copy(), self.chip_a.copy()
-            cb[..., 3] *= k; ca[..., 3] *= k
+            cb[..., 3:] *= k; ca[..., 3:] *= k
             u = W / 1080
             fx.over(out, cb, 72 * u, 0.2 * H)
             fx.over(out, ca, W - 72 * u - ca.shape[1], 0.2 * H)
             if self.head is not None:
-                hh = self.head.copy(); hh[..., 3] *= k
+                hh = self.head.copy(); hh[..., 3:] *= k
                 fx.over(out, hh, (W - hh.shape[1]) / 2, 0.135 * H - hh.shape[0] / 2)
             return out
         start = a.s + 0.35
@@ -218,8 +216,8 @@ class Wipe:
             out = out * (1 - glow) + fx.WHITE * glow
         y = 0.58 * H
         cb, ca = self.chip_b.copy(), self.chip_a.copy()
-        cb[..., 3] *= k * (1 - p)
-        ca[..., 3] *= k * min(1, p * 3)
+        cb[..., 3:] *= k * (1 - p)
+        ca[..., 3:] *= k * min(1, p * 3)
         fx.over(out, cb, 72 * W / 1080, y)
         fx.over(out, ca, W - 72 * W / 1080 - ca.shape[1], y)
         return out
@@ -341,7 +339,7 @@ class Scatter:
                 sc = 1 + (depth - 1) * spread
                 s = rotate(spr, rot * spread, max(0.2, sc))
                 s = blur(s, 10 * abs(depth - 1) * spread)
-                s = s.copy(); s[..., 3] *= min(1.0, pin * 1.5) * (1 - pout)
+                s = s.copy(); s[..., 3:] *= min(1.0, pin * 1.5) * (1 - pout)
                 px, py = x + w / 2 + dx * spread, ly + dy * spread
                 x = x + w
                 tgt = back if layer["behind"] else None

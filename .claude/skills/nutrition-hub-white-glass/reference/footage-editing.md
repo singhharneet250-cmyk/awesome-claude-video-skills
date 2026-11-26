@@ -228,11 +228,15 @@ node $SK/scripts/render.cjs "$T" --transparent --glass-mask --out prompt.mask.mo
 python3 $SK/scripts/glass.py graded.mp4 over.mp4 --content prompt.mov --mask prompt.mask.mov --at 1
 ```
 
-- Under each panel: refraction at a 20 px rim (IOR 1.5), faint colour split, 8 px frost, a porcelain tint that
-  adapts so ink reads (about 0.86 luminance), a lit rim from the top left, and a materialize as the panel reveals.
+- Under each panel (house default since 2026-11-26: clear, liquid, glossy): a 32 px rounded edge that bends the
+  picture like a drop of water (IOR 1.5, `--liquid 1.0`), faint colour split, almost no frost, a porcelain tint
+  that adapts just enough for ink text (about 0.73 luminance), gloss (`--gloss 1.0`: rim specular and bloom from
+  the top left, a far-edge line, fresnel, a curved sheen), no drop shadow, and a materialize as the panel reveals.
 - `--compare flat.mov` writes a side-by-side (old flat panel left, liquid glass right) for checking.
-- `--strength 0…1` is the iOS 27-style slider (0 opaque, 0.4 default, 1 clear; tested at 0, 0.4 and 0.9 on the 6 s
-  take: text reads at all three, hands show through at 0.9). `--variant clear` = strength 0.9.
+- `--strength 0…1` is the iOS 27-style slider (0 opaque, 0.4 frosted, 0.9 the clear house default, 1 clear;
+  tested at 0, 0.4 and 0.9: text reads at all three, hands show through at 0.9). `--variant regular` = 0.4.
+- Checked on the owner's Vitamin D take (plaid shirt, white stage): toggle, prompt and CTA cards and the orbit
+  chips read at 0.9 with ink text; sample `Clear-Glossy-Glass-sample.mp4` (12.6 s).
 - Tested on a 6 s 1080×1920 take (bright interior): 32 s for 180 frames; text reads over hands, hair and a dark chair.
 - Any template works; panels are whatever carries `.nh-glass`. A template without glass just gets its overlay.
 

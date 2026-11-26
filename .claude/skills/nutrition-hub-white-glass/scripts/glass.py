@@ -18,18 +18,23 @@ text reads, puts a thin specular rim on the lit edge, then lays the overlay's wo
 timeline.py render does all of this for every overlay ("glass": "real" is the default; "flat" switches it off).
 
 Options (sizes are for a 1080 px wide frame and scale with it):
-  --strength 0.4  the iOS 27 Liquid Glass slider: 0 = opaque porcelain (most readable), 1 = completely clear.
-                  It sets the frost and the auto tint together; 0.4 is the house default (frosted, legible)
+  --strength 0.9  the iOS 27 Liquid Glass slider: 0 = opaque porcelain, 1 = completely clear. It sets the frost
+                  and the auto tint together. House default since 2026-11-26 (owner): clear, 0.9
   --frost 8       blur of the footage seen through the glass, px (overrides the strength's frost; 0 = clear)
-  --tint auto     white mixed into the glass: auto keeps ink text readable over any footage (target luminance
-                  0.85 at the default strength), smoothed over time; or a number 0-1
-                  over any footage, smoothed over time; or a number 0-1
-  --rim 20        width of the bevelled rim that bends the light, px
+  --tint auto     white mixed into the glass: auto adapts to the footage so ink text reads (target luminance 0.85
+                  at strength 0.4, 0.73 at 0.9), smoothed over time; or a number 0-1
+  --rim 32        width of the thick rounded edge that bends the light, px
+  --liquid 1.0    how far that edge bends the picture, easing from the edge to the flat face like a drop of
+                  water (0 = a flat slab; the owner asked for a liquid, glossy look)
   --ior 1.5       index of refraction (1.5 = glass); higher bends more
-  --dispersion 0.6  colour split at the rim (0 = none; real glass keeps it faint)
+  --dispersion 0.8  colour split at the rim (0 = none; real glass keeps it faint)
   --light 0.85    strength of the rim highlight (light from the top left, turning a little as the panel moves)
-  --variant regular  regular (frosted, adapts to stay legible: the Liquid Glass default) or clear (strength 0.9, only
-                  for panels without small text), after Apple's Liquid Glass variants
+  --gloss 1.0     the polished-glass highlights: a soft sheen across the face toward the light, a bloom on the key
+                  highlight, a fainter line on the far rim (light caught inside the slab) and fresnel on every edge
+  --variant clear  clear (strength 0.9, the house default) or regular (strength 0.4, frosted), after Apple's Liquid
+                  Glass variants. Clear glass keeps the brand's ink text (owner's choice): its legibility layer is a
+                  light porcelain one, where iOS puts a dark dimming layer under white text. No glow or shadow
+                  around words, and no drop shadow under the glass
 A panel "materializes" the way Apple's Liquid Glass does: as the overlay's reveal brings it in, the lensing, frost,
 tint and rim grow together instead of a flat fade.
 Audio and everything outside the overlay's time are copied from the footage. Needs ffmpeg, numpy and OpenCV.
@@ -79,7 +84,7 @@ def frames(path, w, h, fmt="rgb24", rate=None):
 
 
 class Glass:
-    def __init__(self, scale, frost, tint, rim, ior, dispersion, light, strength=0.4):
+    def __init__(self, scale, frost, tint, rim=32, ior=1.5, dispersion=0.8, light=0.85, strength=0.9, gloss=1.0, liquid=1.0):
         # one slider, like iOS 27's Liquid Glass control: 0 = opaque porcelain, 1 = completely clear
         strength = float(np.clip(strength, 0, 1))
         if frost is None:
@@ -87,6 +92,7 @@ class Glass:
         self.target, self.tmin = 0.95 - 0.25 * strength, max(0.05, 0.6 - 0.62 * strength)
         self.s, self.frost, self.tint, self.ior, self.disp, self.light = scale, frost * scale, tint, ior, dispersion, light
         self.rim = max(4.0, rim * scale)
+        self.gloss, self.liquid = gloss, liquid          # liquid: how far the rounded edge bends the picture (0 = none)
         self.t_smooth = None
         self.W = None
 
@@ -115,12 +121,18 @@ class Glass:
         z = cv2.GaussianBlur(z, (0, 0), 1.2)
         gx = cv2.Sobel(z, cv2.CV_32F, 1, 0, ksize=3) / 8
         gy = cv2.Sobel(z, cv2.CV_32F, 0, 1, ksize=3) / 8
-        bend = self.rim * (1 - 1 / self.ior) * 3.4 * k           # how far the rim pulls the picture, px
+        # liquid lensing (owner: "liquid glossy"): a thick, rounded edge pulls the picture in across the whole rim,
+        # strongest at the edge and easing to nothing where the face turns flat, like a drop of water
+        gn = np.sqrt(gx ** 2 + gy ** 2) + 1e-4
+        amp = self.rim * (1 - 1 / self.ior) * 2.2 * self.liquid * k * cv2.GaussianBlur((1 - u) ** 2, (0, 0), 1.0)
+        nx, ny = gx / gn * amp, gy / gn * amp
         X, Y = np.meshgrid(np.arange(x1 - x0, dtype=np.float32), np.arange(y1 - y0, dtype=np.float32))
         out = np.empty_like(src)
-        for c, k in enumerate((1.0, 1.0 + 0.045 * self.disp, 1.0 + 0.09 * self.disp)):   # R, G, B bend a little differently
-            out[..., c] = cv2.remap(np.ascontiguousarray(frosted[..., c]), X - gx * bend * k, Y - gy * bend * k,
+        for c, kc in enumerate((1.0, 1.0 + 0.045 * self.disp, 1.0 + 0.09 * self.disp)):   # R, G, B bend a little differently
+            out[..., c] = cv2.remap(np.ascontiguousarray(frosted[..., c]), X - nx * kc, Y - ny * kc,
                                     cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+        ly = (out[..., 0] * 0.2126 + out[..., 1] * 0.7152 + out[..., 2] * 0.0722)[..., None]
+        out = np.clip(ly + (out - ly) * (1 + 0.25 * k), 0, 255)            # vibrancy: the bent picture a touch richer
         lum = float((out[..., 0] * 0.2126 + out[..., 1] * 0.7152 + out[..., 2] * 0.0722)[m > 0.5].mean() / 255) if (m > 0.5).any() else 1.0
         if self.tint == "auto":
             t = float(np.clip((self.target - lum) / max(1e-3, 1 - lum), self.tmin, 0.9))   # light enough that ink text reads
@@ -134,10 +146,35 @@ class Glass:
         facing = np.clip(-(gx * L[0] + gy * L[1]) / g, -1, 1)   # +1 where the rim faces the light (top left)
         band = (1 - u) * (g > 1e-3)
         line = np.exp(-d / (1.0 * self.s)) * inside              # the rigid rim: a thin bright line all round
-        spec = (np.clip(facing, 0, 1) ** 2 * band ** 3 * 0.85 + line * (0.35 + 0.45 * np.clip(facing, 0, 1))) * self.light * k
-        shade = np.clip(-facing, 0, 1) * band ** 2 * 0.2 * self.light * k
+        lit, far = np.clip(facing, 0, 1), np.clip(-facing, 0, 1)
+        # gloss (owner: "realistic glossy"), as polished glass shows it:
+        #  key      a crisp specular along the rim that faces the light, brightest where the corner curves into it
+        #  bloom    that highlight glows a little into the glass, as a bright reflection does in a lens
+        #  far edge light caught inside the slab leaves a fainter line on the opposite rim, just past a soft shade
+        #  fresnel  every edge reflects more than the face (grazing angle), so the rim reads glassy all round
+        #  sheen    the polished face reflects a broad soft light: brighter toward the light, falling off across the
+        #           panel with a soft edge; it moves as the panel moves, so it never looks painted on
+        G = self.gloss * self.light * k
+        key = (lit ** 2 * band ** 2.2 * 1.0 + line * (0.45 + 0.55 * lit)) * self.light * k
+        bloom = cv2.GaussianBlur(key, (0, 0), 5.0 * self.s) * 0.6 * self.gloss
+        back = (far ** 2 * np.exp(-d / (1.8 * self.s)) * 0.6 + far ** 3 * band ** 4 * 0.25) * G
+        fres = band ** 2 * 0.18 * G
+        ys_, xs_ = np.nonzero(inside)
+        if len(ys_):
+            pcx, pcy = (xs_.min() + xs_.max()) / 2, (ys_.min() + ys_.max()) / 2
+            hx, hy = max(1.0, (xs_.max() - xs_.min()) / 2), max(1.0, (ys_.max() - ys_.min()) / 2)
+            pr = ((X - pcx) * L[0] + (Y - pcy) * L[1]) / (abs(L[0]) * hx + abs(L[1]) * hy)   # +1 at the lit corner
+            q = ((X - pcx) * -L[1] + (Y - pcy) * L[0]) / (abs(L[1]) * hx + abs(L[0]) * hy)   # across the light
+            pr = pr + 0.22 * q ** 2                              # a softbox seen in a polished face: a curved edge
+            ss_ = lambda e0, e1, v: np.clip((v - e0) / (e1 - e0), 0, 1) ** 2 * (3 - 2 * np.clip((v - e0) / (e1 - e0), 0, 1))
+            face = cv2.GaussianBlur(np.clip(u * 1.4, 0, 1), (0, 0), 2.0) * inside
+            sheen = (0.10 * ss_(-0.6, 1.0, pr) + 0.24 * ss_(0.22, 0.46, pr)) * face * G
+        else:
+            sheen = 0.0
+        shade = far * band ** 2 * 0.14 * self.light * k * (1 - np.exp(-d / (2.5 * self.s)))
         out = out * (1 - shade[..., None])
-        out = out + (255 - out) * np.clip(spec, 0, 1)[..., None]
+        out = out + (255 - out) * np.clip(sheen + fres, 0, 1)[..., None]
+        out = out + (255 - out) * np.clip(key + bloom + back, 0, 1)[..., None]
         res = base.copy()
         a = np.clip(m * 3, 0, 1)[..., None]                       # the shape is there at once; the glass itself grows in
         res[y0:y1, x0:x1] = np.clip(src * (1 - a) + out * a, 0, 255).astype(np.uint8)
@@ -155,14 +192,16 @@ def main():
     ap.add_argument("--content", required=True, help="overlay pass rendered with --transparent --real-glass")
     ap.add_argument("--mask", required=True, help="the same overlay rendered with --transparent --glass-mask")
     ap.add_argument("--at", type=float, default=0.0, help="where the overlay starts in the footage, seconds")
-    ap.add_argument("--strength", type=float, help="0 opaque … 1 clear (default 0.4; 0.9 with --variant clear)")
+    ap.add_argument("--strength", type=float, help="0 opaque … 1 clear (default 0.9; 0.4 with --variant regular)")
     ap.add_argument("--frost", type=float)
     ap.add_argument("--tint", default="auto")
-    ap.add_argument("--rim", type=float, default=20.0)
+    ap.add_argument("--rim", type=float, default=32.0)
     ap.add_argument("--ior", type=float, default=1.5)
-    ap.add_argument("--dispersion", type=float, default=0.6)
+    ap.add_argument("--dispersion", type=float, default=0.8)
     ap.add_argument("--light", type=float, default=0.85)
-    ap.add_argument("--variant", choices=["regular", "clear"], default="regular")
+    ap.add_argument("--liquid", type=float, default=1.0, help="how far the thick rounded edge bends the picture (0 = flat slab)")
+    ap.add_argument("--gloss", type=float, default=1.0, help="sheen, bloom, far-edge and fresnel highlights (0 = rim light only)")
+    ap.add_argument("--variant", choices=["clear", "regular"], default="clear")
     ap.add_argument("--compare", metavar="FLAT.mov", help="write a side-by-side: this flat-glass overlay left, real glass right")
     a = ap.parse_args()
     if a.tint != "auto":
@@ -174,7 +213,7 @@ def main():
     bi = probe(a.base)
     W, H = bi["w"], bi["h"]
     strength = a.strength if a.strength is not None else (0.9 if a.variant == "clear" else 0.4)
-    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength)
+    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength, a.gloss, a.liquid)
     start = int(round(a.at * bi["fps"]))
     content = frames(a.content, W, H, "rgba", bi["rate"])
     mask = frames(a.mask, W, H, "rgba", bi["rate"])
