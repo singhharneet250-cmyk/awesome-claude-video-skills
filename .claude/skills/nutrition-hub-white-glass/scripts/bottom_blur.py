@@ -69,7 +69,7 @@ def main():
                     help="blur ONLY when needed: the band fades in for the time windows in this plan (written by captions.py --plan-out)")
     ap.add_argument("--when", metavar="A-B,C-D",
                     help="extra windows in seconds when the band is on, e.g. for animations in the bottom band: 3.0-5.5,12-14")
-    ap.add_argument("--crf", type=int, default=18)
+    ap.add_argument("--crf", type=int, default=10)
     a = ap.parse_args()
     if not (0 < a.start < a.full <= 1):
         sys.exit("--start must be below --full, both between 0 and 1 (shares of the frame height).")
@@ -144,7 +144,7 @@ def main():
         cmd = ["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", a.input, "-loop", "1", "-t", dur, "-i", mask,
                "-loop", "1", "-t", dur, "-i", fade,
                "-filter_complex", graph, "-map", "[v]", "-map", "0:a?", "-t", dur,
-               "-c:v", "libx264", "-crf", str(a.crf), "-preset", "medium", "-pix_fmt", "yuv420p",
+               "-c:v", "libx264", "-crf", str(a.crf), "-preset", "fast", "-pix_fmt", "yuv420p",
                "-c:a", "copy", "-movflags", "+faststart", a.output]
         r = subprocess.run(cmd)
         if r.returncode != 0:

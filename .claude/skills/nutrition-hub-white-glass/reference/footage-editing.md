@@ -87,7 +87,7 @@ shifts label colours** (accurate packaging): grade those shots separately or lea
 ```bash
 ffmpeg -i in.mp4 -vf "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30,\
 eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015,setsar=1" \
-  -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a copy graded.mp4
+  -c:v libx264 -crf 10 -preset fast -pix_fmt yuv420p -c:a copy graded.mp4
 ```
 
 If the subject isn't centred, change the crop's x offset (for example `crop=1080:1920:(iw-1080)*0.35:0`).
@@ -209,7 +209,7 @@ second. Use `-itsoffset` for the start time.
 node $SK/scripts/render.cjs $SK/templates/overlay-callout.html --transparent --out callout.mov
 ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
   -filter_complex "[0:v][1:v]overlay=0:0:eof_action=pass[v]" \
-  -map "[v]" -map 0:a -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a copy over.mp4
+  -map "[v]" -map 0:a -c:v libx264 -crf 10 -preset fast -pix_fmt yuv420p -c:a copy over.mp4
 ```
 
 - `--transparent` writes ProRes 4444 (`.mov`) or VP9 with alpha (`.webm`).
@@ -293,7 +293,7 @@ python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt
 
 ```bash
 ffmpeg -i over.mp4 -vf "ass=captions.ass:fontsdir=$SK/assets/fonts" \
-  -c:v libx264 -crf 18 -pix_fmt yuv420p -c:a copy capped.mp4
+  -c:v libx264 -crf 10 -preset fast -pix_fmt yuv420p -c:a copy capped.mp4
 ```
 
 Captions have no box (SKILL.md §6). The style uses `BorderStyle=1` with a semi-transparent
@@ -324,7 +324,7 @@ ffmpeg -i capped.mp4 -i endcard.mp4 -filter_complex "\
 [0:v]fps=30,format=yuv420p,setsar=1[a];[1:v]fps=30,format=yuv420p,setsar=1[b];\
 [a][b]xfade=transition=fadewhite:duration=$X:offset=$OFF[v];\
 [0:a]afade=t=out:st=$OFF:d=$X,apad=pad_dur=$PAD,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a2]" \
-  -map "[v]" -map "[a2]" -c:v libx264 -crf 18 -preset slow -profile:v high -pix_fmt yuv420p \
+  -map "[v]" -map "[a2]" -c:v libx264 -crf 14 -preset slow -profile:v high -pix_fmt yuv420p \
   -c:a aac -b:a 192k -movflags +faststart final.mp4
 ```
 

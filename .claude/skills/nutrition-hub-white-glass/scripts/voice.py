@@ -111,7 +111,7 @@ def main():
         cmd = ["ffmpeg", "-y", "-v", "error", "-i", a.src, "-vn", "-af", f"aformat=channel_layouts=mono,{chain}", "-ac", "2", str(out)]
     else:
         cmd = ["ffmpeg", "-y", "-v", "error", "-i", a.src, "-map", "0:v?", "-map", "0:a", "-c:v", "copy",
-               "-af", f"aformat=channel_layouts=mono,{chain}", "-ac", "2", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(out)]
+               "-af", f"aformat=channel_layouts=mono,{chain}", "-ac", "2", "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", str(out)]
     r = subprocess.run(cmd, capture_output=True, text=True)
     if r.returncode:
         sys.exit(r.stderr[-600:])

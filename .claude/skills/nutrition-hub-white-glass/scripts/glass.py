@@ -47,6 +47,9 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import encode  # noqa: E402  (visually lossless output; encode.py deliver for the final file)
+
 try:
     import cv2
 except ImportError:
@@ -220,8 +223,7 @@ def main():
     flat = frames(a.compare, W, H, "rgba", bi["rate"]) if a.compare else None
     OW = W * 2 if flat else W
     enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{OW}x{H}", "-r", bi["rate"], "-i", "-",
-                            "-i", str(a.base), "-map", "0:v", "-map", "1:a?", "-c:v", "libx264", "-crf", "17", "-preset", "medium",
-                            "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", "-shortest", a.out], stdin=subprocess.PIPE)
+                            "-i", str(a.base), "-map", "0:v", "-map", "1:a?", *encode.WORK, "-c:a", "copy", "-movflags", "+faststart", "-shortest", a.out], stdin=subprocess.PIPE)
     n = 0
     for i, f in enumerate(frames(a.base, W, H, "rgb24", bi["rate"])):
         out, left = f, f

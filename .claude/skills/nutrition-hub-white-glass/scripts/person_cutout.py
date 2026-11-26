@@ -29,6 +29,9 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import encode  # noqa: E402
+
 try:
     import cv2
 except ImportError:
@@ -281,7 +284,7 @@ def main():
         print(f"preview → {a.preview} (matte | cut-out | result)")
         return
     enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", rate, "-i", "-",
-                            "-i", str(a.video), "-map", "0:v", "-map", "1:a?", "-c:v", "libx264", "-crf", "16", "-preset", "slow",
+                            "-i", str(a.video), "-map", "0:v", "-map", "1:a?", *encode.WORK,
                             "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", "-shortest", a.out], stdin=subprocess.PIPE)
     menc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{W}x{H}", "-r", rate, "-i", "-",
                              "-c:v", "libx264", "-crf", "10", "-pix_fmt", "yuv420p", a.matte_out], stdin=subprocess.PIPE) if a.matte_out else None

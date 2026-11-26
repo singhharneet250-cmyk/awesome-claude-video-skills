@@ -43,6 +43,7 @@ except ImportError:
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import encode  # noqa: E402  (visually lossless output; encode.py deliver for the final file)
 
 WHITE = np.array([1.0, 1.0, 1.0], np.float32)
 ICE = np.array([0xEA, 0xF0, 0xF6], np.float32) / 255
@@ -93,7 +94,7 @@ class Writer:
                "-r", info["rate"], "-i", "-"]
         if audio_from and info["audio"]:
             cmd += ["-i", str(audio_from), "-map", "0:v", "-map", "1:a", "-c:a", "copy"]
-        cmd += ["-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)]
+        cmd += [*encode.WORK, "-movflags", "+faststart", str(out)]
         self.p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def write(self, rgb):

@@ -397,7 +397,7 @@ def main():
         out *= 0.89 / np.max(np.abs(out))
     af = ["-af", "loudnorm=I=-14:TP=-2:LRA=11,alimiter=limit=0.75:attack=1:release=60:level=disabled,aresample=48000"] if master else []
     cmd = ["ffmpeg", "-y", "-v", "error", "-i", str(a.video), "-f", "f32le", "-ar", str(SR), "-ac", "2", "-i", "-",
-           "-map", "0:v", "-map", "1:a", "-c:v", "copy", *af, "-c:a", "aac", "-b:a", "192k", "-ar", str(SR),
+           "-map", "0:v", "-map", "1:a", "-c:v", "copy", *af, "-c:a", "aac", "-b:a", "256k", "-ar", str(SR),
            "-shortest", "-movflags", "+faststart", str(a.out)]
     r = subprocess.run(cmd, input=out.astype(np.float32).tobytes(), capture_output=True)
     if r.returncode:

@@ -458,8 +458,18 @@ All of these are implemented in `assets/brand.css`.
   - Nothing important in the bottom 420 px or the top 250 px.
 - **16:9 product films and education:** 1920×1080. Use 96 px margins and `.nh-landscape`.
 - **4:5 feed:** 1080×1350 with 72 px margins.
-- **Export:** H.264 High, yuv420p, CRF 16–18, AAC 192 kb/s at 48 kHz, `+faststart`,
-  loudness −14 LUFS with true peak −1.5 dBTP.
+- **High-quality, full-HD output** *(owner, 2026-11-26, every future edit)*: deliver 1080×1920 (or the format's full
+  HD size) as a clean master the platforms re-encode from. `scripts/encode.py` holds every setting:
+  - **between steps:** x264 CRF 10, preset fast (visually lossless), so eight passes don't add up;
+  - **delivery:** H.264 High 4.2, yuv420p, **CRF 14, preset slow**, BT.709 tags, ≤ 30 Mbit/s (about 10–15 Mbit/s
+    for a talking head), AAC **256 kb/s** at 48 kHz, `+faststart`; loudness −14 LUFS, true peak ≤ −1.5 dBTP.
+    `timeline.py render` ends with it; for any other output run `python3 scripts/encode.py deliver in.mp4 out.mp4`;
+  - **enlarging:** Lanczos plus a light unsharp, never the default bicubic;
+  - **source:** `qa.py --source take.mp4` (automatic in `timeline.py render`) warns when the take is below full HD.
+    WhatsApp shrinks video to about 576×1024 at 1.3 Mbit/s, so ask for the **original camera file** (attached in
+    WhatsApp as a Document, or by Google Drive) before editing: no encoder setting can put back detail the source
+    never had;
+  - **size caps** (WhatsApp 16 MB): make a copy with the `halfsize` skill from the delivered file; the master stays.
 
 ## 8. Content rules (evidence-led)
 
@@ -492,7 +502,8 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
 - The steps below still apply. The timeline is how they are written down and run.
 
 1. **Read the brief and probe the footage:**
-   `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`.
+   `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`,
+   and `python3 scripts/encode.py check in.mp4`: below full HD (a WhatsApp copy), ask for the original file first.
 2. **Check that the logo exists and matches its sha256.** If not, ask for it.
 3. **Plan beats:** hook (0–3 s), evidence or value, end card. Choose components from §4.
 4. **Build graphics** by copying a template from `templates/` and editing only its `SCENE` object
@@ -639,6 +650,7 @@ scripts/glass.py               real glass over footage: refraction, dispersion, 
 scripts/screen_insert.py       put a beat on a real screen in footage (auto-detect, --corners, --track, glare and glow)
 scripts/person_cutout.py       remove the background: MODNet every frame + BiRefNet-lite keyframe guide; stage, blur, picture or clip
 scripts/voice.py               clear, natural voice: measured mud cut, presence and air lifts, light denoise, de-esser, compression
+scripts/encode.py              high-quality output: visually lossless steps, the CRF 14 delivery encode, Lanczos enlarging, source check
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage
