@@ -289,6 +289,23 @@ All of these are implemented in `assets/brand.css`.
   keeps a little of its own glare and spills a soft glow in dark rooms. `--track` follows gentle handheld moves; for
   big camera moves, or a screen that runs off the frame, film locked off. Tested: R15's monitor and R11's monitor
   (locked off) look real; R16's handheld pull-back drifts after about a second.
+- **N · Remove background (owner request, 2026-11-26).** `scripts/person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4`
+  puts the speaker on the Liquid Glass stage (or `--bg blur|white|picture|clip`) with a soft contact shadow and a
+  light wrap. Two open models run locally, downloaded from huggingface.co on first use:
+  - MODNet (Apache-2.0), every frame, for the fine edge (turban, beard, fingers), refined to the frame's own edges
+    and steadied over time.
+  - BiRefNet-lite (MIT), three keyframes a second, as the guide: furniture that touches the body (a counter, a
+    chair) is kept out. It costs about 7 s a keyframe on a CPU (about 15 min for a 42 s take); `--guide 0` skips it.
+  - `--preview f.png --at 12` shows matte, cut-out and result for one moment first. The matte feeds the orbit,
+    frame escape and depth scatter (`"matte": "matte.mp4"`).
+  - Tested on the owner's 42 s WhatsApp take (576×1024, busy room): BiRefNet-portrait was too heavy for this
+    machine (13 s a frame, out of memory); MODNet alone kept a counter; a learned room plate ate the shirt; the
+    keyframe guide is what works.
+- **O · Clear voice (owner request, 2026-11-26).** `scripts/voice.py take.mp4 clean.mp4` measures the recording, then
+  corrects only what it finds, gently: 80 Hz high-pass, light denoise sized to the noise floor, a mud cut, a presence
+  lift around 3 kHz, a little air, a de-esser and 2.5:1 compression. `--report` shows the plan; `--ab 0-10` writes a
+  level-matched before-and-after. Loudness is finished later (sfx.py, −14 LUFS). On the owner's take: presence
+  (2–4 kHz) up 4.4 dB, noise still 23 dB under the voice.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -608,6 +625,8 @@ scripts/layout_plan.py         picks the vacant slot around the person for each 
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, frozen stretches, contact sheet)
 scripts/glass.py               real glass over footage: refraction, dispersion, frost, porcelain tint, rim light under each panel
 scripts/screen_insert.py       put a beat on a real screen in footage (auto-detect, --corners, --track, glare and glow)
+scripts/person_cutout.py       remove the background: MODNet every frame + BiRefNet-lite keyframe guide; stage, blur, picture or clip
+scripts/voice.py               clear, natural voice: measured mud cut, presence and air lifts, light denoise, de-esser, compression
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage

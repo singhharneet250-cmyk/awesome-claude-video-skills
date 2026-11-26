@@ -251,6 +251,23 @@ python3 $SK/scripts/screen_insert.py store-tv.mp4 beat.mp4 tv.mp4 --at 0.5
   film the store TV locked off.
 - The result is b-roll: cut it in with `broll.py` or a b-roll entry in `edit.json`.
 
+## 3d. Remove the background and clean the voice (SKILL.md §4 N, O)
+
+```bash
+python3 $SK/scripts/person_cutout.py take.mp4 --preview cut.png --at 12        # check one moment first
+python3 $SK/scripts/person_cutout.py take.mp4 nobg.mp4 --matte-out matte.mp4    # you on the Liquid Glass stage
+python3 $SK/scripts/voice.py take.mp4 voice.wav                                  # clear, natural voice
+ffmpeg -i nobg.mp4 -i voice.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest take_src.mp4
+```
+
+- Then `take_src.mp4` is the `edit.json` source with `"grade": false` (the cut-out is graded already), and
+  `"matte": "matte.mp4"` on the orbit, escape or scatter.
+- Tested on the owner's 42 s WhatsApp take (576×1024, a busy room with a counter touching the arm): about 15 min of
+  BiRefNet-lite keyframes plus about 8 min for every frame on 4 CPU cores.
+- Captions for Punjabi or Hindi speech: Whisper (faster-whisper `medium`, local) gives good word timings but rough
+  Devanagari spelling for Punjabi; write the words in Roman script on those timings (`words.json`), the way the label
+  reel's Hinglish captions were done. Keep "Vitamin D" as one word with a no-break space so it never splits.
+
 ## 4. Captions
 
 1. Get word timings. Use Whisper or faster-whisper with word timestamps, IT Reelsmaker's

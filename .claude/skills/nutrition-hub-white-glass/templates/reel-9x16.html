@@ -167,6 +167,8 @@ const NH = {
 
 const params = new URLSearchParams(location.search);
 if (params.get("transparent") === "1") document.getElementById("stage").classList.add("is-transparent");
+// the end card's call to action and contact can be set per video: ?cta=DM%20for%20guidance&contact=9914571175
+["cta", "contact"].forEach((k) => { if (params.has(k)) SCENE[k] = params.get(k); });
 
 document.querySelectorAll("[data-text]").forEach((el) => { el.textContent = NH.get(el.dataset.text) ?? ""; });
 document.getElementById("facts").innerHTML = SCENE.facts.map((f, k) => `
