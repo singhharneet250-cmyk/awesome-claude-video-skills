@@ -345,6 +345,8 @@ def main():
     ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
     ap.add_argument("--position", choices=sorted(POSITIONS) + ["auto"], default="bottom",
                     help="bottom (default, y about 73%%), mic (about 58%%, R6), chest (about 50%%, R5), or auto: the vacant space around the person in the --match video (left, right, above, chest or the bottom band; scripts/layout_plan.py)")
+    ap.add_argument("--avoid", default="", metavar="T0-T1:X0,Y0,X1,Y1;...",
+                    help="--position auto: areas (1080x1920 pixels) captions must not cover while overlays show; timeline.py fills it in")
     ap.add_argument("--prefer", choices=["left", "right", "top", "chest", "bottom"], default=None,
                     help="with --position auto: favour one slot when it fits, e.g. bottom to use the blur band for captions")
     ap.add_argument("--plan-out", type=Path, metavar="PLAN.json",
@@ -369,7 +371,12 @@ def main():
         zone = args.position
         if args.position == "auto":
             from layout_plan import Planner
-            person = Planner(args.match, prefer=args.prefer)
+            avoid = []
+            for part in filter(None, args.avoid.split(";")):
+                tt, box = part.split(":")
+                t0, t1 = (float(v) for v in tt.split("-"))
+                avoid.append((t0, t1, *(float(v) for v in box.split(","))))
+            person = Planner(args.match, prefer=args.prefer, avoid=avoid)
             if person.person.get("person"):
                 zone = (0.30, 0.78)                       # captions can go anywhere around the person
             else:

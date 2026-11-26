@@ -102,8 +102,9 @@ def slots(face):
 
 
 class Planner:
-    def __init__(self, video, prefer=None):
+    def __init__(self, video, prefer=None, avoid=None):
         self.prefer = prefer               # a slot to use whenever the caption fits there, e.g. 'bottom'
+        self.avoid = avoid or []           # (t0, t1, x0, y0, x1, y1): an overlay's area while it is on screen
         self.person = track(video)
         self.fr = frames(video) if self.person.get("person") else None
         self.prev = None
@@ -131,6 +132,9 @@ class Planner:
                 xc = min(max(face["cx"] * FW, SAFE_L + f["bw"] / 2), SAFE_R - f["bw"] / 2)
             if name == "bottom":
                 yc = y0 + f["bh"] / 2 + 20               # sit at the top of the band, near the person
+            if any(s < t1 and e > t0 and xc - f["bw"] / 2 < ax1 + 24 and xc + f["bw"] / 2 > ax0 - 24
+                   and yc - f["bh"] / 2 < ay1 + 24 and yc + f["bh"] / 2 > ay0 - 24 for t0, t1, ax0, ay0, ax1, ay1 in self.avoid):
+                continue                               # a glass card or overlay sits there now: never cover it
             bx0, bx1 = (xc - f["bw"] / 2) * AW / FW, (xc + f["bw"] / 2) * AW / FW
             by0, by1 = (yc - f["bh"] / 2) * AH / FH, (yc + f["bh"] / 2) * AH / FH
             r = (slice(max(0, int(by0)), max(1, int(by1))), slice(max(0, int(bx0)), max(1, int(bx1))))

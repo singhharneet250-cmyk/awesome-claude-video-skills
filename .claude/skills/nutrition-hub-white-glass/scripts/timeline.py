@@ -34,6 +34,7 @@ inside the take; and a rhythm note when the picture doesn't change for more than
 overlay or beat). Needs everything the individual scripts need, plus Pillow (and opentimelineio for export).
 """
 import argparse
+import numpy as np
 import hashlib
 import json
 import shutil
@@ -336,6 +337,23 @@ def media(work, kind, key, ext, blur=()):
     return work / f"{kind}-{hashlib.sha1((key + ' '.join(map(str, blur))).encode()).hexdigest()[:10]}{ext}"
 
 
+def overlay_box(template, dur, work):
+    """Where an overlay sits on screen: the union of its visible pixels in three stills (1080x1920), padded."""
+    from PIL import Image
+    box = None
+    for k, f in enumerate((0.3, 0.6, 0.9)):
+        png = media(work, "box", f"{template}@{f}", ".png")
+        if not png.is_file():
+            run(["node", HERE / "render.cjs", SK / "templates" / template, "--transparent", "--still", str(round(dur * f, 2)), "--out", png],
+                f"measure where {template.split('?')[0]} sits")
+        a = np.asarray(Image.open(png).convert("RGBA"))[..., 3]
+        ys, xs = np.nonzero(a > 12)
+        if len(xs):
+            b = (xs.min(), ys.min(), xs.max(), ys.max())
+            box = b if box is None else (min(box[0], b[0]), min(box[1], b[1]), max(box[2], b[2]), max(box[3], b[3]))
+    return box
+
+
 def render_beat(b, i, work, blur):
     beat = media(work, "beat", b["template"], ".mp4", blur)
     run(["node", HERE / "render.cjs", SK / "templates" / b["template"], "--out", beat, *blur], f"render beat {bname(b)}")
@@ -508,6 +526,13 @@ def render(e):
     if cap:
         ass = work / "captions.ass"
         cmd = [PY, HERE / "captions.py", e["_words"], "--out", ass, "--match", cur, "--position", cap.get("position", "auto")]
+        avoid = []                              # captions never cover an overlay while it shows
+        for o in e.get("overlays", []):
+            box = overlay_box(o["template"], o["_dur"], work)
+            if box:
+                avoid.append(f"{o['start']:.2f}-{o['start'] + o['_dur']:.2f}:{box[0]},{box[1]},{box[2]},{box[3]}")
+        if avoid and cap.get("position", "auto") == "auto":
+            cmd += ["--avoid", ";".join(avoid)]
         if cap.get("keywords"):
             cmd += ["--keywords", ",".join(cap["keywords"])]
         if cap.get("blur"):
