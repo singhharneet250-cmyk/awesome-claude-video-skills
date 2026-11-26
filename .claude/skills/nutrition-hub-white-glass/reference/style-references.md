@@ -333,6 +333,18 @@ The Nutrition Hub palette does not change: porcelain `#FFFFFF`, ice `#EAF0F6`, i
 (text `#E66D2A`), slate `#596879`, mist `#8290A0`; Inter, Bebas Neue for slams, Instrument Serif Italic for one
 accent word. R15's warm off-white with an orange highlight and R14's white canvas are the closest to it.
 
+**Glass (owner, 2026-11-26, every future edit):** clear Liquid Glass (strength 0.9) for cards, chips and handles;
+a thick rounded edge that bends the picture (liquid) and polished highlights (glossy); ink text on the glass
+(chosen over iOS white text); no drop shadows under glass, chips, pills or stickers; no glow or shadow beside
+words on them.
+
+**Background (owner, 2026-11-26):** keep the real background; remove it only when the owner asks for that video.
+
+**Gradients (owner, 2026-11-26, every future edit):** type in brand gradients, top to bottom, repeated per line:
+ink `#46668C → #202B38 → #121922`, orange `#FDA65C → #F0782B → #DA5A1A`, slate `#7C90A6 → #596879`; glass
+tinted warm peach `#FFD6B6` at the lit corner → white → cool ice `#C4D8F2`; the caption key word lighter to deeper
+letter by letter.
+
 ### Editing details worth keeping
 
 - **One element carried through** (R8 "CREATE" across a match cut; R16 one shape through every UI state; R12 the

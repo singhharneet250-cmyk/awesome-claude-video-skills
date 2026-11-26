@@ -43,6 +43,7 @@ except ImportError:
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from motion_track import OneEuro  # noqa: E402
+import encode  # noqa: E402
 
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 PORCELAIN = (255, 255, 255)
@@ -278,8 +279,8 @@ def main():
 
     enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", rate, "-i", "-",
                             *(["-i", a.plate] if pi["audio"] and not still_plate else []),
-                            "-map", "0:v", *(["-map", "1:a?", "-c:a", "aac", "-b:a", "192k"] if pi["audio"] and not still_plate else []),
-                            "-c:v", "libx264", "-crf", "17", "-preset", "slow", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-shortest", a.out],
+                            "-map", "0:v", *(["-map", "1:a?", *encode.AUDIO] if pi["audio"] and not still_plate else []),
+                            *encode.WORK, "-movflags", "+faststart", "-shortest", a.out],
                            stdin=subprocess.PIPE)
     i, last_c = 0, None
     frame = first

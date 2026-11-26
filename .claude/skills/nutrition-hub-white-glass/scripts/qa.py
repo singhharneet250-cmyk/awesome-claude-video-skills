@@ -88,7 +88,15 @@ def check_streams(info, expect):
         kbps = int(a.get("bit_rate", 0)) // 1000
         report("PASS", "audio", f"AAC 48 kHz, {a.get('channels')} ch" + (f", {kbps} kb/s" if kbps else ""))
     else:
-        report("FAIL", "audio", f"{a.get('codec_name')} {a.get('sample_rate')} Hz; export AAC 192 kb/s at 48 kHz")
+        report("FAIL", "audio", f"{a.get('codec_name')} {a.get('sample_rate')} Hz; export AAC 256 kb/s at 48 kHz")
+
+    # high quality (owner, 2026-11-26): a clean master the platforms re-encode from, not a thin file
+    vbr = int(v.get("bit_rate") or info["format"].get("bit_rate") or 0) / 1e6
+    need = 8.0 * (w * h) / (1080 * 1920)
+    if vbr >= need:
+        report("PASS", "quality", f"{vbr:.1f} Mbit/s video (high quality: {need:.0f}+ at this size)")
+    else:
+        report("WARN", "quality", f"{vbr:.1f} Mbit/s video, below {need:.0f}: deliver with encode.py deliver (CRF 14, slow)")
 
     dur = float(info["format"].get("duration", 0))
     if expect is not None:
@@ -248,6 +256,7 @@ def main():
     ap.add_argument("--graphics", action="store_true", help="all-graphics piece: stray hues fail instead of warn")
     ap.add_argument("--expect", type=float, help="expected length in seconds")
     ap.add_argument("--sheet", type=Path, help="contact sheet path (default: <video>.sheet.png)")
+    ap.add_argument("--source", type=Path, help="the camera file: warns when it had to be enlarged (low detail)")
     args = ap.parse_args()
     if not args.video.exists():
         sys.exit(f"{args.video} not found")
@@ -255,6 +264,11 @@ def main():
     print(f"White Glass QA · {args.video}")
     meta = check_streams(probe(args.video), args.expect)
     check_faststart(args.video)
+    if args.source and args.source.exists():
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        import encode
+        note = encode.source_note(args.source, meta["w"], meta["h"]) if meta else None
+        report("WARN" if note else "PASS", "source", note or "source is full HD or larger: no enlarging")
     if meta and meta["audio"]:
         check_loudness(args.video)
     check_logo()

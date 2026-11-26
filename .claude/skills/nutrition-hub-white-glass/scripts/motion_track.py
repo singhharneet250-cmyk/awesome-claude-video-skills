@@ -289,7 +289,7 @@ def preview(video, result, out):
     src = subprocess.Popen(["ffmpeg", "-v", "error", "-nostdin", "-i", str(video), "-vf", f"scale={W}:{H}", "-f", "rawvideo", "-pix_fmt", "bgr24", "-"],
                            stdout=subprocess.PIPE)
     dst = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "bgr24", "-s", f"{W}x{H}", "-r", str(info["fps"]), "-i", "-",
-                            "-c:v", "libx264", "-crf", "22", "-pix_fmt", "yuv420p", str(out)], stdin=subprocess.PIPE)
+                            "-c:v", "libx264", "-crf", "10", "-preset", "fast", "-pix_fmt", "yuv420p", str(out)], stdin=subprocess.PIPE)
     trail = {"left": [], "right": []}
     marks = {round(m["t"], 2): m["type"] for m in result["moments"]}
     shown, until = "", -1

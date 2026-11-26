@@ -15,6 +15,11 @@ liquid glass (clearer, light bending at a rigid rim, after Apple's Liquid Glass 
 the system in the docs. The palette, type and rules are unchanged, and the skill keeps its id
 (`nutrition-hub-white-glass`, `?scheme=white-glass`) so every command still works. The name describes the look:
 never use Apple's logos, icons or system controls in a Nutrition Hub video.
+**Clear, liquid, glossy** *(owner, 2026-11-26, for every edit from now on)*: cards, chips and handles are **clear**
+Liquid Glass (strength 0.9): see-through, with a thick rounded edge that bends the picture like a drop of water and
+polished highlights. Text on the glass stays brand **ink** (owner's choice over iOS's white text). **No drop
+shadows** under glass, chips, pills or stickers, and **no glow or shadow beside words** on them (caption words keep
+their §6 legibility shadow).
 
 `reference/playbook.png` is the source playbook. Look at it when in doubt. Everything
 marked *(derived)* below adapts the playbook to video. Unmarked values come straight from it.
@@ -63,6 +68,24 @@ Supporting tones sampled from the playbook:
 | Orange gradient | `#FDAA62 → #F0782B → #EF732D` | Pills, check badges, bars |
 | Slate | `#596879` | Body copy, source notes (5.7:1 on white) |
 | Mist grey | `#8290A0` | Labels and meta only (3.3:1, so never essential info) |
+
+**Gradient type and glass** *(owner, 2026-11-26, every future edit)*: the brand colours are drawn as gradients.
+
+| Gradient | Stops | Where |
+|---|---|---|
+| Ink gradient | `#46668C → #202B38 → #121922`, top to bottom | Headlines, labels, card copy, chip words |
+| Orange text gradient | `#FDA65C → #F0782B → #DA5A1A`, top to bottom | Kickers, units, the accent word |
+| Slate gradient | `#7C90A6 → #596879`, top to bottom | Body copy, sub-lines, source notes |
+| Glass tint | warm peach `#FFD6B6` (lit corner) → white → cool ice `#C4D8F2` (far corner) | Every glass card, chip and handle |
+| Caption key word | its accent colour, lighter on the first letter → deeper on the last | Captions (subtitles can't fill top to bottom) |
+
+- Type gradients run **top to bottom and repeat on every line**, so a line that animates word by word, or a
+  paragraph on two lines, reads as one ramp. `render.cjs` applies them to every template (`assets/grad-text.js`;
+  `--flat-type` turns them off); `fx.py` draws chip and sticker words the same way (`fx.text_grad`).
+- Text on a pill, chip or button (its own background) keeps its solid colour; white text on orange stays white.
+- Real glass over footage (`glass.py --grad 1.0`) is tinted and filters the light like coloured glass: peach on
+  the lit side, ice on the far side; ink text still reads everywhere. `--grad 0` gives plain porcelain glass.
+- Gradients stay in the brand family: no rainbow, neon or off-palette colours, and never on the logo.
 
 - Use orange sparingly: key metrics, active states and call-to-action details.
   Allow **one orange focal point per frame** *(derived)*.
@@ -124,8 +147,9 @@ Headlines are short, sentence case and end in a full stop ("Creatine, explained 
 
 All of these are implemented in `assets/brand.css`.
 
-- **A · Liquid glass panels:** clear-frosted information cards with a rigid rim that catches the light (brightest
-  top-left and bottom-right), a lens edge and lower-edge thickness, a soft shadow and an 18–28 px radius
+- **A · Liquid glass panels:** clear information cards with a thick rounded rim that bends the light and catches it
+  (brightest top-left, a fainter line bottom-right), a lens edge and lower-edge thickness, no drop shadow and an
+  18–28 px radius
   (`.nh-glass`, `.nh-glass--sm`). Inner corners are concentric (an element inside a panel takes the panel's radius
   minus its padding), and glass never sits on glass. Over footage they go near-opaque
   automatically (`.is-transparent`). **Every word over footage sits on a panel**, except caption
@@ -133,11 +157,17 @@ All of these are implemented in `assets/brand.css`.
   - **Real glass over footage** *(owner reference "liquid glass", 2026-11-26)*: CSS blur only smears, and an
     overlay rendered on its own can't see the footage. `scripts/glass.py` does the glass at composite time:
     under every `.nh-glass` panel the footage is refracted through a rounded rim (IOR 1.5), split a little in
-    colour at the edge, frosted, tinted porcelain until ink text reads (auto, about 0.86 luminance), with a
-    thin specular rim lit from the top left. Two passes of the overlay feed it (`render.cjs --real-glass` and
-    `--glass-mask`). `timeline.py render` uses it for every overlay; `"glass": "flat"` keeps the old panels.
-    `--strength` (or `"glass_strength"` on an overlay) is the iOS 27 Liquid Glass slider: 0 opaque porcelain,
-    0.4 the house default, 1 completely clear. Keep small text at 0.6 or below.
+    colour at the edge, lightly frosted and tinted porcelain just enough for ink text (auto), with gloss: a crisp
+    specular on the rim facing the light with a little bloom, a fainter line on the far rim, fresnel on every
+    edge and a soft curved sheen across the face that moves with the panel. Two passes of the overlay feed it
+    (`render.cjs --real-glass` and `--glass-mask`). `timeline.py render` uses it for every overlay; `"glass":
+    "flat"` keeps the old near-opaque panels. `--strength` (or `"glass_strength"` on an overlay) is the iOS 27
+    Liquid Glass slider: 0 opaque porcelain … **0.9 the house default (clear)** … 1 completely clear;
+    `--variant regular` (0.4) is the frosted fallback for a long paragraph over very busy footage. `--liquid`
+    (1.0) sets how far the 32 px edge bends the picture, `--gloss` (1.0) the highlights. The orbit chips and the
+    wipe handle (`fx.py`) get the same glass. Apple's guidance, followed here: clear glass is for components
+    over photos and video (our cards over the speaker); keep it legible with a layer under the glass (iOS
+    dims it for white text; ours is a light porcelain layer for ink text).
 - **B · 3D science:** molecular science visuals with realistic materials and controlled
   detail. The SVG atom in `reel-9x16.html` is a stand-in; use a real 3D render:
   - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,
@@ -289,6 +319,27 @@ All of these are implemented in `assets/brand.css`.
   keeps a little of its own glare and spills a soft glow in dark rooms. `--track` follows gentle handheld moves; for
   big camera moves, or a screen that runs off the frame, film locked off. Tested: R15's monitor and R11's monitor
   (locked off) look real; R16's handheld pull-back drifts after about a second.
+- **N · Remove background (owner request, 2026-11-26).** **Off by default** *(owner, 2026-11-26: "do not remove
+  background")*: keep the real room in every edit, and use this only when the owner asks for it on that video.
+  Effects that need the person's outline (orbit behind the head, word behind the speaker) make a matte with
+  `--matte-out` or `"matte": "head"` and never replace the background.
+  `scripts/person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4`
+  puts the speaker on the Liquid Glass stage (or `--bg blur|white|picture|clip`) with a soft contact shadow and a
+  light wrap. Two open models run locally, downloaded from huggingface.co on first use:
+  - MODNet (Apache-2.0), every frame, for the fine edge (turban, beard, fingers), refined to the frame's own edges
+    and steadied over time.
+  - BiRefNet-lite (MIT), three keyframes a second, as the guide: furniture that touches the body (a counter, a
+    chair) is kept out. It costs about 7 s a keyframe on a CPU (about 15 min for a 42 s take); `--guide 0` skips it.
+  - `--preview f.png --at 12` shows matte, cut-out and result for one moment first. The matte feeds the orbit,
+    frame escape and depth scatter (`"matte": "matte.mp4"`).
+  - Tested on the owner's 42 s WhatsApp take (576×1024, busy room): BiRefNet-portrait was too heavy for this
+    machine (13 s a frame, out of memory); MODNet alone kept a counter; a learned room plate ate the shirt; the
+    keyframe guide is what works.
+- **O · Clear voice (owner request, 2026-11-26).** `scripts/voice.py take.mp4 clean.mp4` measures the recording, then
+  corrects only what it finds, gently: 80 Hz high-pass, light denoise sized to the noise floor, a mud cut, a presence
+  lift around 3 kHz, a little air, a de-esser and 2.5:1 compression. `--report` shows the plan; `--ab 0-10` writes a
+  level-matched before-and-after. Loudness is finished later (sfx.py, −14 LUFS). On the owner's take: presence
+  (2–4 kHz) up 4.4 dB, noise still 23 dB under the voice.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -429,8 +480,18 @@ All of these are implemented in `assets/brand.css`.
   - Nothing important in the bottom 420 px or the top 250 px.
 - **16:9 product films and education:** 1920×1080. Use 96 px margins and `.nh-landscape`.
 - **4:5 feed:** 1080×1350 with 72 px margins.
-- **Export:** H.264 High, yuv420p, CRF 16–18, AAC 192 kb/s at 48 kHz, `+faststart`,
-  loudness −14 LUFS with true peak −1.5 dBTP.
+- **High-quality, full-HD output** *(owner, 2026-11-26, every future edit)*: deliver 1080×1920 (or the format's full
+  HD size) as a clean master the platforms re-encode from. `scripts/encode.py` holds every setting:
+  - **between steps:** x264 CRF 10, preset fast (visually lossless), so eight passes don't add up;
+  - **delivery:** H.264 High 4.2, yuv420p, **CRF 14, preset slow**, BT.709 tags, ≤ 30 Mbit/s (about 10–15 Mbit/s
+    for a talking head), AAC **256 kb/s** at 48 kHz, `+faststart`; loudness −14 LUFS, true peak ≤ −1.5 dBTP.
+    `timeline.py render` ends with it; for any other output run `python3 scripts/encode.py deliver in.mp4 out.mp4`;
+  - **enlarging:** Lanczos plus a light unsharp, never the default bicubic;
+  - **source:** `qa.py --source take.mp4` (automatic in `timeline.py render`) warns when the take is below full HD.
+    WhatsApp shrinks video to about 576×1024 at 1.3 Mbit/s, so ask for the **original camera file** (attached in
+    WhatsApp as a Document, or by Google Drive) before editing: no encoder setting can put back detail the source
+    never had;
+  - **size caps** (WhatsApp 16 MB): make a copy with the `halfsize` skill from the delivered file; the master stays.
 
 ## 8. Content rules (evidence-led)
 
@@ -463,7 +524,8 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
 - The steps below still apply. The timeline is how they are written down and run.
 
 1. **Read the brief and probe the footage:**
-   `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`.
+   `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`,
+   and `python3 scripts/encode.py check in.mp4`: below full HD (a WhatsApp copy), ask for the original file first.
 2. **Check that the logo exists and matches its sha256.** If not, ask for it.
 3. **Plan beats:** hook (0–3 s), evidence or value, end card. Choose components from §4.
 4. **Build graphics** by copying a template from `templates/` and editing only its `SCENE` object
@@ -532,6 +594,7 @@ inputs in the last column.
 | Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
 | Orbit, frame escape, chat takeover, the R7 pack (sticky, before + after, pull-back, depth scatter, green screen, headline wall, phone, UI world, comment); head and hand motion | `scripts/fx.py` + `fx_pack.py`, the overlay templates, `scripts/motion_track.py` (§4 G–K) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
 | A rough cut on a real timeline the owner can see and tweak: transcript cuts, pause removal, beat order, b-roll placement, FCPXML | OpenChatCut v0.2.17 on the owner's computer, through the `openchatcut` MCP server (`.mcp.json`; set-up and rules in `reference/openchatcut.md`) | `approvalMode: "manual"`; §5 transitions only (no glitch or zoom punch); captions per §6 or burned after export; then the Liquid Glass finishing pass and `qa.py` |
+| Where a Nutrition Hub handle is taken or free, and look-alike accounts copying the brand | Sherlock (MIT, sherlock-project 0.16.2) through `scripts/handle_check.sh` (installs it on first use) | Only the brand's own handles and look-alikes, never a private person; a hit means a name exists, check it by eye; here most platforms are blocked by the network, so run it on the owner's computer |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
@@ -608,6 +671,10 @@ scripts/layout_plan.py         picks the vacant slot around the person for each 
 scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, frozen stretches, contact sheet)
 scripts/glass.py               real glass over footage: refraction, dispersion, frost, porcelain tint, rim light under each panel
 scripts/screen_insert.py       put a beat on a real screen in footage (auto-detect, --corners, --track, glare and glow)
+scripts/person_cutout.py       remove the background: MODNet every frame + BiRefNet-lite keyframe guide; stage, blur, picture or clip
+scripts/voice.py               clear, natural voice: measured mud cut, presence and air lifts, light denoise, de-esser, compression
+scripts/encode.py              high-quality output: visually lossless steps, the CRF 14 delivery encode, Lanczos enlarging, source check
+scripts/handle_check.sh        Sherlock: where @nutritionhubkhanna and its look-alikes exist on Instagram, YouTube, TikTok, Threads, X and more
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage

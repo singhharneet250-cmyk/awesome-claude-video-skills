@@ -14,12 +14,13 @@
  *   Real glass over footage (scripts/glass.py bends, frosts and lights the footage under each glass panel):
  *   node render.cjs <page.html> --transparent --real-glass --out content.mov   # words and icons, panels left clear
  *   node render.cjs <page.html> --transparent --glass-mask --out mask.mov      # only the panel shapes, solid white
+ *   Type is drawn in brand gradients (assets/grad-text.js); --flat-type keeps solid colours.
  *
  * Options: --fps 30  --size 1080x1920  --from <s> (start, default 0)
  *          --blur <n> sub-frames blended per frame over a half-frame shutter (180°): real motion blur on fast
  *          moves, nothing changes on still frames. 3-4 is plenty; render time grows n times. Default 1 (off).
  *          --duration <s> (default: page's window.__duration minus --from)
- *          --logo <path>  (original logo file, if not at assets/logo/)  --crf 16
+ *          --logo <path>  (original logo file, if not at assets/logo/)  --crf 12
  *
  * The page must expose window.__seek(t) and window.__duration (see templates/).
  * Video renders also write <out>.sfx.json, the sound-effect cue sheet for scripts/sfx.py (SKILL.md §5).
@@ -32,14 +33,14 @@ const fs = require("node:fs");
 const { pathToFileURL } = require("node:url");
 
 function parseArgs(argv) {
-  const o = { fps: 30, size: "1080x1920", crf: 16, transparent: false };
+  const o = { fps: 30, size: "1080x1920", crf: 12, transparent: false };   // high quality (owner)
   const pos = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (!a.startsWith("--")) { pos.push(a); continue; }
     const key = a.slice(2);
     if (key === "transparent") { o.transparent = true; continue; }
-    if (key === "real-glass" || key === "glass-mask") { o[key] = true; continue; }
+    if (key === "real-glass" || key === "glass-mask" || key === "flat-type") { o[key] = true; continue; }
     o[key] = argv[++i];
   }
   o.page = pos[0];
@@ -79,10 +80,15 @@ async function main() {
   const hasSeek = await page.evaluate(() => typeof window.__seek === "function");
   if (!hasSeek) { await browser.close(); throw new Error("Page has no window.__seek(t) — use a template from templates/."); }
 
+  // Gradient type (owner, 2026-11-26): brand ink, orange and slate text become vertical gradients (assets/grad-text.js),
+  // re-checked after every seek. --flat-type keeps solid colours.
+  if (o["flat-type"] === undefined && o["glass-mask"] === undefined)
+    await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, "..", "assets", "grad-text.js"), "utf8") });
+
   // Real-glass passes (SKILL.md §4 A): the content pass leaves glass panels clear; the mask pass draws only them
   if (o["real-glass"] !== undefined) await page.addStyleTag({ content: `
     .nh-glass { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
-      border-color: transparent !important; box-shadow: 0 30px 70px -30px rgba(32, 43, 56, .30) !important; }` });
+      border-color: transparent !important; box-shadow: none !important; }` });   /* clear glass: no drop shadow */
   if (o["glass-mask"] !== undefined) await page.addStyleTag({ content: `
     html, body, .nh-stage { background: transparent !important; }
     body * { visibility: hidden !important; }

@@ -43,6 +43,7 @@ except ImportError:
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import encode  # noqa: E402  (visually lossless output; encode.py deliver for the final file)
 
 WHITE = np.array([1.0, 1.0, 1.0], np.float32)
 ICE = np.array([0xEA, 0xF0, 0xF6], np.float32) / 255
@@ -93,7 +94,7 @@ class Writer:
                "-r", info["rate"], "-i", "-"]
         if audio_from and info["audio"]:
             cmd += ["-i", str(audio_from), "-map", "0:v", "-map", "1:a", "-c:a", "copy"]
-        cmd += ["-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)]
+        cmd += [*encode.WORK, "-movflags", "+faststart", str(out)]
         self.p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
 
     def write(self, rgb):
@@ -127,8 +128,41 @@ def envelope(t, s, e):
     return min(ease_out((t - s) / IN_S), 1 - ease_in(1 - (e - t) / OUT_S) if e - t < OUT_S else 1.0)
 
 
+def resize(spr, size):
+    """cv2.resize for sprites, including 5-channel glass chips (OpenCV's area resize takes at most 4 channels)."""
+    if spr.shape[2] <= 4:
+        return cv2.resize(spr, size, interpolation=cv2.INTER_AREA)
+    return np.dstack([cv2.resize(spr[..., :4], size, interpolation=cv2.INTER_AREA),
+                      cv2.resize(np.ascontiguousarray(spr[..., 4]), size, interpolation=cv2.INTER_AREA)])
+
+
+def glass_under(dst, shape, x, y):
+    """Clear Liquid Glass (glass.py, the house default) under a sprite's shape, in place on dst (float RGB 0-1):
+    the footage behind is bent at the rim, lightly frosted and lit."""
+    import glass as G
+    h, w = shape.shape
+    H, W = dst.shape[:2]
+    X0, Y0 = int(x), int(y)
+    P = int(0.15 * h) + 12
+    rx0, ry0, rx1, ry1 = max(X0 - P, 0), max(Y0 - P, 0), min(X0 + w + P, W), min(Y0 + h + P, H)
+    sx0, sy0, sx1, sy1 = max(0, rx0 - X0), max(0, ry0 - Y0), min(w, rx1 - X0), min(h, ry1 - Y0)
+    if rx0 >= rx1 or ry0 >= ry1 or sx0 >= sx1 or sy0 >= sy1 or shape.max() < 0.02:
+        return
+    m = np.zeros((ry1 - ry0, rx1 - rx0), np.float32)
+    sl = (slice(Y0 + sy0 - ry0, Y0 + sy1 - ry0), slice(X0 + sx0 - rx0, X0 + sx1 - rx0))
+    m[sl] = shape[sy0:sy1, sx0:sx1]
+    sc = W / 1080
+    hp = float((shape > 0.5).any(1).sum())                         # the pill's height: a small chip gets a thin rim
+    g = G.Glass(sc, None, "auto", min(32.0, 0.3 * hp) / sc)       # the house glass: clear, liquid, glossy
+    dst[ry0:ry1, rx0:rx1] = g.apply(dst[ry0:ry1, rx0:rx1] * 255, m) / 255
+
+
 def over(dst, rgba, x, y):
-    """Alpha-composite an RGBA float sprite onto dst (float RGB) with its top-left at (x, y)."""
+    """Alpha-composite an RGBA float sprite onto dst (float RGB) with its top-left at (x, y). A 5-channel sprite
+    (RGBA + glass shape, from chip()) gets clear Liquid Glass under its shape first."""
+    if rgba.shape[2] == 5:
+        glass_under(dst, rgba[..., 4], x, y)
+        rgba = rgba[..., :4]
     h, w = rgba.shape[:2]
     H, W = dst.shape[:2]
     x0, y0, x1, y1 = max(int(x), 0), max(int(y), 0), min(int(x) + w, W), min(int(y) + h, H)
@@ -181,8 +215,31 @@ def find_font():
     return out
 
 
-def chip(word, height):
-    """A frosted glass pill with an ink word, RGBA."""
+INK_GRAD = ((0.0, (70, 102, 140)), (0.62, (32, 43, 56)), (1.0, (18, 25, 34)))      # = assets/grad-text.js, top to bottom
+ORANGE_GRAD = ((0.0, (253, 166, 92)), (0.55, (240, 120, 43)), (1.0, (218, 90, 26)))
+
+
+def text_grad(im, xy, text, font, anchor="mm", stops=INK_GRAD):
+    """Draw text on an RGBA PIL image in a vertical brand gradient (owner, 2026-11-26: gradient type)."""
+    from PIL import Image, ImageDraw
+    mask = Image.new("L", im.size, 0)
+    ImageDraw.Draw(mask).text(xy, text, font=font, fill=255, anchor=anchor)
+    box = mask.getbbox()
+    if not box:
+        return im
+    y0, y1 = box[1], box[3]
+    ys = np.clip((np.arange(im.size[1], dtype=np.float32) - y0) / max(1, y1 - y0), 0, 1)
+    pos = np.array([p for p, _ in stops], np.float32)
+    col = np.stack([np.interp(ys, pos, [c[k] for _, c in stops]) for k in range(3)], -1)     # H x 3
+    layer = np.zeros((im.size[1], im.size[0], 4), np.uint8)
+    layer[..., :3] = col[:, None, :].astype(np.uint8)
+    layer[..., 3] = np.asarray(mask)
+    return Image.alpha_composite(im, Image.fromarray(layer, "RGBA"))
+
+
+def chip(word, height, glass=True):
+    """A clear Liquid Glass pill with an ink word and no shadow: RGBA (the word) plus a 5th channel, the pill's shape,
+    where over() puts real glass under the word. glass=False: the old porcelain pill with its shadow."""
     from PIL import Image, ImageDraw, ImageFilter, ImageFont
     ss = 2
     hpx = int(height * ss)
@@ -190,15 +247,23 @@ def chip(word, height):
     tw = int(font.getlength(word))
     w = tw + int(hpx * 1.1)
     pad = int(hpx * 0.4)
+    box = (pad, pad, pad + w, pad + hpx)
     im = Image.new("RGBA", (w + 2 * pad, hpx + 2 * pad), (0, 0, 0, 0))
     shadow = Image.new("RGBA", im.size, (0, 0, 0, 0))
     ImageDraw.Draw(shadow).rounded_rectangle((pad, pad + hpx * 0.12, pad + w, pad + hpx + hpx * 0.12), hpx // 2, fill=(32, 43, 56, 50))
-    im = Image.alpha_composite(im, shadow.filter(ImageFilter.GaussianBlur(hpx * 0.16)))
+    shadow = shadow.filter(ImageFilter.GaussianBlur(hpx * 0.16))
+    pill = Image.new("L", im.size, 0)
+    ImageDraw.Draw(pill).rounded_rectangle(box, hpx // 2, fill=255)
+    if not glass:                                               # clear glass: no shadow beside the word (owner)
+        im = Image.alpha_composite(im, shadow)
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle((pad, pad, pad + w, pad + hpx), hpx // 2, fill=(255, 255, 255, 238), outline=(32, 43, 56, 26), width=ss)
-    d.text((pad + w / 2, pad + hpx / 2), word, font=font, fill=(32, 43, 56, 255), anchor="mm")
+    if not glass:
+        d.rounded_rectangle(box, hpx // 2, fill=(255, 255, 255, 238), outline=(32, 43, 56, 26), width=ss)
+    im = text_grad(im, (pad + w / 2, pad + hpx / 2), word, font, "mm")
     im = im.resize((im.width // ss, im.height // ss), Image.LANCZOS)
     a = np.asarray(im).astype(np.float32) / 255
+    if glass:
+        a = np.dstack([a, np.asarray(pill.resize(im.size, Image.LANCZOS)).astype(np.float32) / 255])
     return a
 
 
@@ -242,8 +307,8 @@ def orbit_frame(out, matte, face, t, a, sprites, W, H):
         scale = (1 + 0.18 * z) * (0.6 + 0.4 * k)
         order.append((z, x, y, scale, spr))
     for z, x, y, scale, spr in sorted(order, key=lambda o: o[0]):
-        s = cv2.resize(spr, (max(2, int(spr.shape[1] * scale)), max(2, int(spr.shape[0] * scale))), interpolation=cv2.INTER_AREA)
-        s = s.copy(); s[..., 3] *= min(1.0, k * 1.4)
+        s = resize(spr, (max(2, int(spr.shape[1] * scale)), max(2, int(spr.shape[0] * scale))))
+        s = s.copy(); s[..., 3:] *= min(1.0, k * 1.4)
         if a.tilt and z > 0:
             front_items.append((s, x, y))
         else:

@@ -33,7 +33,12 @@
     linear-gradient(160deg, #FFFFFF 0%, #FAFCFE 45%, #EAF0F6 100%);
   /* Liquid glass (owner 2026-11-26): clearer than frosted, with a rigid rim that catches light. Over footage the
      real thing is done by scripts/glass.py (refraction, dispersion, frost, rim light). */
-  --nh-glass-fill: linear-gradient(155deg, rgba(255, 255, 255, .74) 0%, rgba(255, 255, 255, .42) 100%);
+  /* gradient glass (owner 2026-11-26): warm peach at the lit corner → white → cool ice, light tints of orange and ice */
+  --nh-glass-fill: linear-gradient(150deg, rgba(255, 223, 196, .5) 0%, rgba(255, 255, 255, .26) 50%, rgba(206, 224, 245, .5) 100%);
+  /* gradient type (owner 2026-11-26), top → bottom; render.cjs applies them to every template (assets/grad-text.js) */
+  --nh-ink-grad: linear-gradient(180deg, #46668C 0%, #202B38 62%, #121922 100%);
+  --nh-orange-text-grad: linear-gradient(180deg, #FDA65C 0%, #F0782B 55%, #DA5A1A 100%);
+  --nh-slate-grad: linear-gradient(180deg, #7C90A6 0%, #596879 100%);
   --nh-glass-rim: linear-gradient(135deg, #FFFFFF 0%, rgba(255, 255, 255, .7) 16%, rgba(158, 176, 196, .55) 46%,
                   rgba(158, 176, 196, .4) 60%, rgba(255, 255, 255, .75) 84%, #FFFFFF 100%);   /* specular top-left and bottom-right */
   --nh-shadow-sm: 0 1px 2px rgba(32, 43, 56, .04), 0 10px 24px -14px rgba(32, 43, 56, .18);
@@ -144,7 +149,8 @@
 }
 
 /* ---------- A / Liquid glass panel ---------- */
-/* After Apple's Liquid Glass and the owner's liquid-glass reference: light passes through more than it scatters
+/* Clear Liquid Glass (house default since 2026-11-26): see-through, ink text, no drop shadow and no glow beside words.
+   After Apple's Liquid Glass and the owner's liquid-glass reference: light passes through more than it scatters
    (less frost, more saturation), a rigid rim catches it (gradient rim, brightest top-left and bottom-right), and an
    inner shade at the lower edge gives the slab its thickness. Inner corners are concentric: an element inside a
    panel takes the panel radius minus its padding. Never glass on glass. */
@@ -152,14 +158,13 @@
   position: relative;
   border-radius: calc(var(--nh-radius-lg) * var(--s));
   background: var(--nh-glass-fill);
-  -webkit-backdrop-filter: blur(14px) saturate(1.8) brightness(1.03);
-  backdrop-filter: blur(14px) saturate(1.8) brightness(1.03);
+  -webkit-backdrop-filter: blur(4px) saturate(1.8) brightness(1.03);
+  backdrop-filter: blur(4px) saturate(1.8) brightness(1.03);
   border: 1.5px solid rgba(255, 255, 255, .2);
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .95), inset 0 -1.5px 0 rgba(255, 255, 255, .7),
               inset 0 0 0 1px rgba(32, 43, 56, .05),                 /* the lens edge, just inside the rim */
               inset 0 0 22px -6px rgba(32, 43, 56, .07),             /* thickness all round */
-              inset 0 -16px 28px -18px rgba(32, 43, 56, .14),        /* deeper at the lower edge */
-              var(--nh-shadow-lg);
+              inset 0 -16px 28px -18px rgba(32, 43, 56, .14);        /* deeper at the lower edge; no drop shadow (owner) */
 }
 .nh-glass::before {                 /* the rigid rim: a 1.5 px gradient ring that catches the light */
   content: "";
@@ -174,7 +179,7 @@
   pointer-events: none;
 }
 .nh-glass--sm { border-radius: calc(var(--nh-radius-sm) * var(--s));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -10px 18px -14px rgba(32, 43, 56, .12), var(--nh-shadow-sm); }
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -10px 18px -14px rgba(32, 43, 56, .12); }
 
 /* Chip (playbook tags: "● FROSTED GLASS") — also the CTA style */
 .nh-chip {
@@ -185,7 +190,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, .78);
   border: 1.5px solid #FFFFFF;
-  box-shadow: var(--nh-shadow-sm);
+  box-shadow: none;                 /* no shadow beside words (owner, 2026-11-26) */
   font-size: calc(24px * var(--s));
   font-weight: 600;
   letter-spacing: .14em;

@@ -22,8 +22,8 @@ edit.json (paths are relative to the file; every track is optional):
                {"start": 8.0, "end": 11.2, "template": "motion-kit.html?scene=wheel&pick=Creatine"}],   a motion-kit beat
   "effects":  [{"effect": "orbit", "start": 6, "end": 9.5, "words": "Whey,Creatine"},
                {"effect": "escape", "start": 1, "end": 4, "matte": "wall"}],
-  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels; "glass_strength": 0-1 (0 opaque, 1 clear)
-  "captions": {"position": "auto", "keywords": ["protein"], "blur": true},
+  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels; "glass_strength": 0-1 (0 opaque, 0.9 clear default, 1 clear)
+  "captions": {"position": "auto", "keywords": ["protein"], "blur": true},   "max_words": 3 by default with auto
   "sfx":      [{"t": 4.9, "sfx": "thud"}],
   "endcard":  {"template": "reel-9x16.html", "from": 8.15},
   "motion_blur": 4                         sub-frames per frame for rendered graphics (render.cjs --blur); 1 = off
@@ -34,6 +34,7 @@ inside the take; and a rhythm note when the picture doesn't change for more than
 overlay or beat). Needs everything the individual scripts need, plus Pillow (and opentimelineio for export).
 """
 import argparse
+import numpy as np
 import hashlib
 import json
 import shutil
@@ -44,6 +45,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 SK = HERE.parent
 PY = sys.executable
+sys.path.insert(0, str(HERE))
+import encode  # noqa: E402  (high-quality encodes: WORK between steps, FINAL for delivery)
 GRADE = "eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015"
 TONEMAP = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,"
 HOOK, MIN_SHOT, MAX_SHOT, MIN_GAP, FX_MIN = 1.5, 1.0, 4.0, 1.0, 1.55
@@ -324,16 +327,34 @@ def editor(e, motion=False):
 def reframe(e, info, work):
     """The take at 1080x1920, 30 fps, with the soft studio grade (HDR tone-mapped): the base every track sits on."""
     cur = work / "01_graded.mp4"
-    vf = (TONEMAP if info["hdr"] else "") + "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30," + \
+    sp = encode.probe(e["_src"])
+    vf = (TONEMAP if info["hdr"] else "") + encode.scale(1080, 1920, sp["w"], sp["h"]) + ",fps=30," + \
         (GRADE + "," if e.get("grade", True) else "") + "setsar=1"
-    run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", e["_src"], "-vf", vf, "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p",
-         *(["-c:a", "aac", "-b:a", "192k"] if info["audio"] else []), cur], "reframe and grade")
+    run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", e["_src"], "-vf", vf, *encode.WORK,
+         *(encode.AUDIO if info["audio"] else []), cur], "reframe and grade")
     return cur
 
 
 def media(work, kind, key, ext, blur=()):
     """A rendered file named by what made it (template, settings), so an old render is never picked up by mistake."""
     return work / f"{kind}-{hashlib.sha1((key + ' '.join(map(str, blur))).encode()).hexdigest()[:10]}{ext}"
+
+
+def overlay_box(template, dur, work):
+    """Where an overlay sits on screen: the union of its visible pixels in three stills (1080x1920), padded."""
+    from PIL import Image
+    box = None
+    for k, f in enumerate((0.3, 0.6, 0.9)):
+        png = media(work, "box", f"{template}@{f}", ".png")
+        if not png.is_file():
+            run(["node", HERE / "render.cjs", SK / "templates" / template, "--transparent", "--still", str(round(dur * f, 2)), "--out", png],
+                f"measure where {template.split('?')[0]} sits")
+        a = np.asarray(Image.open(png).convert("RGBA"))[..., 3]
+        ys, xs = np.nonzero(a > 12)
+        if len(xs):
+            b = (xs.min(), ys.min(), xs.max(), ys.max())
+            box = b if box is None else (min(box[0], b[0]), min(box[1], b[1]), max(box[2], b[2]), max(box[3], b[3]))
+    return box
 
 
 def render_beat(b, i, work, blur):
@@ -497,8 +518,8 @@ def render(e):
             raw = work / "00_ungraded.mp4"
             if not raw.is_file():
                 run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", e["_src"], "-vf",
-                     (TONEMAP if info["hdr"] else "") + "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,fps=30,setsar=1",
-                     "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-an", raw], "ungraded reframe for before + after")
+                     (TONEMAP if info["hdr"] else "") + encode.scale(1080, 1920, *(lambda p: (p["w"], p["h"]))(encode.probe(e["_src"]))) + ",fps=30,setsar=1",
+                     *encode.WORK, "-an", raw], "ungraded reframe for before + after")
             cmd += ["--before", raw]
         run(cmd, f"{f['effect']} {f['start']}-{f['end']} s")
         cues.append((nxt.with_suffix(".sfx.json"), 0))
@@ -508,6 +529,16 @@ def render(e):
     if cap:
         ass = work / "captions.ass"
         cmd = [PY, HERE / "captions.py", e["_words"], "--out", ass, "--match", cur, "--position", cap.get("position", "auto")]
+        avoid = []                              # captions never cover an overlay while it shows
+        for o in e.get("overlays", []):
+            box = overlay_box(o["template"], o["_dur"], work)
+            if box:
+                avoid.append(f"{o['start']:.2f}-{o['start'] + o['_dur']:.2f}:{box[0]},{box[1]},{box[2]},{box[3]}")
+        if avoid and cap.get("position", "auto") == "auto":
+            cmd += ["--avoid", ";".join(avoid)]
+        mw = cap.get("max_words", 3 if cap.get("position", "auto") == "auto" else None)   # short captions fit beside the head
+        if mw:
+            cmd += ["--max-words", str(mw)]
         if cap.get("keywords"):
             cmd += ["--keywords", ",".join(cap["keywords"])]
         if cap.get("blur"):
@@ -529,8 +560,8 @@ def render(e):
             mov = media(work, "overlay", o["template"], ".mov", blur)
             run(["node", HERE / "render.cjs", tpl, "--transparent", "--out", mov, *blur], f"render overlay {o['template']}")
             run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", cur, "-itsoffset", str(o["start"]), "-i", mov, "-filter_complex",
-                 "[0:v][1:v]overlay=0:0:eof_action=pass[v]", "-map", "[v]", "-map", "0:a?", "-c:v", "libx264", "-crf", "18",
-                 "-pix_fmt", "yuv420p", "-c:a", "copy", nxt], "composite overlay")
+                 "[0:v][1:v]overlay=0:0:eof_action=pass[v]", "-map", "[v]", "-map", "0:a?", *encode.WORK,
+                 "-c:a", "copy", nxt], "composite overlay")
         if mov.with_suffix(".sfx.json").is_file():
             cues.append((mov.with_suffix(".sfx.json"), o["start"]))
         cur = nxt
@@ -538,7 +569,7 @@ def render(e):
         nxt = work / "06_captions.mp4"
         esc = str(ass).replace(":", r"\:")
         run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", cur, "-vf", f"ass={esc}:fontsdir={SK / 'assets' / 'fonts'}",
-             "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "copy", nxt], "burn captions")
+             *encode.WORK, "-c:a", "copy", nxt], "burn captions")
         cur = nxt
     if e.get("endcard"):
         ec = e["endcard"]
@@ -557,11 +588,12 @@ def render(e):
              f"[0:v]fps=30,format=yuv420p,setsar=1[a];[1:v]fps=30,format=yuv420p,setsar=1[b];"
              f"[a][b]xfade=transition=fadewhite:duration={X}:offset={off}[v];"
              f"{a_src}afade=t=out:st={off}:d={X},apad=pad_dur={round(card_d - X, 3)},aresample=48000[a2]",
-             "-map", "[v]", "-map", "[a2]", "-c:v", "libx264", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", nxt],
+             "-map", "[v]", "-map", "[a2]", *encode.WORK, *encode.AUDIO, nxt],
             "append the end card (dip to white)")
         cur = nxt
     out = (base / e.get("out", "final.mp4")).resolve()
-    cmd = [PY, HERE / "sfx.py", cur, out]
+    mixed = work / "08_mixed.mp4"
+    cmd = [PY, HERE / "sfx.py", cur, mixed]
     for f, o in cues:
         if Path(f).is_file():
             cmd += ["--cues", f"{f}@{o}"]
@@ -573,10 +605,12 @@ def render(e):
         run(cmd, "sound effects and loudness")
     elif probe(cur)["audio"]:
         run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", cur, "-c:v", "copy", "-af", "loudnorm=I=-14:TP=-2:LRA=11,alimiter=limit=0.75:attack=1:release=60:level=disabled,aresample=48000",
-             "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", out], "loudness")
+             *encode.AUDIO, mixed], "loudness")
     else:
-        shutil.copy(cur, out)
-    qa = subprocess.run([PY, HERE / "qa.py", out], capture_output=True, text=True)
+        shutil.copy(cur, mixed)
+    print("→ high-quality delivery encode (x264 High, CRF 14, slow)", flush=True)
+    encode.deliver(mixed, out)
+    qa = subprocess.run([PY, HERE / "qa.py", out, "--source", e["_src"]], capture_output=True, text=True)
     print(qa.stdout.strip())
     print(f"\nwrote {out}\ntimeline: {png}")
 

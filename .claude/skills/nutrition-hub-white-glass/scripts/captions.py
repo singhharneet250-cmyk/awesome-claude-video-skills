@@ -285,6 +285,23 @@ def ass_escape(s: str) -> str:
     return s.replace("\\", "＼").replace("{", "(").replace("}", ")")
 
 
+def grad_word(word):
+    """The key word in a gradient of its accent colour (owner, 2026-11-26: gradient type): lighter on the first
+    letter, deeper on the last, one colour tag per letter (subtitles can't fill a gradient top to bottom)."""
+    hexv = ORANGE.split("&H", 1)[1].split("&", 1)[0][-6:]                     # BBGGRR
+    b, g, r = (int(hexv[i:i + 2], 16) for i in (0, 2, 4))
+    light = [c + (255 - c) * 0.32 for c in (r, g, b)]
+    deep = [c * 0.84 for c in (r, g, b)]
+    chars = list(word)
+    n = max(1, len(chars) - 1)
+    out = []
+    for i, ch in enumerate(chars):
+        k = i / n
+        rr, gg, bb = (round(light[j] + (deep[j] - light[j]) * k) for j in range(3))
+        out.append("{\\c&H00%02X%02X%02X&}" % (bb, gg, rr) + ch)
+    return "".join(out)
+
+
 def render_ass_text(tokens, span, lines=None, fs=62):
     lines = lines or wrap(tokens)
     reset = RESET if fs == 62 else RESET[:-1] + f"\\fs{fs}}}"
@@ -294,11 +311,9 @@ def render_ass_text(tokens, span, lines=None, fs=62):
         parts = []
         for t in line:
             word = ass_escape(t)
-            if span and idx == span[0]:
-                word = ORANGE + word
-            if span and idx == span[1] - 1:
+            if span and span[0] <= idx < span[1]:
                 core = word.rstrip(".,!?;:\"')”’")
-                word = core + reset + word[len(core):]
+                word = grad_word(core) + (reset if idx == span[1] - 1 else "") + word[len(core):]
             elif not (span and span[0] <= idx < span[1]) and not serif_used and \
                     t.lower().strip(".,!?;:\"'()”’") in SERIF_WORDS:
                 core = word.rstrip(".,!?;:\"')”’")
@@ -345,6 +360,8 @@ def main():
     ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
     ap.add_argument("--position", choices=sorted(POSITIONS) + ["auto"], default="bottom",
                     help="bottom (default, y about 73%%), mic (about 58%%, R6), chest (about 50%%, R5), or auto: the vacant space around the person in the --match video (left, right, above, chest or the bottom band; scripts/layout_plan.py)")
+    ap.add_argument("--avoid", default="", metavar="T0-T1:X0,Y0,X1,Y1;...",
+                    help="--position auto: areas (1080x1920 pixels) captions must not cover while overlays show; timeline.py fills it in")
     ap.add_argument("--prefer", choices=["left", "right", "top", "chest", "bottom"], default=None,
                     help="with --position auto: favour one slot when it fits, e.g. bottom to use the blur band for captions")
     ap.add_argument("--plan-out", type=Path, metavar="PLAN.json",
@@ -369,7 +386,12 @@ def main():
         zone = args.position
         if args.position == "auto":
             from layout_plan import Planner
-            person = Planner(args.match, prefer=args.prefer)
+            avoid = []
+            for part in filter(None, args.avoid.split(";")):
+                tt, box = part.split(":")
+                t0, t1 = (float(v) for v in tt.split("-"))
+                avoid.append((t0, t1, *(float(v) for v in box.split(","))))
+            person = Planner(args.match, prefer=args.prefer, avoid=avoid)
             if person.person.get("person"):
                 zone = (0.30, 0.78)                       # captions can go anywhere around the person
             else:

@@ -30,7 +30,8 @@ What the best prompts share, now in SKILL.md §5 and the motion kit:
 - **Gotchas**: no `will-change` on anything a camera scales (text goes soft); the last frame equals the first for
   loops; when a shape fills the screen, scale it past all four corners.
 - **Banned in the good prompts too**: bouncy easing, particle bursts, glows, gradients on UI chrome, dead time,
-  anything that looks like a template.
+  anything that looks like a template. (The owner has since asked for gradient type and gradient glass in the
+  brand's own colours, 2026-11-26: SKILL.md §2. The rest still applies.)
 - Music for those films: royalty-free tracks around 120 BPM, often Mixkit.
 
 ## Skills installed in this repo (read in full and checked first)
@@ -59,6 +60,24 @@ Strudel music, X posting licence).
 | Mobbin MCP (mobbin.com/mcp) | 600,000+ real app screens for design reference | Not added: it needs a paid Mobbin plan and Nutrition Hub has no app. |
 | React Bits (reactbits.dev) | 165+ animated text effects, backgrounds and components for React | Not installed (no React project here; licence MIT + Commons Clause: free to use in videos, not to resell). Its text effects map to ours: Count Up → Count-up Bars, Rotating Text → Word Wheel, Scroll Velocity → Big Scroll, Blur Text → Tracking Reveal. Its colourful backgrounds (Aurora, Silk) are off-palette. |
 
+## Sherlock (owner, 2026-11-26: "Add sherlock")
+
+Two tools share the name; the owner didn't pick, so the well-known one was added:
+
+- **Added: Sherlock, the username finder** (github.com/sherlock-project/sherlock, MIT, 0.16.2). It checks whether
+  an account with a given name exists on 400+ sites. For Nutrition Hub: see where `@nutritionhubkhanna` is free or
+  taken before claiming it, and spot look-alike accounts (`nutritionhub_khanna`, `nutritionhub.khanna`, ...) that
+  could be impersonating the shop. `bash scripts/handle_check.sh` installs it in its own venv on first use (the system
+  pip can't build its `stem` dependency on Debian Python) and checks Instagram, YouTube, TikTok, Threads, X,
+  Pinterest, Snapchat, LinkedIn, Reddit, Telegram and GitHub, writing a CSV per name. Only for the brand's own handles
+  and look-alikes, never to look up a private person; a hit means a name exists, not who runs it. In this cloud
+  environment only GitHub answered (the social platforms are not allowed hosts); run it on the owner's computer, or
+  allow those hosts first.
+- **Not added: Sherlock AI plugin** (github.com/proyecto26/sherlock-ai-plugin, MIT): six research skills (deep
+  research reports, paper and PDF analysis with a MinerU key, paper-to-comic, diagrams, Gemini image generation
+  with a Google sign-in). Its deep research could help find sources for supplement facts; add it if the owner asks
+  (read and scan it first, like the other companions).
+
 ## Tools named in the videos
 
 | Tool | Seen in | Decision |
@@ -85,4 +104,13 @@ Apple's guidance (Human Interface Guidelines: Materials; WWDC25 "Meet Liquid Gla
 - **iOS 27 (WWDC 2026)** refined Liquid Glass after a year of readability complaints: a system slider from fully
   opaque to completely clear, a more legible default, new rendering, and adaptation to Reduce Transparency and
   Increase Contrast → `glass.py --strength` (0 opaque … 1 clear), house default 0.4, readable by design.
+- **Clear variant, from the HIG (Materials) and SwiftUI `Glass.clear`, read 2026-11-26**: clear is "highly
+  translucent", for components that float over photos and video, and only over visually rich backgrounds; regular
+  "blurs and adjusts the luminosity" and suits text-heavy components. Clear needs a layer underneath for
+  legibility: the HIG suggests a dark dimming layer of 35% when the content behind is bright (none when it is
+  already dark); the SwiftUI example uses 30% black. Apple's clear glass carries no halo or shadow around words.
+- **Owner's decision (2026-11-26)**: clear glass for all cards and animations from now on, shown with iOS-style
+  white text and with brand ink text; the owner chose **ink text** (so our legibility layer is light porcelain,
+  not dark), **no shadows**, and a **liquid, glossy** finish → `glass.py` defaults: strength 0.9, `--liquid 1.0`,
+  `--gloss 1.0`, 32 px rim.
 - Not taken: Apple's look-alike controls, icons or system UI (never in a Nutrition Hub video).
