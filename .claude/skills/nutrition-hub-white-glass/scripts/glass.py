@@ -29,6 +29,8 @@ Options (sizes are for a 1080 px wide frame and scale with it):
   --ior 1.5       index of refraction (1.5 = glass); higher bends more
   --dispersion 0.8  colour split at the rim (0 = none; real glass keeps it faint)
   --light 0.85    strength of the rim highlight (light from the top left, turning a little as the panel moves)
+  --lens 0.12     the card is a glass lens (owner, 2026-11-26): what is behind it is magnified 1/(1-lens) in the middle
+                  (1.14x by default), easing to 1x at the edge; 0.3-0.4 makes a magnifier for a label or a detail
   --grad 1.0      gradient tint (owner, 2026-11-26): warm peach at the lit corner, white, cool ice at the far corner
                   (light tints of the brand orange and ice; 0 = plain porcelain white)
   --gloss 1.0     the polished-glass highlights: a soft sheen across the face toward the light, a bloom on the key
@@ -89,7 +91,7 @@ def frames(path, w, h, fmt="rgb24", rate=None):
 
 
 class Glass:
-    def __init__(self, scale, frost, tint, rim=32, ior=1.5, dispersion=0.8, light=0.85, strength=0.9, gloss=1.0, liquid=1.0, grad=1.0):
+    def __init__(self, scale, frost, tint, rim=32, ior=1.5, dispersion=0.8, light=0.85, strength=0.9, gloss=1.0, liquid=1.0, grad=1.0, lens=0.12):
         # one slider, like iOS 27's Liquid Glass control: 0 = opaque porcelain, 1 = completely clear
         strength = float(np.clip(strength, 0, 1))
         if frost is None:
@@ -98,6 +100,7 @@ class Glass:
         self.s, self.frost, self.tint, self.ior, self.disp, self.light = scale, frost * scale, tint, ior, dispersion, light
         self.rim = max(4.0, rim * scale)
         self.grad = grad                                 # gradient tint: 0 = plain white
+        self.lens = lens                                 # magnification in the middle: 1 / (1 - lens)
         self.gloss, self.liquid = gloss, liquid          # liquid: how far the rounded edge bends the picture (0 = none)
         self.t_smooth = None
         self.W = None
@@ -149,9 +152,20 @@ class Glass:
         amp = self.rim * (1 - 1 / self.ior) * 2.2 * self.liquid * k * cv2.GaussianBlur((1 - u) ** 2, (0, 0), 1.0)
         nx, ny = gx / gn * amp, gy / gn * amp
         X, Y = np.meshgrid(np.arange(x1 - x0, dtype=np.float32), np.arange(y1 - y0, dtype=np.float32))
+        # glass lens (owner, 2026-11-26: "use glass card as glass lens"): the whole card is a convex lens, so what is
+        # behind it is magnified, most in the middle (1 / (1 - lens): 1.14x at 0.12) and easing to 1x at the edge,
+        # where the liquid rim takes over; it grows in with the card's materialize
+        SX, SY = X, Y
+        if self.lens > 0 and inside.any():
+            iy, ix = np.nonzero(inside)
+            cx, cy = (ix.min() + ix.max()) / 2, (iy.min() + iy.max()) / 2
+            pl = np.clip(d / max(1.0, float(d.max())), 0, 1)
+            pl = cv2.GaussianBlur(pl * pl * (3 - 2 * pl), (0, 0), 2.0)        # smooth, 0 at the edge, 1 deep inside
+            f = 1 - self.lens * k * pl
+            SX, SY = (cx + (X - cx) * f).astype(np.float32), (cy + (Y - cy) * f).astype(np.float32)
         out = np.empty_like(src)
         for c, kc in enumerate((1.0, 1.0 + 0.045 * self.disp, 1.0 + 0.09 * self.disp)):   # R, G, B bend a little differently
-            out[..., c] = cv2.remap(np.ascontiguousarray(frosted[..., c]), X - nx * kc, Y - ny * kc,
+            out[..., c] = cv2.remap(np.ascontiguousarray(frosted[..., c]), SX - nx * kc, SY - ny * kc,
                                     cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
         ly = (out[..., 0] * 0.2126 + out[..., 1] * 0.7152 + out[..., 2] * 0.0722)[..., None]
         out = np.clip(ly + (out - ly) * (1 + 0.25 * k), 0, 255)            # vibrancy: the bent picture a touch richer
@@ -160,6 +174,8 @@ class Glass:
             t = float(np.clip((self.target - lum) / max(1e-3, 1 - lum), self.tmin, 0.9))   # light enough that ink text reads
             self.t_smooth = t if self.t_smooth is None else self.t_smooth + 0.12 * (t - self.t_smooth)   # no flicker
             t = self.t_smooth * k
+            if self.lens >= 0.25:                                # a magnifier carries no text: show what it magnifies
+                t = min(t, 0.12 * k)
         else:
             t = float(self.tint) * k
         tmap = t * (0.42 + 0.58 * u)                             # the rim stays clearer, so the bent picture shows there
@@ -224,6 +240,7 @@ def main():
     ap.add_argument("--ior", type=float, default=1.5)
     ap.add_argument("--dispersion", type=float, default=0.8)
     ap.add_argument("--light", type=float, default=0.85)
+    ap.add_argument("--lens", type=float, default=0.12, help="the card as a lens: magnification 1/(1-lens) in the middle (0 = flat; 0.3 = a magnifier)")
     ap.add_argument("--grad", type=float, default=1.0, help="gradient tint, warm peach (lit corner) to cool ice (0 = plain white)")
     ap.add_argument("--liquid", type=float, default=1.0, help="how far the thick rounded edge bends the picture (0 = flat slab)")
     ap.add_argument("--gloss", type=float, default=1.0, help="sheen, bloom, far-edge and fresnel highlights (0 = rim light only)")
@@ -239,7 +256,7 @@ def main():
     bi = probe(a.base)
     W, H = bi["w"], bi["h"]
     strength = a.strength if a.strength is not None else (0.9 if a.variant == "clear" else 0.4)
-    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength, a.gloss, a.liquid, a.grad)
+    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength, a.gloss, a.liquid, a.grad, a.lens)
     start = int(round(a.at * bi["fps"]))
     content = frames(a.content, W, H, "rgba", bi["rate"])
     mask = frames(a.mask, W, H, "rgba", bi["rate"])

@@ -164,7 +164,10 @@ All of these are implemented in `assets/brand.css`.
     "flat"` keeps the old near-opaque panels. `--strength` (or `"glass_strength"` on an overlay) is the iOS 27
     Liquid Glass slider: 0 opaque porcelain … **0.9 the house default (clear)** … 1 completely clear;
     `--variant regular` (0.4) is the frosted fallback for a long paragraph over very busy footage. `--liquid`
-    (1.0) sets how far the 32 px edge bends the picture, `--gloss` (1.0) the highlights. The orbit chips and the
+    (1.0) sets how far the 32 px edge bends the picture, `--gloss` (1.0) the highlights. **Every card is a glass
+    lens** *(owner, 2026-11-26)*: `--lens 0.12` magnifies what is behind it about 1.14× in the middle, easing to 1×
+    at the edge (text on it stays crisp); `"glass_lens": 0.3–0.4` on an overlay makes a magnifier (with the `lens`
+    scene: zoom into a label or a detail; its tint is capped so the magnified picture stays clear). The orbit chips and the
     wipe handle (`fx.py`) get the same glass. Apple's guidance, followed here: clear glass is for components
     over photos and video (our cards over the speaker); keep it legible with a layer under the glass (iOS
     dims it for white text; ours is a light porcelain layer for ink text).
@@ -305,7 +308,7 @@ All of these are implemented in `assets/brand.css`.
   | Kind | Scenes | Use |
   |---|---|---|
   | Full-screen beats | `wheel` (Word Wheel), `menu` (Menu Switch), `count` (Count-up Bars), `split` (Word Split), `highlight` (Highlighter Sweep), `morph` (Shape Morph), `scroll` (Big Scroll), `ring` (Text Ring), `strip` (Photo Strip), `echo` (Echo Stack), `photos` (Photo Scatter) | Render as MP4 and cut in like b-roll: `"template"` in an `edit.json` b-roll entry, or `broll.py`. 3–4.5 s each. `--transparent` is refused (ink type never sits bare on footage). |
-  | Overlays | `toggle` (Toggle List), `prompt` (Prompt Box), `progress` (Progress Pill), `panels` (Spatial Panels), `tracking` (Tracking Reveal), `banner` (Comment Banner), `cta` (Comment CTA: a glass card, an orange "Comment KEYWORD" pill and the handle, R18's ending) | Over the speaker with `--transparent` (real glass in the timeline), or full screen. Lower band by default, `?slot=top` for the top band. |
+  | Overlays | `toggle` (Toggle List), `prompt` (Prompt Box), `progress` (Progress Pill), `panels` (Spatial Panels), `tracking` (Tracking Reveal), `banner` (Comment Banner), `cta` (Comment CTA: a glass card, an orange "Comment KEYWORD" pill and the handle, R18's ending), `lens` (Glass Lens: a round glass magnifier that glides to a spot in the footage, `?x=&y=`, `?to=`, `?label=`; give the overlay `"glass_lens": 0.35`) | Over the speaker with `--transparent` (real glass in the timeline), or full screen. Lower band by default, `?slot=top` for the top band. |
 
   - 16:9 for a TV or laptop: `--size 1920x1080`; every scene lays itself out for landscape.
   - Honesty: `count` needs a real number and `?source=`; photos are real (`?img=`, `?imgs=`); the copy in the

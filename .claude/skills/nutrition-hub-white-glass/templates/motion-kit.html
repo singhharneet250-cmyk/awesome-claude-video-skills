@@ -537,6 +537,25 @@ const SCENES = {
         const q = easeOut(prog(t, 0.85, 0.5)); chip.style.opacity = q; setXY(chip, CX, cy + ch / 2 + 100 * S + (1 - q) * 12 * S, 0.5, 0.5);
       } }; } },
 
+  /* Glass Lens (owner, 2026-11-26: "use glass card as glass lens"): a round liquid-glass lens glides in to a spot in the
+     footage (?x=&y= in frame pixels), can glide on along it (?to=x,y), and holds there; glass.py magnifies what is
+     under it (overlay "glass_lens": 0.35 in edit.json). ?size= diameter (default 360), ?label= a chip under it. */
+  lens: { overlay: true, build() {
+    const D = parseFloat(str("dur", "3")), SZ = parseFloat(str("size", "360")) * S;
+    const tx = parseFloat(str("x", String(CX))), ty = parseFloat(str("y", String(CY)));
+    const to = str("to", "") ? str("to", "").split(",").map(parseFloat) : null;
+    const fromX = str("from", "right") === "left" ? -SZ : W + SZ;
+    const disc = el(stage, "mk-card nh-glass", { width: px(SZ), height: px(SZ), borderRadius: "50%", left: 0, top: 0 });
+    const label = str("label", "") ? el(stage, "mk nh-chip", { fontSize: px(24 * S) }, esc(str("label", ""))) : null;
+    return { dur: D, sfx: [{ t: 0.1, sfx: "whoosh", what: "glass lens glides in" }],
+      seek(t) {
+        const p = spring(t, 0.05, 9);                                  // glide in, settle exactly on the spot
+        let x = lerp(fromX, tx, p), y = ty;
+        if (to) { const q = easeInOut(prog(t, 0.9, Math.max(0.6, D - 1.6))); x = lerp(x, to[0], q); y = lerp(ty, to[1], q); }
+        disc.style.opacity = clamp(p * 1.6); setXY(disc, x, y, 0.5, 0.5);
+        if (label) { const l = easeOut(prog(t, 0.6, 0.45)); label.style.opacity = l; setXY(label, x, y + SZ / 2 + 44 * S + (1 - l) * 10 * S, 0.5, 0.5); }
+      } }; } },
+
   /* Photo Scatter (R12): a headline in the middle; real photos pop in around it and drift outward slowly. */
   photos: { overlay: false, build() {
     const imgs = list("imgs", "");
