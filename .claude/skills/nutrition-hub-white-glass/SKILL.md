@@ -576,6 +576,7 @@ inputs in the last column.
 | Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
 | Orbit, frame escape, chat takeover, the R7 pack (sticky, before + after, pull-back, depth scatter, green screen, headline wall, phone, UI world, comment); head and hand motion | `scripts/fx.py` + `fx_pack.py`, the overlay templates, `scripts/motion_track.py` (§4 G–K) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
 | A rough cut on a real timeline the owner can see and tweak: transcript cuts, pause removal, beat order, b-roll placement, FCPXML | OpenChatCut v0.2.17 on the owner's computer, through the `openchatcut` MCP server (`.mcp.json`; set-up and rules in `reference/openchatcut.md`) | `approvalMode: "manual"`; §5 transitions only (no glitch or zoom punch); captions per §6 or burned after export; then the Liquid Glass finishing pass and `qa.py` |
+| Where a Nutrition Hub handle is taken or free, and look-alike accounts copying the brand | Sherlock (MIT, sherlock-project 0.16.2) through `scripts/handle_check.sh` (installs it on first use) | Only the brand's own handles and look-alikes, never a private person; a hit means a name exists, check it by eye; here most platforms are blocked by the network, so run it on the owner's computer |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
@@ -655,6 +656,7 @@ scripts/screen_insert.py       put a beat on a real screen in footage (auto-dete
 scripts/person_cutout.py       remove the background: MODNet every frame + BiRefNet-lite keyframe guide; stage, blur, picture or clip
 scripts/voice.py               clear, natural voice: measured mud cut, presence and air lifts, light denoise, de-esser, compression
 scripts/encode.py              high-quality output: visually lossless steps, the CRF 14 delivery encode, Lanczos enlarging, source check
+scripts/handle_check.sh        Sherlock: where @nutritionhubkhanna and its look-alikes exist on Instagram, YouTube, TikTok, Threads, X and more
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage

@@ -59,6 +59,24 @@ Strudel music, X posting licence).
 | Mobbin MCP (mobbin.com/mcp) | 600,000+ real app screens for design reference | Not added: it needs a paid Mobbin plan and Nutrition Hub has no app. |
 | React Bits (reactbits.dev) | 165+ animated text effects, backgrounds and components for React | Not installed (no React project here; licence MIT + Commons Clause: free to use in videos, not to resell). Its text effects map to ours: Count Up → Count-up Bars, Rotating Text → Word Wheel, Scroll Velocity → Big Scroll, Blur Text → Tracking Reveal. Its colourful backgrounds (Aurora, Silk) are off-palette. |
 
+## Sherlock (owner, 2026-11-26: "Add sherlock")
+
+Two tools share the name; the owner didn't pick, so the well-known one was added:
+
+- **Added: Sherlock, the username finder** (github.com/sherlock-project/sherlock, MIT, 0.16.2). It checks whether
+  an account with a given name exists on 400+ sites. For Nutrition Hub: see where `@nutritionhubkhanna` is free or
+  taken before claiming it, and spot look-alike accounts (`nutritionhub_khanna`, `nutritionhub.khanna`, ...) that
+  could be impersonating the shop. `bash scripts/handle_check.sh` installs it in its own venv on first use (the system
+  pip can't build its `stem` dependency on Debian Python) and checks Instagram, YouTube, TikTok, Threads, X,
+  Pinterest, Snapchat, LinkedIn, Reddit, Telegram and GitHub, writing a CSV per name. Only for the brand's own handles
+  and look-alikes, never to look up a private person; a hit means a name exists, not who runs it. In this cloud
+  environment only GitHub answered (the social platforms are not allowed hosts); run it on the owner's computer, or
+  allow those hosts first.
+- **Not added: Sherlock AI plugin** (github.com/proyecto26/sherlock-ai-plugin, MIT): six research skills (deep
+  research reports, paper and PDF analysis with a MinerU key, paper-to-comic, diagrams, Gemini image generation
+  with a Google sign-in). Its deep research could help find sources for supplement facts; add it if the owner asks
+  (read and scan it first, like the other companions).
+
 ## Tools named in the videos
 
 | Tool | Seen in | Decision |
