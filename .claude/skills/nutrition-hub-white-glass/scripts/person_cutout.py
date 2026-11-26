@@ -90,7 +90,8 @@ class Guide:
     """A second, stronger opinion a few times a second: BiRefNet-lite (MIT, huggingface.co/onnx-community/
     BiRefNet_lite-ONNX) segments the person cleanly, furniture included, but takes about 7 s a frame on a CPU, so it
     runs on keyframes (3 a second by default). Each frame keeps MODNet's detail only inside the guide: the union of the
-    two nearest keyframes' person, widened by about 3% of the width so arms moving between keyframes stay whole."""
+    two nearest keyframes' person, widened by about 3% of the width so arms moving between keyframes stay whole, and
+    the part both keyframes are sure of is filled (MODNet can leave holes in a plaid shirt)."""
     SW, SH = 270, 480
 
     def __init__(self, video, rate, grade, per_sec=3.0, cache=None):
@@ -137,7 +138,12 @@ class Guide:
         k1 = min(k0 + 1, len(self.keys) - 1)
         g = (np.maximum(self.keys[k0], self.keys[k1]) > 0.5).astype(np.uint8)
         g = cv2.GaussianBlur(cv2.dilate(g, self.k).astype(np.float32), (0, 0), 1.5)
-        return a * cv2.resize(g, (W, H), interpolation=cv2.INTER_LINEAR)
+        # and fill: where both keyframes are sure it is the person (shrunk a little), MODNet's holes in a busy shirt
+        # pattern are closed; MODNet keeps the edges
+        core = cv2.erode((np.minimum(self.keys[k0], self.keys[k1]) > 0.5).astype(np.uint8), self.k)
+        core = cv2.GaussianBlur(core.astype(np.float32), (0, 0), 1.5)
+        a = a * cv2.resize(g, (W, H), interpolation=cv2.INTER_LINEAR)
+        return np.maximum(a, cv2.resize(core, (W, H), interpolation=cv2.INTER_LINEAR))
 
 
 def tidy(a):
