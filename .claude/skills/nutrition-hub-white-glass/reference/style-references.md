@@ -338,6 +338,8 @@ a thick rounded edge that bends the picture (liquid) and polished highlights (gl
 (chosen over iOS white text); no drop shadows under glass, chips, pills or stickers; no glow or shadow beside
 words on them.
 
+**Background (owner, 2026-11-26):** keep the real background; remove it only when the owner asks for that video.
+
 ### Editing details worth keeping
 
 - **One element carried through** (R8 "CREATE" across a match cut; R16 one shape through every UI state; R12 the

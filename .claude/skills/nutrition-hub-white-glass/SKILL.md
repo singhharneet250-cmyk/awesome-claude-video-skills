@@ -301,7 +301,11 @@ All of these are implemented in `assets/brand.css`.
   keeps a little of its own glare and spills a soft glow in dark rooms. `--track` follows gentle handheld moves; for
   big camera moves, or a screen that runs off the frame, film locked off. Tested: R15's monitor and R11's monitor
   (locked off) look real; R16's handheld pull-back drifts after about a second.
-- **N · Remove background (owner request, 2026-11-26).** `scripts/person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4`
+- **N · Remove background (owner request, 2026-11-26).** **Off by default** *(owner, 2026-11-26: "do not remove
+  background")*: keep the real room in every edit, and use this only when the owner asks for it on that video.
+  Effects that need the person's outline (orbit behind the head, word behind the speaker) make a matte with
+  `--matte-out` or `"matte": "head"` and never replace the background.
+  `scripts/person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4`
   puts the speaker on the Liquid Glass stage (or `--bg blur|white|picture|clip`) with a soft contact shadow and a
   light wrap. Two open models run locally, downloaded from huggingface.co on first use:
   - MODNet (Apache-2.0), every frame, for the fine edge (turban, beard, fingers), refined to the frame's own edges

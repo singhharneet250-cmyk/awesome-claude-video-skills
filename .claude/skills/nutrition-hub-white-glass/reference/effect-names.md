@@ -104,7 +104,7 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 | Glass Strength | The iOS 27-style slider: 0 opaque porcelain … 0.4 frosted … 0.9 house default (clear) … 1 completely clear | `glass.py --strength 0.6`, or `"glass_strength"` on an overlay |
 | Screen Insert | A beat or clip playing on a real TV, laptop or monitor in your footage | `screen_insert.py plate.mp4 beat.mp4 out.mp4` (`--detect dark`, `--corners`, `--track`) |
 | Motion Blur | Real motion blur on rendered graphics (4 sub-frames, 180° shutter) | `render.cjs --blur 4`, or `"motion_blur": 4` in `edit.json` |
-| Remove Background | You on the Liquid Glass stage (or a blur, white, or your own picture or clip), no room behind | `person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4` |
+| Remove Background | Only when asked (off by default, owner 2026-11-26): you on the Liquid Glass stage (or a blur, white, or your own picture or clip), no room behind | `person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4` |
 | Clear Voice | Clearer, natural voice: less mud, more presence, light denoise | `voice.py take.mp4 clean.mp4` (`--ab 0-10` to compare) |
 | Word Bridge | A word stays on screen across a cut (R8's match cut) | a Tracking Reveal or a caption that spans the b-roll cut |
 
