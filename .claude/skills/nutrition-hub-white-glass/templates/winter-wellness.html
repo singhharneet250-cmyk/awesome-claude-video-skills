@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub Winter Wellness 3D</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: #fff; overflow: hidden; }
+  /* winter studio: white at the top, a cool ice floor, a soft cool vignette */
+  .nh-stage { background:
+      radial-gradient(120% 60% at 50% 108%, rgba(196, 214, 234, .55) 0%, rgba(196, 214, 234, 0) 60%),
+      linear-gradient(180deg, #FFFFFF 0%, #F6F9FC 38%, #E4ECF5 78%, #D6E1ED 100%); }
+  #gl { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+  .layer { position: absolute; inset: 0; pointer-events: none; }
+  .vignette { background: radial-gradient(130% 90% at 50% 45%, rgba(255,255,255,0) 55%, rgba(170, 190, 212, .22) 100%); }
+
+  /* 3D extruded headline (scene 01): the face in the ink gradient, the depth in orange layers */
+  .h3d { position: absolute; left: 0; right: 0; top: 250px; perspective: 1400px; text-align: center; }
+  .h3d .rig { position: relative; display: inline-block; transform-style: preserve-3d; }
+  .h3d .ln { transform-style: preserve-3d; }
+  .h3d .ln { position: relative; display: block; font: 400 134px/0.9 var(--nh-condensed); letter-spacing: .01em; }
+  .h3d .ln + .ln { font-size: 104px; margin-top: 12px; }
+  .h3d .ln .face, .h3d .ln .depth { display: block; white-space: nowrap; }
+  .h3d .ln .depth { position: absolute; inset: 0; }
+  .h3d .face { position: relative; color: #202B38; }
+  .h3d .k5 { color: #F0782B; }
+
+  /* liquid glass information panel */
+  .panel { position: absolute; left: 72px; right: 72px; top: 1150px; padding: 40px 48px 36px; border-radius: 34px;
+           opacity: 0; will-change: transform; }
+  .panel .kick { font: 700 24px/1 var(--nh-font); letter-spacing: .22em; text-transform: uppercase; color: #E66D2A; }
+  .panel .title { margin-top: 16px; font: 400 118px/.9 var(--nh-condensed); letter-spacing: .01em; color: #202B38; }
+  .panel .tags { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .panel .tag { padding: 12px 20px; border-radius: 999px; font: 700 26px/1 var(--nh-font); letter-spacing: .06em;
+                text-transform: uppercase; color: #202B38; background: rgba(255,255,255,.72); }
+  .panel .tag.on { background: #F0782B; color: #FFFFFF; }
+  .panel .src { margin-top: 18px; font: 500 21px/1.35 var(--nh-font); color: #596879; }
+  .chip2 { position: absolute; padding: 18px 30px; border-radius: 26px; font: 400 76px/1 var(--nh-condensed);
+           letter-spacing: .02em; color: #202B38; opacity: 0; }
+  .chip2 small { display: block; margin-top: 6px; font: 600 20px/1.2 var(--nh-font); letter-spacing: .06em; color: #596879; text-transform: uppercase; }
+
+  /* inside the softgel (scene 02 fly-through) */
+  .gold { background: radial-gradient(80% 60% at 50% 45%, #FFE3A3 0%, #F6C15A 45%, #E59A28 100%); opacity: 0; }
+
+  /* winter frost wipe: a soft white band that sweeps across a cut */
+  .wipe { position: absolute; top: -10%; bottom: -10%; width: 260%; left: -280%;
+          background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(246,249,252,.92) 25%, #FFFFFF 35%, #FFFFFF 65%,
+                      rgba(232,240,248,.92) 75%, rgba(255,255,255,0) 100%); }
+
+  /* brand ending */
+  .end-logo { position: absolute; left: 0; right: 0; top: 230px; text-align: center; opacity: 0; }
+  .end-logo .nh-logo { width: 640px; display: inline-block; }
+  .contact { position: absolute; left: 150px; right: 150px; top: 1250px; padding: 30px 40px; border-radius: 30px; text-align: center; opacity: 0; }
+  .contact .call { font: 400 92px/1 var(--nh-condensed); letter-spacing: .03em; color: #202B38; }
+  .contact .call b { font-weight: 400; color: #F0782B; }
+  .contact .sub { margin-top: 10px; font: 700 22px/1.3 var(--nh-font); letter-spacing: .16em; text-transform: uppercase; color: #596879; }
+  .disclaim { position: absolute; left: 90px; right: 90px; top: 1450px; text-align: center; font: 500 21px/1.4 var(--nh-font); color: #596879; opacity: 0; }
+</style>
+</head>
+<body>
+<!--
+  Winter Wellness (owner brief, 2026-11-26): a 48 s premium 3D scientific reel, hybrid cinematic 3D + scientific
+  motion graphics, no voice (text, music and sound effects), generic unbranded supplements.
+    01 0–5 s    opening: snow, five supplements fly in, low-angle push-in and orbit, 3D extruded headline
+    02 5–12 s   Vitamin D3: golden softgel on a 360° macro orbit, the camera flies through it, bone and muscle
+    03 12–19 s  Vitamin C: citrus slices top-down to close-up, the molecule forms from citrus particles, a shield
+    04 19–26 s  Zinc: atoms assemble into a hexagonal close-packed crystal, immune cells activate, 45° dolly-in
+    05 26–33 s  Omega-3: golden oil droplets, a beating heart, a cell membrane; EPA and DHA appear separately
+    06 33–40 s  Protein: a slow-motion powder burst, BCAA molecules (leucine, isoleucine, valine), muscle fibres
+    07 40–48 s  ending: all five together, slow pull-back, the original logo, a glass contact strip
+  Transitions are frost wipes on a camera speed ramp. Claims follow EU-authorised health-claim wording (EFSA),
+  sourced on screen; the end line says supplements don't replace a varied diet (§8).
+
+  Render (from the skill folder):
+    node scripts/render.cjs templates/winter-wellness.html --out winter.mp4                 # draft look
+    node scripts/render.cjs "templates/winter-wellness.html?samples=4" --out winter.mp4     # motion blur + depth of field
+    node scripts/render.cjs templates/winter-wellness.html --out still.png --still 8.5       # one frame
+  URL params: ?t= freeze · ?samples=1..8 · ?dof=0
+-->
+<div class="nh-stage" id="stage">
+  <canvas id="gl"></canvas>
+  <div class="layer vignette"></div>
+  <div class="layer gold" id="gold"></div>
+
+  <div class="h3d" id="h3d"><div class="rig" id="rig">
+    <div class="ln" data-ln><span class="face"><span class="k5">5</span> ESSENTIAL NUTRIENTS</span></div>
+    <div class="ln" data-ln><span class="face">FOR WINTER</span></div>
+  </div></div>
+
+  <div class="panel nh-glass" id="p-d3"><div class="kick">02 · Sunshine vitamin</div><div class="title">VITAMIN D3</div>
+    <div class="tags"><span class="tag">Bones</span><span class="tag">Muscles</span><span class="tag on">Immune function</span></div>
+    <div class="src">Contributes to normal bones, muscle function and immune function. Source: EFSA authorised health claims</div></div>
+  <div class="panel nh-glass" id="p-c"><div class="kick">03 · Citrus science</div><div class="title">VITAMIN C</div>
+    <div class="tags"><span class="tag on">Antioxidant support</span></div>
+    <div class="src">Contributes to the protection of cells from oxidative stress. Source: EFSA authorised health claims</div></div>
+  <div class="panel nh-glass" id="p-zn"><div class="kick">04 · Trace mineral</div><div class="title">ZINC</div>
+    <div class="tags"><span class="tag on">Immune function</span><span class="tag">Cell growth</span></div>
+    <div class="src">Contributes to normal immune function and normal cell division. Source: EFSA authorised health claims</div></div>
+  <div class="panel nh-glass" id="p-om"><div class="kick">05 · Healthy fats</div><div class="title">OMEGA-3</div>
+    <div class="tags"><span class="tag on">Heart health</span></div>
+    <div class="src">EPA and DHA contribute to normal heart function (250 mg a day). Source: EFSA authorised health claims</div></div>
+  <div class="chip2 nh-glass" id="c-epa" style="left:120px;top:250px">EPA<small>Eicosapentaenoic acid</small></div>
+  <div class="chip2 nh-glass" id="c-dha" style="right:120px;top:250px">DHA<small>Docosahexaenoic acid</small></div>
+  <div class="panel nh-glass" id="p-pr"><div class="kick">06 · Building blocks</div><div class="title">PROTEIN</div>
+    <div class="tags"><span class="tag on">Muscle maintenance</span><span class="tag">Recovery</span></div>
+    <div class="src">Contributes to the maintenance of muscle mass. Source: EFSA authorised health claims</div></div>
+
+  <div class="end-logo" id="end-logo"><img class="nh-logo" data-nh-logo alt="Nutrition Hub logo"></div>
+  <div class="contact nh-glass" id="contact"><div class="call">CALL <b>9914571175</b></div><div class="sub">DM or WhatsApp for winter wellness guidance</div></div>
+  <div class="disclaim" id="disclaim">Food supplements are not a substitute for a varied diet. Ask a professional for the right dose.</div>
+
+  <div class="layer" style="overflow:hidden"><div class="wipe" id="wipe"></div></div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "../assets/vendor/three/three.module.min.js", "three/addons/": "../assets/vendor/three/addons/" } }
+</script>
+<script type="module">
+import { createStage, buildMolecule, span, ease, floatWave, materials, THREE } from "../assets/wg3d.js";
+
+const P = new URLSearchParams(location.search);
+const CAM = { samples: Number(P.get("samples") || 1), shutter: 0.5, aperture: P.get("dof") === "0" ? 0 : 0.05 };
+const D = 48;
+const CUTS = [5, 12, 19, 26, 33, 40];
+const SCN = [[0, 5], [5, 12], [12, 19], [19, 26], [26, 33], [33, 40], [40, 48]];
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const lerp = (a, b, p) => a + (b - a) * p;
+const c01 = (x) => Math.min(1, Math.max(0, x));
+const sstep = (a, b, x) => { const p = c01((x - a) / (b - a)); return p * p * (3 - 2 * p); };
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+
+/* ---------- logo (original file only) ---------- */
+window.__logoStatus = "loading";
+{
+  const img = document.querySelector("img[data-nh-logo]");
+  const probe = new Image();
+  probe.onload = () => { img.src = probe.src; window.__logoStatus = "ok"; };
+  probe.onerror = () => { window.__logoStatus = "missing"; };
+  probe.src = P.get("logo") || "../assets/logo/nutrition-hub-logo.png";
+}
+
+try {
+  const stage = createStage({ out: document.getElementById("gl"), width: 1080, height: 1920, exposure: 1.02, fov: 30, shadowOpacity: 0.12, envIntensity: 1.05 });
+  const { scene, camera } = stage;
+  scene.add(camera);
+
+  /* ---------- materials ---------- */
+  const M = {
+    gold: new THREE.MeshPhysicalMaterial({ color: "#F2B23A", roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.03, sheen: 0.6,
+      sheenColor: new THREE.Color("#FFE6A8"), emissive: new THREE.Color("#8A5200"), emissiveIntensity: 0.22, transparent: true, opacity: 0.94, specularIntensity: 1 }),
+    goldCore: new THREE.MeshBasicMaterial({ color: "#FFD983", transparent: true, opacity: 0.42 }),
+    amber: new THREE.MeshPhysicalMaterial({ color: "#E59A2E", roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.02,
+      emissive: new THREE.Color("#7A3E00"), emissiveIntensity: 0.25, transparent: true, opacity: 0.9, specularIntensity: 1 }),
+    orange: materials.accent(),
+    ceramic: materials.ceramic(),
+    bone: materials.ceramic("#F4EFE6"),
+    charcoal: new THREE.MeshPhysicalMaterial({ color: "#2A2D33", roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.2 }),
+    zinc: new THREE.MeshPhysicalMaterial({ color: "#C8D0D9", metalness: 1, roughness: 0.2, envMapIntensity: 1.3 }),
+    muscle: new THREE.MeshPhysicalMaterial({ color: "#F29466", roughness: 0.32, clearcoat: 0.8, clearcoatRoughness: 0.15, sheen: 0.5, sheenColor: new THREE.Color("#FFD2BC") }),
+    powder: new THREE.MeshStandardMaterial({ color: "#F7F1E6", roughness: 0.95 }),
+    frost: materials.frosted(false),
+    snow: new THREE.MeshBasicMaterial({ color: "#FFFFFF", transparent: true, opacity: 0.9 }),
+    peel: new THREE.MeshPhysicalMaterial({ color: "#F08A22", roughness: 0.45, clearcoat: 0.6 }),
+    line: new THREE.MeshBasicMaterial({ color: "#F0782B" }),
+  };
+
+  /* ---------- generic supplements ---------- */
+  function softgel(mat, len = 1.0, r = 0.36) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 40), mat);
+    body.scale.set(len / 2, r, r); body.castShadow = true; g.add(body);
+    const core = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 20), M.goldCore);
+    core.scale.set(len / 2 * 0.72, r * 0.62, r * 0.62); g.add(core);
+    return g;
+  }
+  function tablet(mat, r = 0.42, h = 0.2, oval = 1, score = false) {
+    const pts = [];
+    const bev = h * 0.45;
+    for (let i = 0; i <= 12; i++) { const a = (i / 12) * Math.PI / 2; pts.push(new THREE.Vector2(r - bev + Math.sin(a) * bev, -h / 2 + bev - Math.cos(a) * bev)); }
+    for (let i = 0; i <= 12; i++) { const a = (i / 12) * Math.PI / 2; pts.push(new THREE.Vector2(r - bev + Math.cos(a) * bev, h / 2 - bev + Math.sin(a) * bev)); }
+    pts.unshift(new THREE.Vector2(0, -h / 2)); pts.push(new THREE.Vector2(0, h / 2));
+    const m = new THREE.Mesh(new THREE.LatheGeometry(pts, 72), mat);
+    m.scale.x = oval; m.castShadow = true;
+    const g = new THREE.Group(); g.add(m);
+    if (score) { const s = new THREE.Mesh(new THREE.BoxGeometry(r * 1.5 * oval, 0.012, 0.03), M.charcoal); s.position.y = h / 2 + 0.001; g.add(s); }
+    return g;
+  }
+  function scoop() {
+    const g = new THREE.Group();
+    const cup = [];
+    for (let i = 0; i <= 12; i++) { const a = (i / 12) * Math.PI / 2; cup.push(new THREE.Vector2(0.02 + Math.sin(a) * 0.12, -0.5 + (1 - Math.cos(a)) * 0.12)); }
+    for (let i = 1; i <= 10; i++) cup.push(new THREE.Vector2(0.14 + 0.28 * (i / 10) ** 0.7, -0.38 + 0.4 * (i / 10)));
+    const bowl = new THREE.Mesh(new THREE.LatheGeometry(cup, 64), new THREE.MeshPhysicalMaterial({ color: "#2A2D33", roughness: 0.3, clearcoat: 1, side: THREE.DoubleSide }));
+    bowl.castShadow = true; g.add(bowl);
+    const handle = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, 0.42, 8, 16), M.charcoal);
+    handle.rotation.z = Math.PI / 2 + 0.18; handle.position.set(0.62, -0.02, 0); handle.castShadow = true; g.add(handle);
+    const mound = new THREE.Mesh(new THREE.SphereGeometry(0.41, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2), M.powder);
+    mound.scale.y = 0.4; mound.position.y = 0.0; g.add(mound);
+    return g;
+  }
+  function citrusSlice(r = 0.7) {
+    const cv = document.createElement("canvas"); cv.width = cv.height = 512;
+    const x = cv.getContext("2d");
+    x.fillStyle = "#F7B24A"; x.beginPath(); x.arc(256, 256, 256, 0, Math.PI * 2); x.fill();
+    x.fillStyle = "#FFF4DE"; x.beginPath(); x.arc(256, 256, 238, 0, Math.PI * 2); x.fill();
+    for (let i = 0; i < 10; i++) {
+      const a0 = (i / 10) * Math.PI * 2 + 0.04, a1 = ((i + 1) / 10) * Math.PI * 2 - 0.04;
+      const gr = x.createRadialGradient(256, 256, 20, 256, 256, 225);
+      gr.addColorStop(0, "#FFC46A"); gr.addColorStop(1, "#F2861F");
+      x.fillStyle = gr; x.beginPath(); x.moveTo(256 + Math.cos((a0 + a1) / 2) * 14, 256 + Math.sin((a0 + a1) / 2) * 14);
+      x.arc(256, 256, 222, a0, a1); x.closePath(); x.fill();
+    }
+    x.fillStyle = "#FFF4DE"; x.beginPath(); x.arc(256, 256, 16, 0, Math.PI * 2); x.fill();
+    const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+    const face = new THREE.MeshPhysicalMaterial({ map: tex, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.08, transparent: true, opacity: 0.97 });
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.14, 72), [M.peel, face, face]);
+    m.castShadow = true;
+    const g = new THREE.Group(); g.add(m); return g;
+  }
+
+  /* ---------- science graphics ---------- */
+  function bone() {
+    const g = new THREE.Group();
+    const prof = [];
+    for (let i = 0; i <= 30; i++) { const y = -1.1 + (2.2 * i) / 30; prof.push(new THREE.Vector2(0.15 + 0.07 * Math.pow(Math.abs(y) / 1.1, 4), y)); }
+    const shaft = new THREE.Mesh(new THREE.LatheGeometry(prof, 48), M.bone); shaft.castShadow = true; g.add(shaft);
+    for (const s of [-1, 1]) for (const k of [-1, 1]) {
+      const ball = new THREE.Mesh(new THREE.SphereGeometry(0.24, 40, 24), M.bone);
+      ball.position.set(k * 0.15, s * 1.12, 0); ball.castShadow = true; g.add(ball);
+    }
+    g.rotation.z = Math.PI / 2;
+    return g;
+  }
+  function muscle(n = 26, len = 2.0, R = 0.34) {
+    const g = new THREE.Group(); const fibres = [];
+    for (let i = 0; i < n; i++) {
+      const a = i * 2.399963, rr = R * Math.sqrt((i + 0.5) / n);
+      const f = new THREE.Mesh(new THREE.CapsuleGeometry(0.05, len * (1 - 0.55 * (rr / R) ** 2), 6, 14), M.muscle);
+      f.rotation.z = Math.PI / 2; f.position.set(0, Math.cos(a) * rr, Math.sin(a) * rr); f.castShadow = true;
+      g.add(f); fibres.push(f);
+    }
+    const sheath = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), new THREE.MeshPhysicalMaterial({ color: "#F6B394", roughness: 0.2,
+      clearcoat: 1, clearcoatRoughness: 0.1, transparent: true, opacity: 0.38, depthWrite: false }));
+    sheath.scale.set(len * 0.56, R * 1.22, R * 1.22); g.add(sheath);
+    for (const sx of [-1, 1]) { const tnd = new THREE.Mesh(new THREE.CapsuleGeometry(0.06, len * 0.22, 6, 12), materials.ceramic("#F7F2EA"));
+      tnd.rotation.z = Math.PI / 2; tnd.position.x = sx * len * 0.62; tnd.castShadow = true; g.add(tnd); }
+    g.userData.fibres = fibres; g.userData.sheath = sheath; return g;
+  }
+  function cell(r = 0.42, nRec = 46) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(r, 48, 32), materials.ceramic("#DCE6F1")); body.castShadow = true; g.add(body);
+    const stem = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.012, 0.016, 0.16, 8), M.ceramic, nRec);
+    const tip = new THREE.InstancedMesh(new THREE.SphereGeometry(0.035, 12, 8), new THREE.MeshPhysicalMaterial({ roughness: 0.3, clearcoat: 1 }), nRec);
+    const q = new THREE.Quaternion(), m4 = new THREE.Matrix4(), up = V(0, 1, 0);
+    for (let i = 0; i < nRec; i++) {
+      const y = 1 - (2 * (i + 0.5)) / nRec, rad = Math.sqrt(1 - y * y), a = i * 2.399963;
+      const n = V(Math.cos(a) * rad, y, Math.sin(a) * rad);
+      q.setFromUnitVectors(up, n);
+      m4.compose(n.clone().multiplyScalar(r + 0.07), q, V(1, 1, 1)); stem.setMatrixAt(i, m4);
+      m4.compose(n.clone().multiplyScalar(r + 0.16), q, V(1, 1, 1)); tip.setMatrixAt(i, m4);
+      tip.setColorAt(i, new THREE.Color("#7C8DA0"));
+    }
+    g.add(stem, tip); g.userData.tip = tip; g.userData.n = nRec;
+    return g;
+  }
+  function heart() {
+    const s = new THREE.Shape();
+    s.moveTo(0, -0.95);
+    s.bezierCurveTo(-0.15, -0.75, -1.05, -0.25, -1.0, 0.25);
+    s.bezierCurveTo(-0.95, 0.75, -0.35, 0.95, 0, 0.55);
+    s.bezierCurveTo(0.35, 0.95, 0.95, 0.75, 1.0, 0.25);
+    s.bezierCurveTo(1.05, -0.25, 0.15, -0.75, 0, -0.95);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: 0.38, bevelEnabled: true, bevelThickness: 0.26, bevelSize: 0.2, bevelSegments: 10, curveSegments: 48 });
+    geo.center();
+    const m = new THREE.Mesh(geo, M.orange); m.castShadow = true;
+    const g = new THREE.Group(); g.add(m); return g;
+  }
+  function membrane(cols = 16, rows = 5, dx = 0.18) {
+    const n = cols * rows * 2;
+    const heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075, 16, 10), materials.ceramic("#F7F9FC"), n);
+    const tails = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.009, 0.009, 0.22, 6), new THREE.MeshPhysicalMaterial({ color: "#9AA8B8", roughness: 0.4 }), n * 2);
+    const g = new THREE.Group(); g.add(heads, tails);
+    g.userData = { heads, tails, cols, rows, dx };
+    return g;
+  }
+  function placeMembrane(mem, t) {
+    const { heads, tails, cols, rows, dx } = mem.userData; const m4 = new THREE.Matrix4(); const q = new THREE.Quaternion();
+    let h = 0, k = 0;
+    for (const side of [1, -1]) for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const x = (c - cols / 2) * dx + (r % 2) * dx / 2, z = (r - rows / 2) * dx;
+      const wave = Math.sin(x * 2.2 + t * 1.4) * 0.06 + Math.sin(z * 3 + t) * 0.03;
+      const y = side * 0.36 + wave;
+      m4.compose(V(x, y, z), q.identity(), V(1, 1, 1)); heads.setMatrixAt(h++, m4);
+      for (const o of [-0.03, 0.03]) { m4.compose(V(x + o, y - side * 0.15, z), q.identity(), V(1, 1, 1)); tails.setMatrixAt(k++, m4); }
+    }
+    heads.instanceMatrix.needsUpdate = true; tails.instanceMatrix.needsUpdate = true;
+  }
+  async function molecule(id, opts = {}) {
+    const res = await fetch(`../assets/molecules/${id}.json`);
+    const data = await res.json();
+    const { group, radius, center } = buildMolecule(data, { hydrogens: opts.hydrogens ?? false });
+    group.position.sub(center);
+    const g = new THREE.Group(); g.add(group); g.userData.radius = radius;
+    group.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    return g;
+  }
+
+  /* ---------- snow (camera space, always around the view) ---------- */
+  const SN = 200, snowGeo = new THREE.SphereGeometry(0.011, 8, 6);
+  const snow = new THREE.InstancedMesh(snowGeo, M.snow, SN);
+  const snowSeed = Array.from({ length: SN }, () => [rnd(), rnd(), rnd(), rnd()]);
+  camera.add(snow);
+  function placeSnow(t, gust) {
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+    for (let i = 0; i < SN; i++) {
+      const [a, b, c, d] = snowSeed[i];
+      const z = -(2.4 + c * 12), w = Math.tan(THREE.MathUtils.degToRad(15)) * -z * 1.2, h = w * 1.9;
+      const fall = (t * (0.08 + 0.1 * d) + b) % 1;
+      const x = (a * 2 - 1) * w + Math.sin(t * 0.7 + i) * 0.08 * -z * 0.1 + gust * (a + 0.5) * 2.5;
+      const y = h * (0.5 - fall);
+      const s = 0.5 + d * 1.0;
+      m4.compose(V(x, y, z), q, V(s, s, s)); snow.setMatrixAt(i, m4);
+    }
+    snow.instanceMatrix.needsUpdate = true;
+  }
+
+  /* ---------- scene builders ---------- */
+  const groups = [];
+  const add = (g) => { scene.add(g); groups.push(g); return g; };
+
+  // 01 opening: the five supplements
+  const S1 = add(new THREE.Group());
+  const five = [softgel(M.gold, 0.95, 0.34), tablet(M.orange, 0.4, 0.2), tablet(M.ceramic, 0.36, 0.18, 1.45), softgel(M.amber, 1.25, 0.3), scoop()];
+  five[4].scale.setScalar(0.62);
+  five.forEach((o) => S1.add(o));
+  const fiveFrom = five.map((_, i) => V((i - 2) * 3.2 + (rnd() - 0.5) * 2, 4 + rnd() * 3, 6 + rnd() * 3));
+
+  // 02 Vitamin D3
+  const S2 = add(new THREE.Group());
+  const gel = softgel(M.gold, 1.3, 0.46); S2.add(gel);
+  const boneG = bone(); boneG.scale.setScalar(0.72); boneG.position.set(-0.1, 0.85, 0); S2.add(boneG);
+  const musG = muscle(30, 1.7, 0.32); musG.position.set(0.15, 1.85, -0.45); musG.rotation.z = 0.32; S2.add(musG);
+  const cellD = cell(0.32, 36); cellD.position.set(1.25, 0.55, 0.6); S2.add(cellD);
+
+  // 03 Vitamin C
+  const S3 = add(new THREE.Group());
+  const slices = [];
+  for (let i = 0; i < 5; i++) { const s = citrusSlice(0.62); S3.add(s); slices.push(s); }
+  const vitC = await molecule("vitamin-c", { hydrogens: false }); S3.add(vitC);
+  const vcAtoms = []; vitC.traverse((o) => { if (o.isMesh && o.geometry.type === "SphereGeometry") vcAtoms.push(o); });
+  vcAtoms.forEach((o) => { o.userData.s0 = o.scale.x; o.userData.home = o.position.clone(); o.userData.from = V((rnd() - 0.5) * 6, (rnd() - 0.2) * 4, (rnd() - 0.5) * 4); });
+  const shield = new THREE.Group(); S3.add(shield);
+  const shieldGlass = new THREE.Mesh(new THREE.SphereGeometry(1.55, 64, 40), M.frost.clone()); shield.add(shieldGlass);
+  const shieldEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(1.6, 1)), new THREE.LineBasicMaterial({ color: "#F0782B", transparent: true }));
+  shield.add(shieldEdges);
+  const radicals = Array.from({ length: 9 }, () => { const r = new THREE.Mesh(new THREE.SphereGeometry(0.08, 16, 12), M.charcoal); S3.add(r);
+    r.userData.dir = V(rnd() - 0.5, rnd() * 0.8 - 0.3, rnd() - 0.5).normalize(); return r; });
+
+  // 04 Zinc: hexagonal close-packed cluster + immune cells
+  const S4 = add(new THREE.Group());
+  const dZn = 0.62, hZn = dZn * Math.sqrt(2 / 3), znPos = [V(0, 0, 0)];
+  for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; znPos.push(V(Math.cos(a) * dZn, 0, Math.sin(a) * dZn)); }
+  for (const s of [1, -1]) for (let i = 0; i < 3; i++) { const a = (i / 3) * Math.PI * 2 + Math.PI / 6; const rr = dZn / Math.sqrt(3); znPos.push(V(Math.cos(a) * rr, s * hZn, Math.sin(a) * rr)); }
+  const zn = new THREE.Group(); zn.position.y = 1.35; S4.add(zn);
+  const znAtoms = znPos.map((p) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.17, 40, 24), M.zinc); m.castShadow = true; zn.add(m);
+    m.userData.home = p; m.userData.from = V((rnd() - 0.5) * 7, (rnd() - 0.5) * 5, (rnd() - 0.5) * 5); return m; });
+  const bonds = [];
+  for (let i = 0; i < znPos.length; i++) for (let j = i + 1; j < znPos.length; j++) {
+    const a = znPos[i], b = znPos[j], L = a.distanceTo(b);
+    if (L < dZn * 1.05) {
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, L, 10), M.line);
+      m.position.copy(a).add(b).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(V(0, 1, 0), b.clone().sub(a).normalize());
+      zn.add(m); bonds.push(m);
+    }
+  }
+  const cells = [V(-1.35, 0.95, 0.7), V(1.4, 2.15, -0.4), V(0.75, 0.35, 1.05)].map((p, i) => { const c = cell(0.44, 44); c.position.copy(p); S4.add(c); c.userData.k = i; return c; });
+  const rings = cells.map((c) => { const r = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.012, 8, 64), new THREE.MeshBasicMaterial({ color: "#F0782B", transparent: true }));
+    r.position.copy(c.position); S4.add(r); return r; });
+
+  // 05 Omega-3
+  const S5 = add(new THREE.Group());
+  const heartG = heart(); heartG.position.set(0, 1.5, 0); heartG.scale.setScalar(0.44); S5.add(heartG);
+  const mem = membrane(20, 3); mem.position.set(0, 0.6, -1.5); S5.add(mem);
+  const drops = Array.from({ length: 14 }, () => { const r = 0.07 + rnd() * 0.15; const m = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20), M.amber); m.castShadow = true;
+    m.userData.p = V((rnd() - 0.5) * 4, 0.4 + rnd() * 2.6, (rnd() - 0.5) * 2.4); m.userData.s = 0.1 + rnd() * 0.15; S5.add(m); return m; });
+
+  // 06 Protein
+  const S6 = add(new THREE.Group());
+  const sc6 = scoop(); sc6.scale.setScalar(0.6); sc6.position.set(0, 0.4, 0); S6.add(sc6);
+  const NP = 1300;
+  const powder = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.02, 0), M.powder, NP); S6.add(powder);
+  const pv = Array.from({ length: NP }, () => { const a = rnd() * Math.PI * 2, el = 0.35 + rnd() * 1.0, sp = 1.2 + rnd() * 2.6;
+    return [Math.cos(a) * Math.cos(el) * sp, Math.sin(el) * sp * 1.2, Math.sin(a) * Math.cos(el) * sp, 0.6 + rnd() * 1.4]; });
+  const bcaa = [];
+  for (const [id, p] of [["l-leucine", V(-1.25, 2.45, -0.5)], ["l-isoleucine", V(-0.2, 3.05, -1.1)], ["l-valine", V(1.25, 2.6, -0.7)]]) {
+    const m = await molecule(id, { hydrogens: false }); m.scale.setScalar(0.26); m.position.copy(p); S6.add(m); bcaa.push(m);
+  }
+  const fib = muscle(28, 1.5, 0.27); fib.position.set(0.15, 1.8, 0.2); fib.rotation.z = -0.28; S6.add(fib);
+
+  // 07 ending: all five on a pedestal
+  const S7 = add(new THREE.Group());
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.3, 0.22, 96), materials.ceramic("#FAFBFD")); ped.position.y = 0.11; ped.receiveShadow = true; ped.castShadow = true; S7.add(ped);
+  const endFive = [softgel(M.gold, 0.95, 0.34), citrusSlice(0.42), tablet(M.ceramic, 0.36, 0.18, 1.45, true), softgel(M.amber, 1.2, 0.3), scoop()];
+  endFive[4].scale.setScalar(0.55);
+  endFive.forEach((o, i) => { const a = -0.62 + (i / 4) * 1.24; o.position.set(Math.sin(a) * 1.3, 0.55, Math.cos(a) * 0.55 - 0.25); o.scale.multiplyScalar(0.85); S7.add(o); });
+
+  /* ---------- DOM ---------- */
+  const $ = (id) => document.getElementById(id);
+  const canvasEl = $("gl"), gold = $("gold"), wipe = $("wipe"), h3d = $("h3d"), rig = $("rig");
+  // extruded headline: 16 depth layers per line, orange deepening into charcoal
+  document.querySelectorAll("[data-ln]").forEach((ln) => {
+    const face = ln.querySelector(".face");
+    for (let i = 16; i >= 1; i--) {
+      const d = document.createElement("span"); d.className = "depth"; d.innerHTML = face.innerHTML;
+      const k = i / 16; d.style.color = `rgb(${Math.round(lerp(240, 120, k))}, ${Math.round(lerp(120, 52, k))}, ${Math.round(lerp(43, 20, k))})`;
+      d.querySelectorAll(".k5").forEach((e) => (e.style.color = "inherit"));
+      d.dataset.i = i; ln.insertBefore(d, face);
+    }
+  });
+  const depthEls = [...document.querySelectorAll(".h3d .depth")];
+  function panel(id, t, t0, t1) {
+    const el = $(id), pin = span(t, t0, 0.7, ease.out), pout = span(t, t1 - 0.45, 0.45, ease.in);
+    el.style.opacity = String(pin * (1 - pout));
+    el.style.transform = `translateX(${(1 - pin) * 520 + pout * -60}px) translateY(${Math.sin(t * 1.1) * 4}px)`;
+    el.querySelectorAll(".tag").forEach((tg, i) => { const q = span(t, t0 + 0.45 + i * 0.18, 0.4, ease.out); tg.style.opacity = String(q); tg.style.transform = `translateY(${(1 - q) * 14}px)`; });
+  }
+  function chip(id, t, t0, t1) {
+    const el = $(id), pin = span(t, t0, 0.6, ease.out), pout = span(t, t1 - 0.4, 0.4, ease.in);
+    el.style.opacity = String(pin * (1 - pout));
+    el.style.transform = `translateY(${(1 - pin) * 40 + Math.sin(t * 1.3 + t0) * 6}px) scale(${0.94 + 0.06 * pin})`;
+  }
+
+  /* ---------- camera paths (one per scene), with a speed ramp into each cut ---------- */
+  const look = V(), pos = V();
+  function setCam(p, target, fov = 30) {
+    camera.position.copy(p); camera.lookAt(target);
+    if (camera.fov !== fov) { camera.fov = fov; camera.updateProjectionMatrix(); }
+    stage.focusTarget.copy(target);
+  }
+  // speed ramp: local time runs faster in the last 0.5 s of a scene and the first 0.4 s of the next
+  const ramp = (lt, dur) => lt + 0.9 * Math.max(0, lt - (dur - 0.5)) ** 2 / 0.5 - 0.5 * Math.max(0, 0.4 - lt) ** 2 / 0.4;
+
+  function update(t) {
+    const si = SCN.findIndex(([a, b]) => t >= a && t < b) === -1 ? 6 : SCN.findIndex(([a, b]) => t >= a && t < b);
+    groups.forEach((g, i) => (g.visible = i === si));
+    const [a, b] = SCN[si], dur = b - a, lt0 = t - a, lt = ramp(lt0, dur);
+
+    // frost wipe across each cut, snow gust with it
+    let w = -1;
+    for (const c of CUTS) if (Math.abs(t - c) < 0.5) w = (t - c + 0.5) / 1.0;
+    wipe.style.transform = w < 0 ? "translateX(0)" : `translateX(${ease.float(w) * 4320}px)`;
+    const gust = CUTS.reduce((s, c) => s + Math.exp(-(((t - c) / 0.35) ** 2)), 0);
+    placeSnow(t, gust);
+
+    // hide every DOM piece, then show this scene's
+    h3d.style.opacity = "0"; gold.style.opacity = "0";
+    ["p-d3", "p-c", "p-zn", "p-om", "p-pr", "c-epa", "c-dha", "contact", "end-logo", "disclaim"].forEach((id) => ($(id).style.opacity = "0"));
+
+    if (si === 0) {                                     // 01 opening
+      five.forEach((o, i) => {
+        const p = span(lt, 0.15 + i * 0.16, 1.5, ease.out);
+        const ang = (i / 5) * Math.PI * 2 + lt * 0.35;
+        const home = V(Math.cos(ang) * 1.0, 1.05 + Math.sin(ang * 2 + i) * 0.1, Math.sin(ang) * 0.75);
+        o.position.lerpVectors(fiveFrom[i], home, p);
+        o.rotation.set(lt * 0.8 + i, lt * 1.1 + i * 2, (1 - p) * 4 + i);
+      });
+      const push = ease.float(c01(lt / 5));
+      const az = THREE.MathUtils.degToRad(-25 + 45 * push), dist = lerp(9.5, 6.2, push);
+      pos.set(Math.sin(az) * dist, 0.35, Math.cos(az) * dist); look.set(0, 1.45, 0);
+      setCam(pos, look, 32);
+      // extruded headline: the depth unfolds, the slab turns toward camera
+      const hp = span(lt, 1.3, 1.2, ease.out), hout = span(lt, dur - 0.5, 0.45, ease.in);
+      h3d.style.opacity = String(c01(hp * 1.4) * (1 - hout));
+      rig.style.transform = `rotateX(${lerp(58, 12, hp) + Math.sin(lt * 0.9) * 2}deg) rotateY(${lerp(-18, 0, hp) + Math.sin(lt * 0.6) * 4}deg) translateY(${(1 - hp) * 60}px)`;
+      depthEls.forEach((e) => (e.style.transform = `translateZ(${-Number(e.dataset.i) * 1.6 * hp}px)`));
+    } else if (si === 1) {                              // 02 Vitamin D3
+      const orbit = THREE.MathUtils.degToRad(360 * ease.float(c01(lt / 3.4)));
+      gel.position.set(0, 1.25, 0); gel.rotation.set(0.3, lt * 0.6, 0.15 + Math.sin(lt) * 0.1);
+      const fly = span(lt, 3.2, 1.0, ease.in);                  // the camera dives into the softgel
+      const reveal = span(lt, 4.15, 0.9, ease.out);             // ... and comes out on the science
+      gel.visible = lt < 4.2;
+      [boneG, musG, cellD].forEach((o) => (o.visible = lt >= 4.1));
+      if (lt < 4.15) {
+        const dist = lerp(3.6, 0.15, fly);
+        pos.set(Math.sin(orbit) * dist, 1.25 + 0.5 * (1 - fly), Math.cos(orbit) * dist); look.set(0, 1.25, 0);
+        setCam(pos, look, 30);
+        gold.style.opacity = String(span(lt, 3.75, 0.4, ease.out));
+      } else {
+        gold.style.opacity = String(1 - reveal);
+        boneG.scale.setScalar(0.72 * (0.6 + 0.4 * reveal)); musG.scale.setScalar(0.85 * (0.6 + 0.4 * span(lt, 4.4, 0.8, ease.out)));
+        musG.userData.fibres.forEach((f, i) => (f.scale.y = 0.2 + 0.8 * span(lt, 4.4 + i * 0.02, 0.6, ease.out)));
+        cellD.scale.setScalar(span(lt, 4.9, 0.6, ease.out)); cellD.rotation.y = lt;
+        boneG.rotation.set(lt * 0.25, 0, Math.PI / 2 + 0.32);
+        const dly = ease.float(c01((lt - 4.15) / 2.85));
+        pos.set(lerp(-0.7, 0.5, dly), 1.7, lerp(6.2, 5.2, dly)); look.set(0.1, 1.25, 0);
+        setCam(pos, look, 32);
+      }
+      panel("p-d3", t, a + 4.6, b);
+    } else if (si === 2) {                              // 03 Vitamin C
+      slices.forEach((s, i) => { const ang = (i / 5) * Math.PI * 2 + lt * 0.25;
+        s.position.set(Math.cos(ang) * 1.9, 1.0 + Math.sin(lt * 0.8 + i) * 0.15, Math.sin(ang) * 1.9);
+        s.rotation.set(lt * 0.5 + i, lt * 0.3 + i, Math.sin(lt * 0.4 + i) * 0.6); });
+      const form = span(lt, 1.6, 1.8, ease.out);
+      vitC.position.set(0, 1.45, 0); vitC.rotation.y = lt * 0.35; vitC.scale.setScalar(0.32);
+      vcAtoms.forEach((o, i) => { const p = span(lt, 1.4 + i * 0.05, 1.4, ease.out); o.position.lerpVectors(o.userData.from, o.userData.home, p); o.scale.setScalar(o.userData.s0 * (0.4 + 0.6 * p)); });
+      vitC.children[0].children.forEach((o) => { if (o.isMesh && o.geometry.type !== "SphereGeometry") o.visible = form > 0.85; });
+      const sh = span(lt, 3.9, 0.9, ease.out);
+      shield.position.set(0, 1.45, 0); shield.scale.setScalar(0.3 + 0.45 * sh); shield.rotation.y = lt * 0.2;
+      shieldGlass.material.opacity = 0.3 * sh; shieldEdges.material.opacity = 0.85 * sh; shield.visible = sh > 0.01;
+      radicals.forEach((r, i) => {
+        const tt = c01((lt - 4.2 - i * 0.12) / 2.4), dIn = 3.6 - 2.3 * Math.min(1, tt * 2), dOut = 1.3 + 3 * Math.max(0, tt * 2 - 1);
+        const d = tt < 0.5 ? dIn : dOut;
+        r.position.copy(r.userData.dir).multiplyScalar(d).add(V(0, 1.45, 0)); r.visible = lt > 4.2;
+      });
+      const td = ease.float(c01(lt / 3.0));                    // top-down, then down to a close-up
+      const el = lerp(THREE.MathUtils.degToRad(88), THREE.MathUtils.degToRad(14), td), dist = lerp(9.5, 6.3, td);
+      pos.set(Math.sin(lt * 0.12) * Math.cos(el) * dist, 1.3 + Math.sin(el) * dist, Math.cos(lt * 0.12) * Math.cos(el) * dist); look.set(0, 1.25, 0);
+      camera.up.set(0, 1, 0);
+      setCam(pos, look, 30);
+      panel("p-c", t, a + 3.0, b);
+    } else if (si === 3) {                              // 04 Zinc
+      const asm = span(lt, 0.3, 2.2, ease.out);
+      znAtoms.forEach((m, i) => { const p = span(lt, 0.2 + i * 0.07, 1.8, ease.out); m.position.lerpVectors(m.userData.from, m.userData.home, p); });
+      bonds.forEach((m, i) => (m.scale.set(1, span(lt, 2.0 + i * 0.03, 0.5, ease.out) + 1e-3, 1)));
+      zn.rotation.y = lt * 0.3; zn.rotation.x = 0.35;
+      cells.forEach((c, i) => {
+        const on = span(lt, 3.3 + i * 0.55, 0.6, ease.out);
+        c.scale.setScalar(span(lt, 2.4 + i * 0.2, 0.7, ease.out)); c.rotation.y = lt * 0.4 + i;
+        const tip = c.userData.tip; const col = new THREE.Color("#7C8DA0").lerp(new THREE.Color("#F0782B"), on);
+        for (let k = 0; k < c.userData.n; k++) tip.setColorAt(k, col);
+        tip.instanceColor.needsUpdate = true;
+        const pr = c01((lt - 3.3 - i * 0.55) / 1.2);
+        rings[i].scale.setScalar(0.6 + pr * 1.6); rings[i].material.opacity = pr > 0 && pr < 1 ? 0.9 * (1 - pr) : 0;
+        rings[i].lookAt(camera.position);
+      });
+      const dly = ease.float(c01(lt / dur));                   // 45° tracking shot with a controlled dolly-in
+      const az = THREE.MathUtils.degToRad(45 + 14 * dly), dist = lerp(8.2, 6.0, dly);
+      pos.set(Math.sin(az) * dist + lerp(-0.8, 0.6, dly), 1.35 + dist * Math.tan(THREE.MathUtils.degToRad(24)), Math.cos(az) * dist); look.set(0.1, 1.2, 0);
+      setCam(pos, look, 30);
+      panel("p-zn", t, a + 2.8, b);
+    } else if (si === 4) {                              // 05 Omega-3
+      const beat = Math.pow(Math.max(0, Math.sin(lt * Math.PI * 1.15)), 8);
+      heartG.scale.setScalar(0.44 * (1 + 0.045 * beat) * span(lt, 0.2, 0.9, ease.out)); heartG.rotation.y = Math.sin(lt * 0.6) * 0.5;
+      placeMembrane(mem, lt);
+      drops.forEach((d, i) => { const p = d.userData.p; d.position.set(p.x + Math.sin(lt * 0.5 + i) * 0.15, p.y + ((lt * d.userData.s) % 1) * 0.6 - 0.3, p.z); });
+      const tr = ease.float(c01(lt / dur));                     // side tracking, then a macro orbit
+      const az = THREE.MathUtils.degToRad(lerp(-40, 30, tr)), dist = lerp(6.6, 4.4, tr);
+      pos.set(Math.sin(az) * dist, 1.6, Math.cos(az) * dist); look.set(0, 1.35, 0);
+      setCam(pos, look, 30);
+      panel("p-om", t, a + 1.6, b);
+      chip("c-epa", t, a + 2.6, b); chip("c-dha", t, a + 3.4, b);
+    } else if (si === 5) {                              // 06 Protein
+      const burstT = Math.max(0, lt - 0.7) * 0.42;            // slow motion
+      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+      pv.forEach(([vx, vy, vz, s], i) => {
+        const k = 1.6, e = 1 - Math.exp(-k * burstT);
+        const x = (vx / k) * e, z = (vz / k) * e, y = (vy / k) * e - 0.9 * burstT * burstT;
+        q.setFromEuler(new THREE.Euler(i, i * 0.7 + burstT * 3, 0));
+        const sz = lt < 0.7 ? 0 : s;
+        m4.compose(V(x, 0.5 + Math.max(-0.45, y), z), q, V(sz, sz, sz)); powder.setMatrixAt(i, m4);
+      });
+      powder.instanceMatrix.needsUpdate = true;
+      sc6.rotation.y = 0.4 + lt * 0.08;
+      bcaa.forEach((m, i) => { const p = span(lt, 1.6 + i * 0.3, 1.0, ease.out); m.scale.setScalar(0.26 * p); m.rotation.y = lt * 0.5 + i; m.position.y += 0; });
+      fib.userData.fibres.forEach((f, i) => (f.scale.y = 0.05 + 0.95 * span(lt, 3.1 + (i % 10) * 0.05, 0.9, ease.out)));
+      fib.visible = lt > 3.0; fib.rotation.x = lt * 0.2; bcaa.forEach((m) => (m.visible = lt < 3.4 || lt > 99));
+      const hero = ease.float(c01(lt / dur));                   // low-angle hero shot
+      const az = THREE.MathUtils.degToRad(lerp(-20, 20, hero)), dist = lerp(6.4, 5.2, hero);
+      pos.set(Math.sin(az) * dist, 0.3, Math.cos(az) * dist); look.set(0, 1.45, 0);
+      setCam(pos, look, 32);
+      panel("p-pr", t, a + 3.0, b);
+    } else {                                            // 07 ending
+      endFive.forEach((o, i) => { o.rotation.y = lt * 0.4 + i; o.position.y = 0.6 + Math.sin(lt * 1.1 + i) * 0.05; if (i === 1) o.rotation.x = 0.9; });
+      const pb = ease.float(c01(lt / 6.5));                    // slow pull-back hero
+      const dist = lerp(3.4, 7.4, pb), az = THREE.MathUtils.degToRad(lerp(12, -6, pb));
+      pos.set(Math.sin(az) * dist, lerp(1.0, 2.4, pb), Math.cos(az) * dist); look.set(0, lerp(0.55, 0.62, pb), 0);
+      setCam(pos, look, 30);
+      const lg = span(lt, 2.2, 1.0, ease.out);
+      $("end-logo").style.opacity = String(lg); $("end-logo").style.transform = `translateY(${(1 - lg) * 30}px) scale(${0.96 + 0.04 * lg})`;
+      const ct = span(lt, 3.2, 0.8, ease.out);
+      $("contact").style.opacity = String(ct); $("contact").style.transform = `translateY(${(1 - ct) * 40}px)`;
+      $("disclaim").style.opacity = String(span(lt, 3.9, 0.8, ease.out));
+    }
+    // light follows the subject; canvas fades in at the very start
+    stage.lightFrom(V(0, 1.2, 0));
+    canvasEl.style.opacity = String(span(t, 0, 0.5, ease.out));
+  }
+
+  window.__duration = D;
+  window.__seek = (t) => { stage.frame(t, update, CAM); };
+  await document.fonts.ready;
+  window.__seek(P.has("t") ? parseFloat(P.get("t")) : 0);
+} catch (e) {
+  window.__error = String(e && e.stack || e);
+  console.error(window.__error);
+}
+</script>
+</body>
+</html>
