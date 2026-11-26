@@ -69,7 +69,9 @@ Supporting tones sampled from the playbook:
 - No other hues: no greens, blues, neons or black backgrounds. Two exceptions: the logo, and a caption
   key word matched to the video's own colour (§6).
 - **Alternate colour schemes** (owner request, 2026-11-25). `templates/hook-slam.html` also renders in
-  three other schemes, chosen with `?scheme=`:
+  four other schemes, chosen with `?scheme=`:
+  - `charcoal`: the label reel's look (owner, 2026-11-24: white hues, charcoal cards on top): white stage,
+    near-black type, charcoal cards with white words, the brand orange
   - `mint`: white with green
   - `mustard`: cream with mustard
   - `navy-lime`: dark navy with lime
@@ -134,6 +136,8 @@ All of these are implemented in `assets/brand.css`.
     colour at the edge, frosted, tinted porcelain until ink text reads (auto, about 0.86 luminance), with a
     thin specular rim lit from the top left. Two passes of the overlay feed it (`render.cjs --real-glass` and
     `--glass-mask`). `timeline.py render` uses it for every overlay; `"glass": "flat"` keeps the old panels.
+    `--strength` (or `"glass_strength"` on an overlay) is the iOS 27 Liquid Glass slider: 0 opaque porcelain,
+    0.4 the house default, 1 completely clear. Keep small text at 0.6 or below.
 - **B · 3D science:** molecular science visuals with realistic materials and controlled
   detail. The SVG atom in `reel-9x16.html` is a stand-in; use a real 3D render:
   - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,

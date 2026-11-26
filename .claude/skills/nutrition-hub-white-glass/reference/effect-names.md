@@ -99,6 +99,7 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 |---|---|---|
 | Liquid Glass | Glass panels over footage that really bend, frost and light the video behind them; panels "materialize" | `glass.py` (automatic in `timeline.py render`; `"glass": "flat"` turns it off) |
 | Clear Glass | The see-through variant, only for panels without small text | `glass.py --variant clear` |
+| Glass Strength | The iOS 27-style slider: 0 opaque porcelain … 0.4 house default … 1 completely clear | `glass.py --strength 0.6`, or `"glass_strength"` on an overlay |
 | Screen Insert | A beat or clip playing on a real TV, laptop or monitor in your footage | `screen_insert.py plate.mp4 beat.mp4 out.mp4` (`--detect dark`, `--corners`, `--track`) |
 | Motion Blur | Real motion blur on rendered graphics (4 sub-frames, 180° shutter) | `render.cjs --blur 4`, or `"motion_blur": 4` in `edit.json` |
 | Word Bridge | A word stays on screen across a cut (R8's match cut) | a Tracking Reveal or a caption that spans the b-roll cut |
@@ -110,7 +111,7 @@ Sound effect names: **thud** (slam), **riser**, **whoosh**, **swish** (white dip
 
 ## Colour schemes
 
-Liquid Glass (house, `?scheme=white-glass`), Charcoal Cards, Mint, Mustard, Navy + Lime (`hook-slam.html?scheme=`).
+Liquid Glass (house, `?scheme=white-glass`), Charcoal Cards (`charcoal`), Mint (`mint`), Mustard (`mustard`), Navy + Lime (`navy-lime`): `hook-slam.html?scheme=`.
 The colours of R8–R16 (warm off-white, peach and mint, lavender, forest green, neon) are recorded in
 `reference/style-references.md` for reference; they are not Nutrition Hub schemes unless the owner adds one.
 

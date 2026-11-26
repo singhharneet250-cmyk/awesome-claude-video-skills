@@ -231,7 +231,8 @@ python3 $SK/scripts/glass.py graded.mp4 over.mp4 --content prompt.mov --mask pro
 - Under each panel: refraction at a 20 px rim (IOR 1.5), faint colour split, 8 px frost, a porcelain tint that
   adapts so ink reads (about 0.86 luminance), a lit rim from the top left, and a materialize as the panel reveals.
 - `--compare flat.mov` writes a side-by-side (old flat panel left, liquid glass right) for checking.
-- `--variant clear` for panels without small text. `--frost 0` for clear liquid glass.
+- `--strength 0…1` is the iOS 27-style slider (0 opaque, 0.4 default, 1 clear; tested at 0, 0.4 and 0.9 on the 6 s
+  take: text reads at all three, hands show through at 0.9). `--variant clear` = strength 0.9.
 - Tested on a 6 s 1080×1920 take (bright interior): 32 s for 180 frames; text reads over hands, hair and a dark chair.
 - Any template works; panels are whatever carries `.nh-glass`. A template without glass just gets its overlay.
 

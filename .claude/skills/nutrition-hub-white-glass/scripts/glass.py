@@ -18,14 +18,17 @@ text reads, puts a thin specular rim on the lit edge, then lays the overlay's wo
 timeline.py render does all of this for every overlay ("glass": "real" is the default; "flat" switches it off).
 
 Options (sizes are for a 1080 px wide frame and scale with it):
-  --frost 8       blur of the footage seen through the glass, px (White Glass is frosted; 0 = clear liquid glass)
-  --tint auto     white mixed into the glass: auto keeps the glass porcelain-light for ink text (about 0.86 luminance)
+  --strength 0.4  the iOS 27 Liquid Glass slider: 0 = opaque porcelain (most readable), 1 = completely clear.
+                  It sets the frost and the auto tint together; 0.4 is the house default (frosted, legible)
+  --frost 8       blur of the footage seen through the glass, px (overrides the strength's frost; 0 = clear)
+  --tint auto     white mixed into the glass: auto keeps ink text readable over any footage (target luminance
+                  0.85 at the default strength), smoothed over time; or a number 0-1
                   over any footage, smoothed over time; or a number 0-1
   --rim 20        width of the bevelled rim that bends the light, px
   --ior 1.5       index of refraction (1.5 = glass); higher bends more
   --dispersion 0.6  colour split at the rim (0 = none; real glass keeps it faint)
   --light 0.85    strength of the rim highlight (light from the top left, turning a little as the panel moves)
-  --variant regular  regular (frosted, adapts to stay legible: the White Glass default) or clear (see-through, only
+  --variant regular  regular (frosted, adapts to stay legible: the Liquid Glass default) or clear (strength 0.9, only
                   for panels without small text), after Apple's Liquid Glass variants
 A panel "materializes" the way Apple's Liquid Glass does: as the overlay's reveal brings it in, the lensing, frost,
 tint and rim grow together instead of a flat fade.
@@ -76,9 +79,12 @@ def frames(path, w, h, fmt="rgb24", rate=None):
 
 
 class Glass:
-    def __init__(self, scale, frost, tint, rim, ior, dispersion, light, variant="regular"):
-        if variant == "clear":                                  # Apple's clear variant: more see-through, for panels without small text
-            frost, tint = min(frost, 2.0), (0.18 if tint == "auto" else tint)
+    def __init__(self, scale, frost, tint, rim, ior, dispersion, light, strength=0.4):
+        # one slider, like iOS 27's Liquid Glass control: 0 = opaque porcelain, 1 = completely clear
+        strength = float(np.clip(strength, 0, 1))
+        if frost is None:
+            frost = max(0.0, 14 - 15 * strength)
+        self.target, self.tmin = 0.95 - 0.25 * strength, max(0.05, 0.6 - 0.62 * strength)
         self.s, self.frost, self.tint, self.ior, self.disp, self.light = scale, frost * scale, tint, ior, dispersion, light
         self.rim = max(4.0, rim * scale)
         self.t_smooth = None
@@ -117,7 +123,7 @@ class Glass:
                                     cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
         lum = float((out[..., 0] * 0.2126 + out[..., 1] * 0.7152 + out[..., 2] * 0.0722)[m > 0.5].mean() / 255) if (m > 0.5).any() else 1.0
         if self.tint == "auto":
-            t = float(np.clip((0.86 - lum) / max(1e-3, 1 - lum), 0.35, 0.85))    # porcelain-light: ink text always reads
+            t = float(np.clip((self.target - lum) / max(1e-3, 1 - lum), self.tmin, 0.9))   # light enough that ink text reads
             self.t_smooth = t if self.t_smooth is None else self.t_smooth + 0.12 * (t - self.t_smooth)   # no flicker
             t = self.t_smooth * k
         else:
@@ -149,7 +155,8 @@ def main():
     ap.add_argument("--content", required=True, help="overlay pass rendered with --transparent --real-glass")
     ap.add_argument("--mask", required=True, help="the same overlay rendered with --transparent --glass-mask")
     ap.add_argument("--at", type=float, default=0.0, help="where the overlay starts in the footage, seconds")
-    ap.add_argument("--frost", type=float, default=8.0)
+    ap.add_argument("--strength", type=float, help="0 opaque … 1 clear (default 0.4; 0.9 with --variant clear)")
+    ap.add_argument("--frost", type=float)
     ap.add_argument("--tint", default="auto")
     ap.add_argument("--rim", type=float, default=20.0)
     ap.add_argument("--ior", type=float, default=1.5)
@@ -166,7 +173,8 @@ def main():
 
     bi = probe(a.base)
     W, H = bi["w"], bi["h"]
-    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, a.variant)
+    strength = a.strength if a.strength is not None else (0.9 if a.variant == "clear" else 0.4)
+    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength)
     start = int(round(a.at * bi["fps"]))
     content = frames(a.content, W, H, "rgba", bi["rate"])
     mask = frames(a.mask, W, H, "rgba", bi["rate"])

@@ -82,4 +82,7 @@ Apple's guidance (Human Interface Guidelines: Materials; WWDC25 "Meet Liquid Gla
   `--variant regular` (default) and `--variant clear` (no small text on it).
 - **Highlights respond to movement** → the rim light turns a little as a panel moves.
 - **Concentric shapes**, and **never glass on glass** → SKILL.md §4 A.
+- **iOS 27 (WWDC 2026)** refined Liquid Glass after a year of readability complaints: a system slider from fully
+  opaque to completely clear, a more legible default, new rendering, and adaptation to Reduce Transparency and
+  Increase Contrast → `glass.py --strength` (0 opaque … 1 clear), house default 0.4, readable by design.
 - Not taken: Apple's look-alike controls, icons or system UI (never in a Nutrition Hub video).

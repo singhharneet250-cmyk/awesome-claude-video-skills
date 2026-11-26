@@ -22,7 +22,7 @@ edit.json (paths are relative to the file; every track is optional):
                {"start": 8.0, "end": 11.2, "template": "motion-kit.html?scene=wheel&pick=Creatine"}],   a motion-kit beat
   "effects":  [{"effect": "orbit", "start": 6, "end": 9.5, "words": "Whey,Creatine"},
                {"effect": "escape", "start": 1, "end": 4, "matte": "wall"}],
-  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels
+  "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels; "glass_strength": 0-1 (0 opaque, 1 clear)
   "captions": {"position": "auto", "keywords": ["protein"], "blur": true},
   "sfx":      [{"t": 4.9, "sfx": "thud"}],
   "endcard":  {"template": "reel-9x16.html", "from": 8.15},
@@ -523,7 +523,8 @@ def render(e):
             mov, mask = media(work, "overlay", o["template"], ".glass.mov", blur), media(work, "overlay", o["template"], ".mask.mov", blur)
             run(["node", HERE / "render.cjs", tpl, "--transparent", "--real-glass", "--out", mov, *blur], f"render overlay {o['template']}")
             run(["node", HERE / "render.cjs", tpl, "--transparent", "--glass-mask", "--out", mask, *blur], "render its glass shapes")
-            run([PY, HERE / "glass.py", cur, nxt, "--content", mov, "--mask", mask, "--at", str(o["start"])], "real glass over the footage")
+            run([PY, HERE / "glass.py", cur, nxt, "--content", mov, "--mask", mask, "--at", str(o["start"]),
+                 *(["--strength", str(o["glass_strength"])] if "glass_strength" in o else [])], "real glass over the footage")
         else:                                   # "glass": "flat": the near-opaque panels, as rendered
             mov = media(work, "overlay", o["template"], ".mov", blur)
             run(["node", HERE / "render.cjs", tpl, "--transparent", "--out", mov, *blur], f"render overlay {o['template']}")
