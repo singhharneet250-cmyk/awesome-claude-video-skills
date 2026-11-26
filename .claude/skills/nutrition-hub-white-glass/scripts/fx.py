@@ -215,7 +215,7 @@ def find_font():
     return out
 
 
-INK_GRAD = ((0.0, (70, 102, 140)), (0.62, (32, 43, 56)), (1.0, (18, 25, 34)))      # = assets/grad-text.js, top to bottom
+INK_GRAD = ((0.0, (70, 102, 140)), (0.62, (32, 43, 56)), (1.0, (18, 25, 34)))      # = assets/gradients.js, top to bottom
 ORANGE_GRAD = ((0.0, (253, 166, 92)), (0.55, (240, 120, 43)), (1.0, (218, 90, 26)))
 
 
@@ -235,6 +235,44 @@ def text_grad(im, xy, text, font, anchor="mm", stops=INK_GRAD):
     layer[..., :3] = col[:, None, :].astype(np.uint8)
     layer[..., 3] = np.asarray(mask)
     return Image.alpha_composite(im, Image.fromarray(layer, "RGBA"))
+
+
+def fill_grad_stops(rgb):
+    """The diagonal fill gradient of a solid colour, as assets/gradients.js makes it: brand orange and ink use their
+    ramps, white goes to ice, any other colour runs from 26% lighter to 8% deeper."""
+    r, g, b = rgb
+    if (r, g, b) == (240, 120, 43):
+        return ((0.0, (253, 170, 98)), (0.58, (240, 120, 43)), (1.0, (226, 97, 31)))
+    if (r, g, b) == (32, 43, 56):
+        return INK_GRAD
+    if min(r, g, b) > 245:
+        return ((0.0, (255, 255, 255)), (0.4, (255, 255, 255)), (1.0, (234, 240, 247)))
+    return ((0.0, tuple(c + (255 - c) * 0.26 for c in rgb)), (0.58, tuple(rgb)), (1.0, tuple(c * 0.92 for c in rgb)))
+
+
+def grad_shape(im, shape, box, rgb, alpha=255, **kw):
+    """Draw a PIL shape ("rounded_rectangle", "ellipse", ...) filled with the brand diagonal gradient of rgb
+    (owner, 2026-11-26: gradients on everything): lighter at the top left, deeper at the bottom right."""
+    from PIL import Image, ImageDraw
+    mask = Image.new("L", im.size, 0)
+    getattr(ImageDraw.Draw(mask), shape)(box, fill=alpha, **kw)
+    x0, y0, x1, y1 = [float(v) for v in box]
+    H, W = im.size[1], im.size[0]
+    X, Y = np.meshgrid(np.arange(W, dtype=np.float32), np.arange(H, dtype=np.float32))
+    p = np.clip(((X - x0) / max(1.0, x1 - x0) * 0.5 + (Y - y0) / max(1.0, y1 - y0) * 0.5), 0, 1)   # 0 top left, 1 bottom right
+    stops = fill_grad_stops(rgb)
+    pos = [s for s, _ in stops]
+    col = np.stack([np.interp(p, pos, [c[k] for _, c in stops]) for k in range(3)], -1)
+    layer = np.dstack([col.astype(np.uint8), np.asarray(mask)])
+    return Image.alpha_composite(im, Image.fromarray(layer, "RGBA"))
+
+
+def warm_cool(W, H):
+    """The glass tint ramp as a colour field, warm peach (top left) → white → cool ice (bottom right), float RGB."""
+    X, Y = np.meshgrid(np.linspace(-1, 1, W, dtype=np.float32), np.linspace(-1, 1, H, dtype=np.float32))
+    p = np.clip(-(X * 0.6 + Y * 0.8), -1, 1)[..., None]                     # +1 top left
+    warm, cool = np.array([255, 214, 182], np.float32) / 255, np.array([196, 216, 242], np.float32) / 255
+    return np.where(p > 0, 1 + (warm - 1) * p, 1 + (cool - 1) * -p)
 
 
 def chip(word, height, glass=True):
@@ -297,7 +335,8 @@ def orbit_frame(out, matte, face, t, a, sprites, W, H):
         else:
             cv2.ellipse(ring_back, (int(cx), int(cy)), (int(r), int(r)), 0, -90, -90 + sweep, 1.0, th, cv2.LINE_AA)
     ring_alpha = 0.55 * k
-    back = back * (1 - ring_alpha * ring_back[..., None]) + WHITE * ring_alpha * ring_back[..., None]
+    RING = warm_cool(W, H)                                    # the ring in the glass tint ramp (gradients on everything)
+    back = back * (1 - ring_alpha * ring_back[..., None]) + RING * ring_alpha * ring_back[..., None]
     order = []
     for i, spr in enumerate(sprites):
         th_i = 2 * np.pi * i / n + np.radians(a.speed) * (t - a.s)
@@ -315,7 +354,7 @@ def orbit_frame(out, matte, face, t, a, sprites, W, H):
             over(back, s, x - s.shape[1] / 2, y - s.shape[0] / 2)
     m = matte[..., None]
     out = out * m + back * (1 - m)                             # the speaker stays in front of the back half
-    out = out * (1 - ring_alpha * ring[..., None]) + WHITE * ring_alpha * ring[..., None]
+    out = out * (1 - ring_alpha * ring[..., None]) + RING * ring_alpha * ring[..., None]
     for s, x, y in front_items:
         over(out, s, x - s.shape[1] / 2, y - s.shape[0] / 2)
     return out

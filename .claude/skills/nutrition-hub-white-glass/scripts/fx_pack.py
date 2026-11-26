@@ -58,16 +58,19 @@ def sticker(text, height, badge=None):
     font = ImageFont.truetype(fx.find_font(), int(hp * 0.44))
     bfont = ImageFont.truetype(fx.find_font(), int(hp * 0.34))
     tw = int(font.getlength(text))
-    bw = int(hp * 0.62) if badge else 0
+    bw = max(int(hp * 0.62), int(bfont.getlength(str(badge)) + hp * 0.36)) if badge else 0   # fits "1000 IU" too
     w = tw + int(hp * 0.7) + (bw + int(hp * 0.18) if badge else 0)
     pad = int(hp * 0.45)
     im = Image.new("RGBA", (w + 2 * pad, hp + 2 * pad), (0, 0, 0, 0))
     # no drop shadow beside the words (owner, 2026-11-26)
     d = ImageDraw.Draw(im)
-    d.rounded_rectangle((pad, pad, pad + w, pad + hp), int(hp * 0.28), fill=(255, 255, 255, 250), outline=(32, 43, 56, 22), width=ss)
+    im = fx.grad_shape(im, "rounded_rectangle", (pad, pad, pad + w, pad + hp), (255, 255, 255), 250, radius=int(hp * 0.28))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((pad, pad, pad + w, pad + hp), int(hp * 0.28), outline=(32, 43, 56, 22), width=ss)
     x = pad + int(hp * 0.32)
     if badge:
-        d.rounded_rectangle((x, pad + hp * 0.2, x + bw, pad + hp * 0.8), int(hp * 0.16), fill=(240, 120, 43, 255))
+        im = fx.grad_shape(im, "rounded_rectangle", (x, pad + hp * 0.2, x + bw, pad + hp * 0.8), (240, 120, 43), radius=int(hp * 0.16))
+        d = ImageDraw.Draw(im)
         d.text((x + bw / 2, pad + hp / 2), str(badge), font=bfont, fill=(255, 255, 255, 255), anchor="mm")
         x += bw + int(hp * 0.18)
     im = fx.text_grad(im, (x, pad + hp / 2), text, font, "lm")
@@ -156,6 +159,7 @@ class Wipe:
             self.head = fx.chip(a.text, 0.5 * fh_px) if getattr(a, "text", None) else None
         xs = np.arange(W, dtype=np.float32)
         self.xs = xs
+        self.tint = fx.warm_cool(W, H)
 
     @staticmethod
     def _handle(d):
@@ -193,7 +197,7 @@ class Wipe:
             out = before * (1 - m) + f * m
             d = np.abs(self.xs - bar)
             glow = (np.exp(-(d / 2.2) ** 2) * 0.95 + np.exp(-(d / 40) ** 2) * 0.16)[None, :, None] * k
-            out = out * (1 - glow) + fx.WHITE * glow
+            out = out * (1 - glow) + self.tint * glow                   # the divider in the glass tint ramp
             hd = self.handle.copy(); hd[..., 3:] *= k
             fx.over(out, hd, bar - hd.shape[1] / 2, 0.52 * H - hd.shape[0] / 2)           # chest height: clear of the face and the lower overlays
             cb, ca = self.chip_b.copy(), self.chip_a.copy()
@@ -213,7 +217,7 @@ class Wipe:
         if 0 < p < 1:
             d = np.abs(self.xs - bar)
             glow = (np.exp(-(d / 5) ** 2) * 0.9 + np.exp(-(d / 60) ** 2) * 0.35)[None, :, None]
-            out = out * (1 - glow) + fx.WHITE * glow
+            out = out * (1 - glow) + self.tint * glow
         y = 0.58 * H
         cb, ca = self.chip_b.copy(), self.chip_a.copy()
         cb[..., 3:] *= k * (1 - p)
@@ -240,7 +244,8 @@ class Pullback:
         u = W / 1080
         d.rounded_rectangle((40 * u, 60 * u, W - 40 * u, 150 * u), int(26 * u), fill=(255, 255, 255, 235), outline=(32, 43, 56, 20))
         for i, c in enumerate(((240, 120, 43), (201, 213, 226), (201, 213, 226))):
-            d.ellipse((72 * u + i * 30 * u, 95 * u, 90 * u + i * 30 * u, 113 * u), fill=c + (255,))
+            im = fx.grad_shape(im, "ellipse", (72 * u + i * 30 * u, 95 * u, 90 * u + i * 30 * u, 113 * u), c)
+            d = ImageDraw.Draw(im)
         d.text((W / 2, 105 * u), "Nutrition Hub · reel edit", font=f(30), fill=(32, 43, 56, 255), anchor="mm")
         x0, y0, x1, y1 = self.rect
         px0 = x1 + 34 * u
@@ -249,7 +254,8 @@ class Pullback:
         for i, item in enumerate(("Grade", "Captions", "B-roll", "Sound", "Export")):
             yy = y0 + (92 + i * 80) * u
             done = i < 4
-            d.ellipse((px0 + 28 * u, yy, px0 + 62 * u, yy + 34 * u), fill=(240, 120, 43, 255) if done else (234, 240, 246, 255))
+            im = fx.grad_shape(im, "ellipse", (px0 + 28 * u, yy, px0 + 62 * u, yy + 34 * u), (240, 120, 43) if done else (234, 240, 246))
+            d = ImageDraw.Draw(im)
             if done:
                 d.line((px0 + 37 * u, yy + 17 * u, px0 + 44 * u, yy + 25 * u, px0 + 55 * u, yy + 10 * u), fill=(255, 255, 255, 255), width=int(4 * u))
             d.text((px0 + 80 * u, yy + 17 * u), item, font=f(28), fill=(32, 43, 56, 255) if done else (89, 104, 121, 255), anchor="lm")
@@ -260,7 +266,8 @@ class Pullback:
         lx0, lx1 = 72 * u, W - 72 * u
         for y, clips in lanes:
             for a_, b_, c in clips:
-                d.rounded_rectangle((lx0 + (lx1 - lx0) * a_, y, lx0 + (lx1 - lx0) * b_ - 6 * u, y + 52 * u), int(10 * u), fill=c + (255,))
+                im = fx.grad_shape(im, "rounded_rectangle", (lx0 + (lx1 - lx0) * a_, y, lx0 + (lx1 - lx0) * b_ - 6 * u, y + 52 * u), c, radius=int(10 * u))
+                d = ImageDraw.Draw(im)
         # the real audio waveform of the take
         raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(video), "-ac", "1", "-ar", "8000", "-f", "f32le", "-"], capture_output=True).stdout
         aud = np.frombuffer(raw, np.float32)

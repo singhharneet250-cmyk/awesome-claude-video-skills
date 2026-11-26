@@ -342,8 +342,10 @@ words on them.
 
 **Gradients (owner, 2026-11-26, every future edit):** type in brand gradients, top to bottom, repeated per line:
 ink `#46668C → #202B38 → #121922`, orange `#FDA65C → #F0782B → #DA5A1A`, slate `#7C90A6 → #596879`; glass
-tinted warm peach `#FFD6B6` at the lit corner → white → cool ice `#C4D8F2`; the caption key word lighter to deeper
-letter by letter.
+tinted warm peach `#FFD6B6` at the lit corner → white → cool ice `#C4D8F2`. Then "gradient colour scheme for overall
+things": every solid fill and icon as a soft diagonal gradient of itself (white → ice), the orbit ring and wipe divider
+in the glass tint ramp, and captions top to bottom on every line (white → ice `#D6E3F2` on footage, the ink ramp on
+light walls, the key word in its accent ramp).
 
 **Glass lens (owner, 2026-11-26):** every glass card magnifies what is behind it (about 1.14× in the middle, easing to
 the edge); the `lens` scene with `"glass_lens": 0.35` is a round magnifier for a label or a detail.
