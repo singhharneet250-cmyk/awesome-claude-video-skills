@@ -29,6 +29,8 @@ Options (sizes are for a 1080 px wide frame and scale with it):
   --ior 1.5       index of refraction (1.5 = glass); higher bends more
   --dispersion 0.8  colour split at the rim (0 = none; real glass keeps it faint)
   --light 0.85    strength of the rim highlight (light from the top left, turning a little as the panel moves)
+  --grad 1.0      gradient tint (owner, 2026-11-26): warm peach at the lit corner, white, cool ice at the far corner
+                  (light tints of the brand orange and ice; 0 = plain porcelain white)
   --gloss 1.0     the polished-glass highlights: a soft sheen across the face toward the light, a bloom on the key
                   highlight, a fainter line on the far rim (light caught inside the slab) and fresnel on every edge
   --variant clear  clear (strength 0.9, the house default) or regular (strength 0.4, frosted), after Apple's Liquid
@@ -87,7 +89,7 @@ def frames(path, w, h, fmt="rgb24", rate=None):
 
 
 class Glass:
-    def __init__(self, scale, frost, tint, rim=32, ior=1.5, dispersion=0.8, light=0.85, strength=0.9, gloss=1.0, liquid=1.0):
+    def __init__(self, scale, frost, tint, rim=32, ior=1.5, dispersion=0.8, light=0.85, strength=0.9, gloss=1.0, liquid=1.0, grad=1.0):
         # one slider, like iOS 27's Liquid Glass control: 0 = opaque porcelain, 1 = completely clear
         strength = float(np.clip(strength, 0, 1))
         if frost is None:
@@ -95,9 +97,26 @@ class Glass:
         self.target, self.tmin = 0.95 - 0.25 * strength, max(0.05, 0.6 - 0.62 * strength)
         self.s, self.frost, self.tint, self.ior, self.disp, self.light = scale, frost * scale, tint, ior, dispersion, light
         self.rim = max(4.0, rim * scale)
+        self.grad = grad                                 # gradient tint: 0 = plain white
         self.gloss, self.liquid = gloss, liquid          # liquid: how far the rounded edge bends the picture (0 = none)
         self.t_smooth = None
         self.W = None
+
+    # gradient glass (owner, 2026-11-26): the tint runs from a warm peach at the lit corner, through white, to a cool
+    # ice blue at the far corner, both light tints of the brand's orange and ice, so ink text still reads everywhere
+    WARM, COOL = np.array([255, 214, 182], np.float32), np.array([196, 216, 242], np.float32)
+
+    def tint_field(self, inside, L, w, h):
+        if self.grad <= 0 or not inside.any():
+            return np.float32(255)
+        ys, xs = np.nonzero(inside)
+        cx, cy = (xs.min() + xs.max()) / 2, (ys.min() + ys.max()) / 2
+        hx, hy = max(1.0, (xs.max() - xs.min()) / 2), max(1.0, (ys.max() - ys.min()) / 2)
+        X, Y = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
+        p = np.clip(((X - cx) * L[0] + (Y - cy) * L[1]) / (abs(L[0]) * hx + abs(L[1]) * hy), -1, 1)[..., None]   # +1 lit
+        white = np.float32(255)
+        col = np.where(p > 0, white + (self.WARM - white) * p, white + (self.COOL - white) * -p)
+        return white + (col - white) * self.grad
 
     def apply(self, base, mask):
         """base: HxWx3 uint8 footage; mask: HxW float 0-1 (the glass panels). Returns the footage with glass."""
@@ -144,7 +163,10 @@ class Glass:
         else:
             t = float(self.tint) * k
         tmap = t * (0.42 + 0.58 * u)                             # the rim stays clearer, so the bent picture shows there
-        out = out * (1 - tmap[..., None]) + 255 * tmap[..., None]
+        col = self.tint_field(inside, L, x1 - x0, y1 - y0)
+        out = out * (1 - tmap[..., None]) + col * tmap[..., None]
+        if self.grad > 0:                                        # tinted glass filters the light it lets through
+            out = out * (1 - 0.55 * k * (1 - col / 255))
         g = np.sqrt(gx ** 2 + gy ** 2) + 1e-6
         facing = np.clip(-(gx * L[0] + gy * L[1]) / g, -1, 1)   # +1 where the rim faces the light (top left)
         band = (1 - u) * (g > 1e-3)
@@ -202,6 +224,7 @@ def main():
     ap.add_argument("--ior", type=float, default=1.5)
     ap.add_argument("--dispersion", type=float, default=0.8)
     ap.add_argument("--light", type=float, default=0.85)
+    ap.add_argument("--grad", type=float, default=1.0, help="gradient tint, warm peach (lit corner) to cool ice (0 = plain white)")
     ap.add_argument("--liquid", type=float, default=1.0, help="how far the thick rounded edge bends the picture (0 = flat slab)")
     ap.add_argument("--gloss", type=float, default=1.0, help="sheen, bloom, far-edge and fresnel highlights (0 = rim light only)")
     ap.add_argument("--variant", choices=["clear", "regular"], default="clear")
@@ -216,7 +239,7 @@ def main():
     bi = probe(a.base)
     W, H = bi["w"], bi["h"]
     strength = a.strength if a.strength is not None else (0.9 if a.variant == "clear" else 0.4)
-    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength, a.gloss, a.liquid)
+    glass = Glass(W / 1080, a.frost, a.tint, a.rim, a.ior, a.dispersion, a.light, strength, a.gloss, a.liquid, a.grad)
     start = int(round(a.at * bi["fps"]))
     content = frames(a.content, W, H, "rgba", bi["rate"])
     mask = frames(a.mask, W, H, "rgba", bi["rate"])

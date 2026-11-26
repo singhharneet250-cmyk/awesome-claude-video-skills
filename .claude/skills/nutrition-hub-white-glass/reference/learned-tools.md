@@ -30,7 +30,8 @@ What the best prompts share, now in SKILL.md §5 and the motion kit:
 - **Gotchas**: no `will-change` on anything a camera scales (text goes soft); the last frame equals the first for
   loops; when a shape fills the screen, scale it past all four corners.
 - **Banned in the good prompts too**: bouncy easing, particle bursts, glows, gradients on UI chrome, dead time,
-  anything that looks like a template.
+  anything that looks like a template. (The owner has since asked for gradient type and gradient glass in the
+  brand's own colours, 2026-11-26: SKILL.md §2. The rest still applies.)
 - Music for those films: royalty-free tracks around 120 BPM, often Mixkit.
 
 ## Skills installed in this repo (read in full and checked first)

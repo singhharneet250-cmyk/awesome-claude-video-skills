@@ -340,6 +340,11 @@ words on them.
 
 **Background (owner, 2026-11-26):** keep the real background; remove it only when the owner asks for that video.
 
+**Gradients (owner, 2026-11-26, every future edit):** type in brand gradients, top to bottom, repeated per line:
+ink `#46668C → #202B38 → #121922`, orange `#FDA65C → #F0782B → #DA5A1A`, slate `#7C90A6 → #596879`; glass
+tinted warm peach `#FFD6B6` at the lit corner → white → cool ice `#C4D8F2`; the caption key word lighter to deeper
+letter by letter.
+
 ### Editing details worth keeping
 
 - **One element carried through** (R8 "CREATE" across a match cut; R16 one shape through every UI state; R12 the

@@ -70,7 +70,7 @@ def sticker(text, height, badge=None):
         d.rounded_rectangle((x, pad + hp * 0.2, x + bw, pad + hp * 0.8), int(hp * 0.16), fill=(240, 120, 43, 255))
         d.text((x + bw / 2, pad + hp / 2), str(badge), font=bfont, fill=(255, 255, 255, 255), anchor="mm")
         x += bw + int(hp * 0.18)
-    d.text((x, pad + hp / 2), text, font=font, fill=(32, 43, 56, 255), anchor="lm")
+    im = fx.text_grad(im, (x, pad + hp / 2), text, font, "lm")
     im = im.resize((im.width // ss, im.height // ss), Image.LANCZOS)
     return np.asarray(im).astype(np.float32) / 255
 

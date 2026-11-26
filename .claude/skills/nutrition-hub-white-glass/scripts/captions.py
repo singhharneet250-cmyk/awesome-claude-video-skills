@@ -285,6 +285,23 @@ def ass_escape(s: str) -> str:
     return s.replace("\\", "＼").replace("{", "(").replace("}", ")")
 
 
+def grad_word(word):
+    """The key word in a gradient of its accent colour (owner, 2026-11-26: gradient type): lighter on the first
+    letter, deeper on the last, one colour tag per letter (subtitles can't fill a gradient top to bottom)."""
+    hexv = ORANGE.split("&H", 1)[1].split("&", 1)[0][-6:]                     # BBGGRR
+    b, g, r = (int(hexv[i:i + 2], 16) for i in (0, 2, 4))
+    light = [c + (255 - c) * 0.32 for c in (r, g, b)]
+    deep = [c * 0.84 for c in (r, g, b)]
+    chars = list(word)
+    n = max(1, len(chars) - 1)
+    out = []
+    for i, ch in enumerate(chars):
+        k = i / n
+        rr, gg, bb = (round(light[j] + (deep[j] - light[j]) * k) for j in range(3))
+        out.append("{\\c&H00%02X%02X%02X&}" % (bb, gg, rr) + ch)
+    return "".join(out)
+
+
 def render_ass_text(tokens, span, lines=None, fs=62):
     lines = lines or wrap(tokens)
     reset = RESET if fs == 62 else RESET[:-1] + f"\\fs{fs}}}"
@@ -294,11 +311,9 @@ def render_ass_text(tokens, span, lines=None, fs=62):
         parts = []
         for t in line:
             word = ass_escape(t)
-            if span and idx == span[0]:
-                word = ORANGE + word
-            if span and idx == span[1] - 1:
+            if span and span[0] <= idx < span[1]:
                 core = word.rstrip(".,!?;:\"')”’")
-                word = core + reset + word[len(core):]
+                word = grad_word(core) + (reset if idx == span[1] - 1 else "") + word[len(core):]
             elif not (span and span[0] <= idx < span[1]) and not serif_used and \
                     t.lower().strip(".,!?;:\"'()”’") in SERIF_WORDS:
                 core = word.rstrip(".,!?;:\"')”’")

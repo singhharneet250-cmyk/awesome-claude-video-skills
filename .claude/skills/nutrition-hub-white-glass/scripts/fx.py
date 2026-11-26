@@ -215,6 +215,28 @@ def find_font():
     return out
 
 
+INK_GRAD = ((0.0, (70, 102, 140)), (0.62, (32, 43, 56)), (1.0, (18, 25, 34)))      # = assets/grad-text.js, top to bottom
+ORANGE_GRAD = ((0.0, (253, 166, 92)), (0.55, (240, 120, 43)), (1.0, (218, 90, 26)))
+
+
+def text_grad(im, xy, text, font, anchor="mm", stops=INK_GRAD):
+    """Draw text on an RGBA PIL image in a vertical brand gradient (owner, 2026-11-26: gradient type)."""
+    from PIL import Image, ImageDraw
+    mask = Image.new("L", im.size, 0)
+    ImageDraw.Draw(mask).text(xy, text, font=font, fill=255, anchor=anchor)
+    box = mask.getbbox()
+    if not box:
+        return im
+    y0, y1 = box[1], box[3]
+    ys = np.clip((np.arange(im.size[1], dtype=np.float32) - y0) / max(1, y1 - y0), 0, 1)
+    pos = np.array([p for p, _ in stops], np.float32)
+    col = np.stack([np.interp(ys, pos, [c[k] for _, c in stops]) for k in range(3)], -1)     # H x 3
+    layer = np.zeros((im.size[1], im.size[0], 4), np.uint8)
+    layer[..., :3] = col[:, None, :].astype(np.uint8)
+    layer[..., 3] = np.asarray(mask)
+    return Image.alpha_composite(im, Image.fromarray(layer, "RGBA"))
+
+
 def chip(word, height, glass=True):
     """A clear Liquid Glass pill with an ink word and no shadow: RGBA (the word) plus a 5th channel, the pill's shape,
     where over() puts real glass under the word. glass=False: the old porcelain pill with its shadow."""
@@ -237,7 +259,7 @@ def chip(word, height, glass=True):
     d = ImageDraw.Draw(im)
     if not glass:
         d.rounded_rectangle(box, hpx // 2, fill=(255, 255, 255, 238), outline=(32, 43, 56, 26), width=ss)
-    d.text((pad + w / 2, pad + hpx / 2), word, font=font, fill=(32, 43, 56, 255), anchor="mm")
+    im = text_grad(im, (pad + w / 2, pad + hpx / 2), word, font, "mm")
     im = im.resize((im.width // ss, im.height // ss), Image.LANCZOS)
     a = np.asarray(im).astype(np.float32) / 255
     if glass:

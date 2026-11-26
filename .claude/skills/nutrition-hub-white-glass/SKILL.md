@@ -69,6 +69,24 @@ Supporting tones sampled from the playbook:
 | Slate | `#596879` | Body copy, source notes (5.7:1 on white) |
 | Mist grey | `#8290A0` | Labels and meta only (3.3:1, so never essential info) |
 
+**Gradient type and glass** *(owner, 2026-11-26, every future edit)*: the brand colours are drawn as gradients.
+
+| Gradient | Stops | Where |
+|---|---|---|
+| Ink gradient | `#46668C → #202B38 → #121922`, top to bottom | Headlines, labels, card copy, chip words |
+| Orange text gradient | `#FDA65C → #F0782B → #DA5A1A`, top to bottom | Kickers, units, the accent word |
+| Slate gradient | `#7C90A6 → #596879`, top to bottom | Body copy, sub-lines, source notes |
+| Glass tint | warm peach `#FFD6B6` (lit corner) → white → cool ice `#C4D8F2` (far corner) | Every glass card, chip and handle |
+| Caption key word | its accent colour, lighter on the first letter → deeper on the last | Captions (subtitles can't fill top to bottom) |
+
+- Type gradients run **top to bottom and repeat on every line**, so a line that animates word by word, or a
+  paragraph on two lines, reads as one ramp. `render.cjs` applies them to every template (`assets/grad-text.js`;
+  `--flat-type` turns them off); `fx.py` draws chip and sticker words the same way (`fx.text_grad`).
+- Text on a pill, chip or button (its own background) keeps its solid colour; white text on orange stays white.
+- Real glass over footage (`glass.py --grad 1.0`) is tinted and filters the light like coloured glass: peach on
+  the lit side, ice on the far side; ink text still reads everywhere. `--grad 0` gives plain porcelain glass.
+- Gradients stay in the brand family: no rainbow, neon or off-palette colours, and never on the logo.
+
 - Use orange sparingly: key metrics, active states and call-to-action details.
   Allow **one orange focal point per frame** *(derived)*.
 - No other hues: no greens, blues, neons or black backgrounds. Two exceptions: the logo, and a caption

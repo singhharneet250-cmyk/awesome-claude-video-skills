@@ -101,6 +101,8 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 | Clear Glass | The house default since 2026-11-26: see-through, ink text, no shadows | `glass.py` (default; `--variant regular` for the old frosted look) |
 | Liquid Edge | The thick rounded edge bends the picture like a drop of water | `glass.py --liquid 1.0` (0 = flat slab) |
 | Glossy Glass | Rim specular + bloom, a far-edge line, fresnel edges and a soft curved sheen | `glass.py --gloss 1.0` (0 = rim light only) |
+| Gradient Glass | Glass tinted warm peach (lit corner) to cool ice (far corner), filtering the light like coloured glass | `glass.py --grad 1.0` (default; 0 = plain) |
+| Gradient Type | Ink, orange and slate text as top-to-bottom gradients, repeated per line | automatic in `render.cjs` (`--flat-type` = solid); `fx.text_grad` for chips |
 | Glass Strength | The iOS 27-style slider: 0 opaque porcelain … 0.4 frosted … 0.9 house default (clear) … 1 completely clear | `glass.py --strength 0.6`, or `"glass_strength"` on an overlay |
 | Screen Insert | A beat or clip playing on a real TV, laptop or monitor in your footage | `screen_insert.py plate.mp4 beat.mp4 out.mp4` (`--detect dark`, `--corners`, `--track`) |
 | Motion Blur | Real motion blur on rendered graphics (4 sub-frames, 180° shutter) | `render.cjs --blur 4`, or `"motion_blur": 4` in `edit.json` |
