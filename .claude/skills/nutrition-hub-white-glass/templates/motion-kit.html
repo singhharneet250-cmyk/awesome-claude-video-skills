@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub motion kit</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 100vw; height: 100vh; overflow: hidden; background: transparent; }
+  #stage { position: absolute; inset: 0; }
+  .mk { position: absolute; left: 0; top: 0; white-space: nowrap; font-family: var(--nh-font); color: var(--nh-ink);
+        font-feature-settings: "ss01", "cv11"; will-change: auto; }
+  .mk-w { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: .12em; margin-bottom: -.12em; }
+  .mk-w > span { display: inline-block; }
+  .mk-card { position: absolute; box-sizing: border-box; }
+  .mk-tile { position: absolute; border-radius: 20px; overflow: hidden; background: #FFFFFF;
+             box-shadow: 0 1px 2px rgba(32, 43, 56, .06), 0 26px 50px -26px rgba(32, 43, 56, .45); }
+  .mk-tile img, .mk-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .mk-ph { width: 100%; height: 100%; background: linear-gradient(160deg, #FFFFFF, var(--nh-ice)); display: grid; place-items: center;
+           font: 600 22px/1 var(--nh-font); letter-spacing: .14em; text-transform: uppercase; color: var(--nh-mist); }
+  .mk-ph.is-orange { background: var(--nh-orange-grad); color: rgba(255, 255, 255, .85); }
+</style>
+</head>
+<body>
+<!--
+  Motion kit (R8–R16, SKILL.md §4 L): 17 short White Glass beats learned from the owner's motion-design references,
+  picked by name with ?scene=. Every frame is a pure function of time (window.__seek), springs are critically damped
+  (they never overshoot), and one orange dot is the element carried through a scene.
+
+  FULL-SCREEN BEATS (render as MP4 and cut them in like b-roll: broll.py, or "template" in edit.json "broll"):
+    wheel  menu  count  split  highlight  morph  scroll  ring  strip  echo  photos
+  OVERLAYS (render with --transparent and lay over the speaker; they also work full screen):
+    toggle  prompt  progress  panels  tracking  banner  cta
+
+    node ../scripts/render.cjs "motion-kit.html?scene=wheel&words=Whey,Creatine,Oats&pick=Creatine" --out wheel.mp4
+    node ../scripts/render.cjs "motion-kit.html?scene=toggle&items=Seal intact,Batch code scanned" --transparent --out t.mov
+    16:9 (for a TV or laptop screen insert): add --size 1920x1080
+
+  Copy is EXAMPLE copy (label-reading tips). Numbers need a real source (?source=), images are real photos
+  (?img= / ?imgs= absolute paths). Parameters per scene are listed in reference/effect-names.md.
+-->
+<div class="nh-stage" id="stage"></div>
+<script>
+const P = new URLSearchParams(location.search);
+const W = innerWidth, H = innerHeight, S = Math.min(W, H) / 1080, CX = W / 2, CY = H / 2, LAND = W > H;
+const TRANSPARENT = P.has("transparent");
+const NAME = (P.get("scene") || "wheel").toLowerCase();
+const stage = document.getElementById("stage");
+const SLOT_Y = LAND ? H * 0.72 : (P.get("slot") === "top" ? H * 0.25 : H * 0.64);
+
+/* ---------- helpers ---------- */
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, p) => a + (b - a) * p;
+const prog = (t, at, d) => clamp((t - at) / d);
+function bez(x1, y1, x2, y2) { return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
+  for (let i = 0; i < 8; i++) { const cx = 3 * x1 * t * (1 - t) ** 2 + 3 * x2 * t * t * (1 - t) + t ** 3 - x; const d = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t; if (Math.abs(d) < 1e-6) break; t = Math.min(1, Math.max(0, t - cx / d)); }
+  return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3; }; }
+const easeOut = bez(.22, 1, .36, 1), easeIn = bez(.64, 0, .78, 0), easeInOut = bez(.65, 0, .35, 1);
+// Critically damped spring step (0 → 1): fast in, settles exactly on 1, never overshoots (White Glass: no bounce).
+const spring = (t, at, w = 16) => { const x = t - at; return x <= 0 ? 0 : 1 - (1 + w * x) * Math.exp(-w * x); };
+// A value that is sent to new targets at set times: the sum of one spring per change, so it stays a pure function of time.
+const springTo = (t, keys, w = 16) => keys.reduce((v, k, i) => (i === 0 ? k[1] : v + (k[1] - keys[i - 1][1]) * spring(t, k[0], w)), 0);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const str = (k, d) => (P.has(k) ? P.get(k) : d);
+const list = (k, d, sep = ",") => str(k, d).split(sep).map((x) => x.trim()).filter(Boolean);
+const fileUrl = (p) => (p.startsWith("/") ? "file://" + p : p);
+const mix = (a, b, p) => { const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+  const A = h(a), B = h(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], p))).join(",")})`; };
+const INK = "#202B38", ORANGE = "#F0782B", ICE = "#EAF0F6", MIST = "#8290A0", SLATE = "#596879";
+function el(parent, cls, css = {}, html = "") {
+  const e = document.createElement("div"); if (cls) e.className = cls; Object.assign(e.style, css); e.innerHTML = html;
+  parent.appendChild(e); return e; }
+const px = (v) => `${v}px`;
+const images = [];
+function img(src, css = {}) {
+  const i = document.createElement("img"); i.alt = ""; i.src = fileUrl(src); Object.assign(i.style, css);
+  images.push(new Promise((res) => { i.onload = res; i.onerror = () => { window.__error = `image did not load: ${src}`; res(); }; }));
+  return i; }
+function measure(html, font, extra = {}) {
+  const e = el(stage, "mk", { font, visibility: "hidden", ...extra }, html); const w = e.offsetWidth, h = e.offsetHeight; e.remove(); return [w, h]; }
+// words that rise through a mask (brand kinetic type: .35–.55 s, 40–70 ms stagger, no overshoot)
+function words(parent, text, css = {}) {
+  const line = el(parent, "mk", css);
+  line.innerHTML = String(text).split(/\s+/).filter(Boolean).map((w) => `<span class="mk-w"><span>${esc(w)}</span></span>`).join(" ");
+  line._w = [...line.querySelectorAll(".mk-w > span")];
+  return line; }
+function rise(line, t, at, stagger = 0.055, dur = 0.45, k = 1) {
+  line._w.forEach((s, i) => { const p = easeOut(prog(t, at + i * stagger, dur)); s.style.transform = `translateY(${(1 - p) * 108}%)`; });
+  line.style.opacity = k; }
+function setXY(e, x, y, ax = 0.5, ay = 0.5, extra = "") {
+  e.style.transform = `translate(${x}px, ${y}px) translate(${-ax * 100}%, ${-ay * 100}%) ${extra}`; }
+const checkSvg = (stroke = "#FFFFFF", w = 3.2) =>
+  `<svg viewBox="0 0 24 24" style="width:100%;height:100%;overflow:visible"><path d="M5 12.5l4.4 4.3L19 7.4" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" pathLength="1"/></svg>`;
+function orbs() {
+  if (TRANSPARENT) return;
+  el(stage, "nh-orb", { width: px(900 * S), height: px(900 * S), right: px(-420 * S), top: px(-260 * S) });
+  el(stage, "nh-orb", { width: px(760 * S), height: px(760 * S), left: px(-460 * S), bottom: px(120 * S) });
+}
+function fit(width, max) { return width > max ? max / width : 1; }
+
+/* ---------- scenes ---------- */
+const SCENES = {
+
+  /* Word Wheel (R12): a list rolls like a slot reel and lands on one word, with the orange dot. */
+  wheel: { overlay: false, build() {
+    const W8 = list("words", "Whey protein,Creatine,Pre-workout,Multivitamin,Fish oil,Electrolytes,Peanut butter,Oats");
+    const N = W8.length, pick = Math.max(0, W8.indexOf(str("pick", W8[1] || W8[0])));
+    const GAP = 116 * S, BIG = 96 * S, SMALL = 60 * S, X = CX - 330 * S;
+    const m = `linear-gradient(to bottom, transparent ${CY - 430 * S}px, #000 ${CY - 250 * S}px, #000 ${CY + 250 * S}px, transparent ${CY + 430 * S}px)`;
+    const box = el(stage, "", { position: "absolute", inset: 0, WebkitMaskImage: m, maskImage: m });
+    const items = Array.from({ length: N * 4 }, (_, i) => el(box, "mk", { letterSpacing: "-.03em", fontWeight: 800 }, esc(W8[i % N])));
+    const dot = el(stage, "mk", { width: px(26 * S), height: px(26 * S), borderRadius: "50%", background: "var(--nh-orange-grad)" });
+    const kick = el(stage, "mk nh-kicker", {}, esc(str("kicker", "Today we check")));
+    const note = str("note", "Read the label first");
+    const chip = note ? el(stage, "mk nh-chip", {}, `<i class="nh-dot"></i>${esc(note)}`) : null;
+    const F = 2 * N + pick, F0 = F - (N + 3), T0 = 0.15, ROLL = 1.7, LANDT = T0 + ROLL * 0.82;
+    return { dur: T0 + ROLL + 1.35, sfx: [{ t: T0, sfx: "whoosh", gain: -4, what: "wheel rolls" }, { t: LANDT, sfx: "tick", what: "lands on " + W8[pick] }],
+      seek(t) {
+        const pin = easeOut(prog(t, 0, 0.35));
+        const r = prog(t, T0, ROLL), pos = lerp(F0, F, 1 - Math.pow(1 - r, 4));
+        items.forEach((e, i) => { const d = i - pos, a = Math.abs(d);
+          if (a > 4.6) { e.style.display = "none"; return; } e.style.display = "";
+          e.style.fontSize = px(lerp(BIG, SMALL, Math.min(1, a)));
+          e.style.opacity = (1 - Math.min(1, a) * 0.6 - Math.max(0, a - 1) * 0.08) * pin;
+          setXY(e, X, CY + d * GAP, 0, 0.5); });
+        const dp = spring(t, LANDT - 0.05, 18);
+        dot.style.opacity = dp; setXY(dot, X - 48 * S, CY, 0.5, 0.5, `scale(${dp})`);
+        kick.style.opacity = pin; setXY(kick, X, CY - 540 * S, 0, 0.5);
+        if (chip) { const c = easeOut(prog(t, LANDT + 0.25, 0.5)); chip.style.opacity = c; setXY(chip, CX, CY + 470 * S + (1 - c) * 20 * S, 0.5, 0.5); }
+      } }; } },
+
+  /* Menu Switch (R12): a word list steps down; the orange dot travels to each word and a glass card swaps. */
+  menu: { overlay: false, build() {
+    const items = list("items", "Whey|Check protein per serving;Creatine|Look for monohydrate;Electrolytes|Check the sodium;Multivitamin|Compare the daily value", ";")
+      .map((x) => x.split("|").map((y) => y.trim()));
+    const imgs = list("imgs", ""), n = items.length, step = parseFloat(str("step", "0.8"));
+    const RS = 80 * S, GAP = 104 * S;
+    const X = LAND ? CX - 780 * S : CX - 400 * S;
+    const Y0 = LAND ? CY - (n - 1) * GAP / 2 : CY - 430 * S;
+    const rows = items.map(([w]) => el(stage, "mk", { fontSize: px(RS), fontWeight: 800, letterSpacing: "-.035em", lineHeight: 1 }, esc(w)));
+    const dot = el(stage, "mk", { width: px(24 * S), height: px(24 * S), borderRadius: "50%", background: "var(--nh-orange-grad)" });
+    const cw = LAND ? 700 * S : 860 * S, ch = 330 * S;
+    const cx = LAND ? CX + 60 * S + cw / 2 : CX, cy = LAND ? CY : CY + 210 * S;
+    const card = el(stage, "mk-card nh-glass", { width: px(cw), height: px(ch), left: px(cx - cw / 2), top: px(cy - ch / 2), overflow: "hidden" });
+    const faces = items.map(([w, line], k) => {
+      const f = el(card, "", { position: "absolute", inset: 0, padding: px(44 * S), boxSizing: "border-box", display: "flex", gap: px(32 * S), alignItems: "center" });
+      const txt = el(f, "", { flex: 1, whiteSpace: "normal" }, `<div class="nh-kicker" style="font-size:${24 * S}px">${esc(w)}</div>
+        <div style="margin-top:${16 * S}px;font:800 ${56 * S}px/1.08 var(--nh-font);letter-spacing:-.03em;color:${INK}">${esc(line || "")}</div>`);
+      if (imgs[k]) { const box = el(f, "", { width: px(220 * S), height: px(220 * S), borderRadius: px(18 * S), overflow: "hidden", flex: "none" }); box.appendChild(img(imgs[k], { width: "100%", height: "100%", objectFit: "cover" })); }
+      return f; });
+    const T = items.map((_, k) => 0.55 + k * step);
+    return { dur: T[n - 1] + step + 0.45, sfx: T.map((x, k) => ({ t: x + 0.02, sfx: "tick", what: "menu: " + items[k][0] })),
+      seek(t) {
+        rows.forEach((r, i) => { const pin = easeOut(prog(t, 0.08 + i * 0.06, 0.5));
+          const act = spring(t, T[i], 18) - (i < n - 1 ? spring(t, T[i + 1], 18) : 0);
+          r.style.opacity = pin * lerp(0.26, 1, act); setXY(r, X + act * 6 * S, Y0 + i * GAP + (1 - pin) * 24 * S, 0, 0.5); });
+        const dy = springTo(t, T.map((x, i) => [x, Y0 + i * GAP]), 15);
+        const dp = spring(t, T[0] - 0.05, 18); dot.style.opacity = dp; setXY(dot, X - 46 * S, dy, 0.5, 0.5, `scale(${dp})`);
+        const cin = easeOut(prog(t, T[0] - 0.15, 0.6)); card.style.opacity = cin; card.style.transform = `scale(${0.96 + 0.04 * cin})`;
+        faces.forEach((f, k) => { const p = easeOut(prog(t, T[k] + 0.04, 0.45)), q = k < n - 1 ? easeIn(prog(t, T[k + 1] - 0.05, 0.22)) : 0;
+          f.style.opacity = p * (1 - q); f.style.transform = `translateY(${((1 - p) * 34 - q * 22) * S}px)`; });
+      } }; } },
+
+  /* Count-up Bars (R12): a big number counts up while bars rise; the last bar is orange. Needs a real source. */
+  count: { overlay: false, build() {
+    const value = parseFloat(str("value", "25")), dec = parseInt(str("decimals", "0"), 10), unit = str("unit", " g");
+    const fmt = (v) => v.toLocaleString("en-IN", { minimumFractionDigits: dec, maximumFractionDigits: dec });
+    let NS = 250 * S;
+    const [w0] = measure(`${fmt(value)}<span style="font-size:.46em">${esc(unit)}</span>`, `800 ${NS}px/1 var(--nh-font)`, { letterSpacing: "-.04em" });
+    NS *= fit(w0, 900 * S);
+    const label = el(stage, "mk nh-kicker", {}, esc(str("label", "Protein per scoop")));
+    const num = el(stage, "mk", { font: `800 ${NS}px/1 var(--nh-font)`, letterSpacing: "-.04em", fontVariantNumeric: "tabular-nums" });
+    const src = el(stage, "mk", { font: `500 ${26 * S}px/1.3 var(--nh-font)`, color: SLATE },
+      `<b style="color:var(--nh-orange-text);letter-spacing:.08em;font-size:.8em;margin-right:.6em">SOURCE</b>${esc(str("source", "Example: use the number printed on the real label"))}`);
+    const nb = parseInt(str("bars", "14"), 10), AW = 840 * S, BG = 14 * S, BW = (AW - BG * (nb - 1)) / nb, BH = 300 * S, BASE = CY + 360 * S;
+    const bars = Array.from({ length: nb }, (_, i) => el(stage, "mk", { width: px(BW), height: px(BH * (0.22 + 0.78 * Math.pow(i / (nb - 1), 1.6)) * (1 + 0.06 * Math.sin(i * 2.3))),
+      borderRadius: `${10 * S}px ${10 * S}px ${4 * S}px ${4 * S}px`, background: i === nb - 1 ? "var(--nh-orange-grad)" : "#DCE5EE", transformOrigin: "50% 100%" }));
+    const C0 = 0.3, CD = 1.5;
+    return { dur: C0 + CD + 1.6, sfx: [{ t: C0 + CD - 0.05, sfx: "tick", what: "count lands" }],
+      seek(t) {
+        const a = easeOut(prog(t, 0.05, 0.5)); label.style.opacity = a; setXY(label, CX, CY - 330 * S, 0.5, 0.5);
+        const p = easeOut(prog(t, C0, CD)), v = p >= 1 ? value : value * p;
+        num.innerHTML = `${fmt(v)}<span style="font-size:.46em;color:var(--nh-orange-text);margin-left:.04em">${esc(unit)}</span>`;
+        num.style.opacity = easeOut(prog(t, C0 - 0.15, 0.3)); setXY(num, CX, CY - 140 * S, 0.5, 0.5);
+        bars.forEach((b, i) => { const s = spring(t, C0 + 0.05 + i * 0.06, 13); b.style.opacity = clamp(s * 3);
+          setXY(b, CX - AW / 2 + i * (BW + BG), BASE, 0, 1, `scaleY(${Math.max(0.001, s)})`); });
+        const sp = easeOut(prog(t, 1.0, 0.5)); src.style.opacity = sp; setXY(src, CX, CY + 420 * S, 0.5, 0.5);
+      } }; } },
+
+  /* Toggle List (R12 "Autopilot"): switches flip on one by one; the knob stretches as it moves. Overlay or full screen. */
+  toggle: { overlay: true, build() {
+    const items = list("items", "Seal intact,Batch code scanned,Label checked"), title = str("title", "Before you buy");
+    const RH = 116 * S, CW = 840 * S, pad = 44 * S, n = items.length;
+    const ch = pad * 2 + (title ? 56 * S : 0) + n * RH, cy = TRANSPARENT ? SLOT_Y : CY;
+    const card = el(stage, "mk-card nh-glass", { width: px(CW), height: px(ch), left: px(CX - CW / 2), top: px(cy - ch / 2) });
+    if (title) el(card, "nh-kicker", { position: "absolute", left: px(pad), top: px(pad), fontSize: px(24 * S) }, esc(title));
+    const TW = 150 * S, TH = 86 * S, KN = 70 * S, M = (TH - KN) / 2;
+    const rows = items.map((label, i) => {
+      const top = pad + (title ? 56 * S : 0) + i * RH;
+      const r = el(card, "", { position: "absolute", left: px(pad), right: px(pad), top: px(top), height: px(RH), display: "flex", alignItems: "center", justifyContent: "space-between" });
+      el(r, "", { font: `700 ${46 * S}px/1 var(--nh-font)`, letterSpacing: "-.02em", color: INK }, esc(label));
+      const tr = el(r, "", { position: "relative", width: px(TW), height: px(TH), borderRadius: px(TH / 2), background: "#DCE5EE", flex: "none" });
+      const on = el(tr, "", { position: "absolute", inset: 0, borderRadius: px(TH / 2), background: "var(--nh-orange-grad)", opacity: 0 });
+      const k = el(tr, "", { position: "absolute", top: px(M), height: px(KN), borderRadius: px(KN / 2), background: "#FFFFFF", boxShadow: "0 4px 10px rgba(32,43,56,.25)" });
+      return { r, on, k }; });
+    const T = items.map((_, i) => 0.85 + i * 0.5);
+    return { dur: T[n - 1] + 1.0, sfx: T.map((x, i) => ({ t: x + 0.03, sfx: "tick", what: "toggle: " + items[i] })),
+      seek(t) {
+        const c = easeOut(prog(t, 0.1, 0.6)), out = 0; card.style.opacity = c; card.style.transform = `translateY(${(1 - c) * 24}px) scale(${0.96 + 0.04 * c})`;
+        rows.forEach((o, i) => { const p = easeOut(prog(t, 0.3 + i * 0.07, 0.45)); o.r.style.opacity = p; o.r.style.transform = `translateY(${(1 - p) * 16 * S}px)`;
+          const lead = spring(t, T[i], 26), trail = spring(t, T[i], 14);       // leading edge first: the knob stretches, then settles
+          const L = lerp(M, TW - KN - M, trail), R = lerp(M + KN, TW - M, lead);
+          o.k.style.left = px(L); o.k.style.width = px(Math.max(KN, R - L)); o.on.style.opacity = lead; });
+      } }; } },
+
+  /* Word Split (R14, R15): a line opens at "|" and a check, chip or photo springs into the gap. */
+  split: { overlay: false, build() {
+    const [A, B] = str("text", "Read the|label").split("|").map((x) => x.trim());
+    let FS = 112 * S;
+    const font = () => `800 ${FS}px/1.1 var(--nh-font)`;
+    const chip = str("chip", ""), pic = str("img", "");
+    const size = () => { const [wa] = measure(esc(A), font(), { letterSpacing: "-.035em" }), [wb] = measure(esc(B), font(), { letterSpacing: "-.035em" });
+      const wi = chip ? measure(esc(chip), `800 ${FS * 0.42}px/1 var(--nh-font)`)[0] + FS * 0.7 : FS * 1.25; return [wa, wb, wi]; };
+    let [wa, wb, wi] = size(); const m0 = 26 * S;
+    const k = fit(wa + wb + wi + m0 * 2, 960 * S); if (k < 1) { FS *= k; [wa, wb, wi] = size(); }
+    const m = m0 * (FS / (112 * S)), sp = FS * 0.27;
+    const a = words(stage, A, { font: font(), letterSpacing: "-.035em" }), b = words(stage, B, { font: font(), letterSpacing: "-.035em" });
+    const ins = el(stage, "mk", { width: px(wi), height: px(FS * 1.0), borderRadius: px(FS * 0.5), display: "grid", placeItems: "center", overflow: "hidden",
+      background: pic ? "#FFFFFF" : "var(--nh-orange-grad)", boxShadow: "0 14px 30px -14px rgba(240,120,43,.7)" });
+    if (pic) ins.appendChild(img(pic, { width: "100%", height: "100%", objectFit: "cover" }));
+    else if (chip) ins.innerHTML = `<span style="font:800 ${FS * 0.42}px/1 var(--nh-font);color:#FFFFFF;letter-spacing:-.01em">${esc(chip)}</span>`;
+    else ins.innerHTML = `<div style="width:${FS * 0.5}px;height:${FS * 0.5}px">${checkSvg("#FFFFFF", 3.4)}</div>`;
+    const kick = str("kicker", "") ? el(stage, "mk nh-kicker", {}, esc(str("kicker", ""))) : null;
+    const under = str("under", "") ? words(stage, str("under", ""), { font: `500 ${40 * S}px/1.3 var(--nh-font)`, color: SLATE }) : null;
+    const pre = wa + sp + wb, fin = wa + m + wi + m + wb, T = 1.0;
+    return { dur: 3.0, sfx: [{ t: T + 0.14, sfx: "pop", what: "split insert" }],
+      seek(t) {
+        const s = spring(t, T, 13), ax = lerp(CX - pre / 2, CX - fin / 2, s), bx = lerp(CX - pre / 2 + wa + sp, CX - fin / 2 + wa + m + wi + m, s);
+        rise(a, t, 0.12); rise(b, t, 0.2); setXY(a, ax, CY, 0, 0.5); setXY(b, bx, CY, 0, 0.5);
+        const q = spring(t, T + 0.1, 15); ins.style.opacity = clamp(q * 2); setXY(ins, CX - fin / 2 + wa + m + wi / 2, CY, 0.5, 0.5, `scale(${q})`);
+        if (kick) { kick.style.opacity = easeOut(prog(t, 0.05, 0.5)); setXY(kick, CX, CY - 150 * S, 0.5, 0.5); }
+        if (under) { rise(under, t, 1.5); setXY(under, CX, CY + 130 * S, 0.5, 0.5); }
+      } }; } },
+
+  /* Highlighter Sweep (R15, R3): words rise, then an orange bar sweeps behind *the phrase* and turns it white. */
+  highlight: { overlay: false, build() {
+    const lines = str("text", "Most people never read|*the back of the tub.*").split("|");
+    let FS = 86 * S;
+    const font = () => `800 ${FS}px/1.12 var(--nh-font)`;
+    const plain = (l) => l.replace(/\*/g, "");
+    const widest = () => Math.max(...lines.map((l) => measure(esc(plain(l)), font(), { letterSpacing: "-.03em" })[0]));
+    const k = fit(widest() + FS * 0.4, 960 * S); FS *= k;
+    const LH = FS * 1.18, y0 = CY - (lines.length - 1) * LH / 2;
+    let marks = [], lineEls = [], nw = 0;
+    lines.forEach((l, li) => {
+      const e = el(stage, "mk", { font: font(), letterSpacing: "-.03em" });
+      const parts = l.split(/(\*[^*]+\*)/).filter(Boolean);
+      e.innerHTML = parts.map((p) => p.startsWith("*")
+        ? `<span class="mk-w" data-mark style="position:relative;overflow:visible"><span style="position:relative">` +
+          `<i style="position:absolute;left:-.16em;right:-.16em;top:.04em;bottom:-.02em;border-radius:.16em;background:var(--nh-orange-grad);transform-origin:0 50%;transform:scaleX(0)"></i>` +
+          `<b style="position:relative;font-weight:inherit">${esc(p.slice(1, -1))}</b>` +
+          `<b style="position:absolute;left:0;top:0;font-weight:inherit;color:#FFFFFF;clip-path:inset(0 100% 0 0)">${esc(p.slice(1, -1))}</b></span></span>`
+        : p.trim().split(/\s+/).map((w) => `<span class="mk-w"><span>${esc(w)}</span></span>`).join(" ")).join(" ");
+      e._w = [...e.querySelectorAll(".mk-w > span")]; e._i = nw; nw += e._w.length;
+      e.querySelectorAll("[data-mark]").forEach((m) => marks.push(m));
+      lineEls.push([e, y0 + li * LH]); });
+    const TS = 0.12 + nw * 0.055 + 0.55;
+    return { dur: TS + 0.5 + 1.3, sfx: [{ t: TS, sfx: "whoosh", gain: -6, what: "highlighter" }],
+      seek(t) {
+        lineEls.forEach(([e, y]) => { e._w.forEach((s, i) => { const p = easeOut(prog(t, 0.12 + (e._i + i) * 0.055, 0.45)); s.style.transform = `translateY(${(1 - p) * 108}%)`; });
+          setXY(e, CX, y, 0.5, 0.5); });
+        const p = easeInOut(prog(t, TS, 0.5));
+        marks.forEach((m) => { m.querySelector("i").style.transform = `scaleX(${p})`; m.querySelectorAll("b")[1].style.clipPath = `inset(0 ${(1 - p) * 100}% 0 0)`; });
+      } }; } },
+
+  /* Prompt Box (R14, R10): a question types into a pill, a cursor clicks send, an answer card rises. Overlay or full screen. */
+  prompt: { overlay: true, build() {
+    const q = str("q", "Which protein suits my goal?"), ans = str("a", "Ask us in store. Bring your goal and your budget.");
+    const PW = Math.min(900 * S, W - 120 * S), PH = 132 * S, py = TRANSPARENT ? SLOT_Y - 120 * S : CY - 140 * S;
+    const pill = el(stage, "mk-card nh-glass", { width: px(PW), height: px(PH), left: px(CX - PW / 2), top: px(py - PH / 2), borderRadius: px(PH / 2) });
+    const txt = el(pill, "", { position: "absolute", left: px(50 * S), right: px(140 * S), top: 0, bottom: 0, display: "flex", alignItems: "center",
+      font: `600 ${40 * S}px/1 var(--nh-font)`, color: INK, whiteSpace: "nowrap", overflow: "hidden" });
+    const BTN = 92 * S, bx = CX + PW / 2 - 20 * S - BTN / 2;
+    const btn = el(stage, "mk", { width: px(BTN), height: px(BTN), borderRadius: "50%", background: INK, display: "grid", placeItems: "center" },
+      `<svg viewBox="0 0 24 24" style="width:46%;height:46%"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`);
+    const cur = el(stage, "mk", { width: px(54 * S), height: px(54 * S) },
+      `<svg viewBox="0 0 24 24" style="width:100%;height:100%;overflow:visible;filter:drop-shadow(0 3px 5px rgba(32,43,56,.3))"><path d="M4 2.5l15.5 9.3-6.6 1.6 3.9 7.1-2.6 1.4-3.9-7.2L5.6 19z" fill="${INK}" stroke="#FFFFFF" stroke-width="1.4" stroke-linejoin="round"/></svg>`);
+    const card = el(stage, "mk-card nh-glass", { width: px(PW), left: px(CX - PW / 2), top: px(py + PH / 2 + 28 * S), padding: `${34 * S}px ${46 * S}px`, whiteSpace: "normal" },
+      `<div class="nh-kicker" style="font-size:${22 * S}px">Nutrition Hub</div><div style="margin-top:${14 * S}px;font:700 ${44 * S}px/1.22 var(--nh-font);letter-spacing:-.02em;color:${INK}">${esc(ans)}</div>`);
+    const T1 = 0.5, CPS = 22, TY = T1 + q.length / CPS, TC = TY + 0.45;
+    const start = [CX + 380 * S, py + 430 * S], end = [bx + 10 * S, py + 16 * S];
+    return { dur: TC + 0.2 + 0.6 + 1.4, sfx: [{ t: 0.12, sfx: "pop", what: "prompt in" }, { t: TC, sfx: "tick", what: "send" }, { t: TC + 0.24, sfx: "pop", what: "answer" }],
+      seek(t) {
+        const c = easeOut(prog(t, 0.08, 0.6)); pill.style.opacity = c; pill.style.transform = `translateY(${(1 - c) * 24}px) scale(${0.96 + 0.04 * c})`;
+        const n = Math.max(0, Math.min(q.length, Math.floor((t - T1) * CPS)));
+        const caret = t < TC + 0.3 && (t < TY || (t * 1.4) % 1 < 0.6) ? `<i style="display:inline-block;width:${3 * S}px;height:${40 * S}px;background:${ORANGE};margin-left:${3 * S}px"></i>` : "";
+        txt.innerHTML = n === 0 && t < T1 ? `<span style="color:${MIST}">Ask anything</span>${caret}` : esc(q.slice(0, n)) + caret;
+        const press = t > TC ? 1 - 0.1 * Math.exp(-14 * (t - TC)) * Math.min(1, (t - TC) * 30) : 1;
+        btn.style.opacity = c; setXY(btn, bx, py, 0.5, 0.5, `scale(${press * (0.96 + 0.04 * c)})`);
+        const m = easeInOut(prog(t, TY - 0.3, 0.7)), mx = lerp(start[0], end[0], m), my = lerp(start[1], end[1], m) - Math.sin(m * Math.PI) * 60 * S;
+        cur.style.opacity = easeOut(prog(t, TY - 0.35, 0.25)) * (1 - easeIn(prog(t, TC + 0.35, 0.3)));
+        setXY(cur, mx, my, 0.12, 0.08, `scale(${t > TC && t < TC + 0.14 ? 0.88 : 1})`);
+        const a = easeOut(prog(t, TC + 0.2, 0.6)); card.style.opacity = a; card.style.transform = `translateY(${(1 - a) * 26}px) scale(${0.96 + 0.04 * a})`;
+      } }; } },
+
+  /* Shape Morph (R16): one ink shape becomes check → button → slider → toggle (→ chart), never cut. */
+  morph: { overlay: false, build() {
+    const states = list("states", "check,button,slider,toggle"), label = str("label", "Shop now");
+    const G = { dot: [64, 64, 32, INK], check: [200, 200, 100, INK], button: [540, 150, 75, INK], slider: [640, 30, 15, INK],
+      toggle: [240, 136, 68, INK], chart: [680, 420, 44, INK] };
+    const bad = states.find((s) => !G[s]); if (bad) { window.__error = `morph: unknown state "${bad}" (use ${Object.keys(G).join(", ")})`; }
+    const shape = el(stage, "mk", { background: INK });
+    const content = {};
+    const box = (css = {}, html = "") => el(stage, "mk", { display: "grid", placeItems: "center", ...css }, html);
+    content.check = box({ width: px(96 * S), height: px(96 * S) }, checkSvg("#FFFFFF", 3));
+    content.button = box({ font: `700 ${50 * S}px/1 var(--nh-font)`, color: "#FFFFFF", letterSpacing: "-.01em" },
+      `<span>${esc(label)}<span style="display:inline-block;margin-left:.45em;color:${ORANGE}">→</span></span>`);
+    const sl = box({ width: px(640 * S), height: px(80 * S), display: "block" });
+    const slFill = el(sl, "", { position: "absolute", left: 0, top: px(25 * S), height: px(30 * S), borderRadius: px(15 * S), background: "var(--nh-orange-grad)" });
+    const slKnob = el(sl, "", { position: "absolute", top: 0, width: px(80 * S), height: px(80 * S), borderRadius: "50%", background: "#FFFFFF", boxShadow: `0 0 0 ${5 * S}px ${INK}, 0 8px 18px rgba(32,43,56,.3)` });
+    content.slider = sl;
+    const tg = box({ width: px(240 * S), height: px(136 * S), display: "block" });
+    const tgOn = el(tg, "", { position: "absolute", inset: 0, borderRadius: px(68 * S), background: "var(--nh-orange-grad)", opacity: 0 });
+    const tgKnob = el(tg, "", { position: "absolute", top: px(14 * S), width: px(108 * S), height: px(108 * S), borderRadius: "50%", background: "#FFFFFF", boxShadow: "0 4px 12px rgba(32,43,56,.25)" });
+    content.toggle = tg;
+    content.chart = box({ width: px(600 * S), height: px(340 * S), display: "block" },
+      `<svg viewBox="0 0 600 340" style="width:100%;height:100%;overflow:visible"><path id="mkline" d="M20 300 C 120 290, 150 210, 230 220 S 360 150, 420 120 S 520 40, 580 36" fill="none" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/><circle id="mkend" cx="580" cy="36" r="18" fill="${ORANGE}"/></svg>`);
+    content.dot = box({});
+    const HOLD = parseFloat(str("hold", "0.7")), MORPH = 0.38, T = states.map((_, k) => 0.35 + k * (HOLD + MORPH));
+    const geo = (t, i) => springTo(t, states.map((s, k) => [k === 0 ? 0 : T[k] - MORPH, G[s][i] * S]), 13);
+    return { dur: T[T.length - 1] + HOLD + 0.25, sfx: T.map((x, k) => ({ t: x - 0.05 + (states[k] === "toggle" ? 0.15 : 0), sfx: "tick", what: "morph: " + states[k] })),
+      seek(t) {
+        const w = geo(t, 0), h = geo(t, 1), r = geo(t, 2), intro = spring(t, 0.02, 14);
+        shape.style.width = px(w); shape.style.height = px(h); shape.style.borderRadius = px(r);   // always ink: colour never blends through brown
+        setXY(shape, CX, CY, 0.5, 0.5, `scale(${intro})`);
+        Object.entries(content).forEach(([name, e]) => {
+          const k = states.indexOf(name); if (k < 0) { e.style.opacity = 0; return; }
+          const inn = easeOut(prog(t, T[k] - MORPH * 0.3, 0.3)), out = k < states.length - 1 ? easeIn(prog(t, T[k + 1] - MORPH, MORPH * 0.45)) : 0;
+          const o = (k === 0 ? Math.max(inn, intro) : inn) * (1 - out); e.style.opacity = o; e.style.filter = o < 1 ? `blur(${(1 - o) * 6}px)` : "none";
+          setXY(e, CX, CY, 0.5, 0.5, `scale(${0.92 + 0.08 * o})`); });
+        if (states.includes("check")) { const k = states.indexOf("check"); const d = easeOut(prog(t, T[k] - 0.12, 0.35));
+          const pth = content.check.querySelector("path"); pth.setAttribute("stroke-dasharray", "1"); pth.setAttribute("stroke-dashoffset", String(1 - d)); }
+        if (states.includes("slider")) { const k = states.indexOf("slider"); const v = springTo(t, [[0, 0.22], [T[k] + 0.12, 0.8]], 7);
+          slKnob.style.left = px(v * 560 * S); slFill.style.width = px(v * 560 * S + 40 * S); }
+        if (states.includes("toggle")) { const k = states.indexOf("toggle"), lead = spring(t, T[k] + 0.1, 26), trail = spring(t, T[k] + 0.1, 14);
+          const L = lerp(14, 118, trail), R = lerp(122, 226, lead); tgKnob.style.left = px(L * S); tgKnob.style.width = px(Math.max(108, R - L) * S); tgOn.style.opacity = lead; }
+        if (states.includes("chart")) { const k = states.indexOf("chart"); const d = easeInOut(prog(t, T[k] - 0.1, 0.6));
+          content.chart.querySelector("#mkline").setAttribute("stroke-dashoffset", String(1 - d)); content.chart.querySelector("#mkend").setAttribute("r", String(18 * spring(t, T[k] + 0.45, 16))); }
+      } }; } },
+
+  /* Big Scroll (R15): one huge line slides across the frame; its full stop is the orange dot. */
+  scroll: { overlay: false, build() {
+    let text = str("text", "Original only."), dotEnd = text.endsWith(".");
+    if (dotEnd) text = text.slice(0, -1);
+    const FS = parseFloat(str("size", "300")) * S;
+    const line = el(stage, "mk", { font: `800 ${FS}px/1 var(--nh-font)`, letterSpacing: "-.045em" },
+      esc(text) + (dotEnd ? `<i style="display:inline-block;width:.2em;height:.2em;border-radius:50%;background:var(--nh-orange-grad);margin-left:.06em"></i>` : ""));
+    const kick = str("kicker", "At Nutrition Hub") ? el(stage, "mk nh-kicker", {}, esc(str("kicker", "At Nutrition Hub"))) : null;
+    const TW = line.offsetWidth, D = parseFloat(str("dur", "3.4"));
+    return { dur: D, sfx: [{ t: 0.05, sfx: "whoosh", gain: -4, what: "big scroll" }],
+      seek(t) {
+        const p = bez(.3, 0, .2, 1)(prog(t, 0, D)), x = lerp(W * 0.92, W * 0.86 - TW, p);   // lands with the last word on screen
+        line.style.opacity = easeOut(prog(t, 0, 0.25)); setXY(line, x, CY + 40 * S, 0, 0.5);
+        if (kick) { kick.style.opacity = easeOut(prog(t, 0.1, 0.5)); setXY(kick, CX, CY - 200 * S, 0.5, 0.5); }
+      } }; } },
+
+  /* Text Ring (R9): words run round a circle that turns slowly around a product photo or the orange dot. */
+  ring: { overlay: false, build() {
+    const R = 330 * S, FS = 44 * S, phrase = str("text", "READ THE LABEL · CHECK THE SEAL · ASK US · ");
+    const C = 2 * Math.PI * R;
+    const pw = measure(esc(phrase), `700 ${FS}px/1 var(--nh-font)`, { letterSpacing: ".18em" })[0];
+    const rep = Math.max(1, Math.round(C / pw));
+    stage.insertAdjacentHTML("beforeend", `<svg id="mkring" class="mk" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="overflow:visible">
+      <defs><path id="mkcirc" d="M ${CX - R} ${CY} a ${R} ${R} 0 1 1 ${2 * R} 0 a ${R} ${R} 0 1 1 ${-2 * R} 0"/></defs>
+      <g id="mkrot"><text font-family="Inter, sans-serif" font-weight="700" font-size="${FS}" letter-spacing="${FS * 0.18}" fill="${INK}">
+      <textPath href="#mkcirc" textLength="${C - FS * 0.5}" lengthAdjust="spacing">${esc(phrase.repeat(rep))}</textPath></text></g></svg>`);
+    const rot = document.getElementById("mkrot"), svg = document.getElementById("mkring");
+    const pic = str("img", "");
+    const mid = el(stage, "mk", { width: px(400 * S), height: px(400 * S), display: "grid", placeItems: "center" });
+    if (pic) mid.appendChild(img(pic, { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", filter: "drop-shadow(0 30px 40px rgba(32,43,56,.25))" }));
+    else { const disc = el(mid, "nh-glass", { width: px(380 * S), height: px(380 * S), borderRadius: "50%", display: "grid", placeItems: "center" });
+      el(disc, "", { width: px(72 * S), height: px(72 * S), borderRadius: "50%", background: "var(--nh-orange-grad)", boxShadow: "0 14px 30px -12px rgba(240,120,43,.7)" }); }
+    const cap = str("caption", "") ? words(stage, str("caption", ""), { font: `700 ${46 * S}px/1.2 var(--nh-font)`, letterSpacing: "-.02em" }) : null;
+    return { dur: 3.6, sfx: [{ t: 0.3, sfx: "pop", what: "ring centre" }],
+      seek(t) {
+        const a = easeOut(prog(t, 0.05, 0.7)); svg.style.opacity = a;
+        rot.setAttribute("transform", `rotate(${-30 + 24 * t} ${CX} ${CY}) translate(${CX} ${CY}) scale(${0.94 + 0.06 * a}) translate(${-CX} ${-CY})`);
+        const m = spring(t, 0.25, 14); mid.style.opacity = clamp(m * 2); setXY(mid, CX, CY, 0.5, 0.5, `scale(${0.6 + 0.4 * m})`);
+        if (cap) { rise(cap, t, 0.9); setXY(cap, CX, CY + 470 * S, 0.5, 0.5); }
+      } }; } },
+
+  /* Progress Pill (R11, R13): a pill fills in steps (18% … 92% … 100%), then turns into a check. Overlay or full screen. */
+  progress: { overlay: true, build() {
+    const label = str("label", "Reading the label"), done = str("done", "Done");
+    const CW = 860 * S, PW = 760 * S, PH = 100 * S, cy = TRANSPARENT ? SLOT_Y : CY;
+    const card = el(stage, "mk-card nh-glass", { width: px(CW), height: px(250 * S), left: px(CX - CW / 2), top: px(cy - 125 * S) });
+    el(card, "", { position: "absolute", left: px(50 * S), top: px(38 * S), font: `600 ${34 * S}px/1 var(--nh-font)`, color: SLATE }, esc(label));
+    const track = el(card, "", { position: "absolute", left: px(50 * S), top: px(104 * S), width: px(PW), height: px(PH), borderRadius: px(PH / 2), background: "#DCE5EE", overflow: "hidden" });
+    const fill = el(track, "", { position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: px(PH / 2), background: "var(--nh-orange-grad)" });
+    const pct = el(track, "", { position: "absolute", top: 0, bottom: 0, display: "flex", alignItems: "center", font: `800 ${40 * S}px/1 var(--nh-font)`, color: "#FFFFFF", fontVariantNumeric: "tabular-nums" });
+    const fin = el(track, "", { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: px(16 * S), font: `800 ${40 * S}px/1 var(--nh-font)`, color: "#FFFFFF", opacity: 0 },
+      `<span style="width:${44 * S}px;height:${44 * S}px;display:inline-block">${checkSvg("#FFFFFF", 3.4)}</span>${esc(done)}`);
+    const K = [[0.5, 0], [0.9, 0.18], [1.25, 0.18], [1.85, 0.92], [2.1, 0.92], [2.35, 1]], TD = 2.45;
+    const val = (t) => { if (t <= K[0][0]) return 0; for (let i = 1; i < K.length; i++) if (t <= K[i][0]) return lerp(K[i - 1][1], K[i][1], easeOut(prog(t, K[i - 1][0], K[i][0] - K[i - 1][0]))); return 1; };
+    return { dur: TD + 1.2, sfx: [{ t: 0.12, sfx: "pop", what: "progress in" }, { t: TD, sfx: "tick", what: "done" }],
+      seek(t) {
+        const c = easeOut(prog(t, 0.08, 0.6)); card.style.opacity = c; card.style.transform = `translateY(${(1 - c) * 24}px) scale(${0.96 + 0.04 * c})`;
+        const v = val(t), fw = Math.max(PH, v * PW); fill.style.width = px(fw);
+        const d = easeOut(prog(t, TD, 0.35));
+        pct.textContent = Math.round(v * 100) + "%"; pct.style.left = px(Math.max(fw - 120 * S, 26 * S)); pct.style.opacity = (v > 0.12 ? 1 : 0) * (1 - d);
+        if (v <= 0.12) { pct.style.color = INK; pct.style.left = px(fw + 20 * S); pct.style.opacity = (t > 0.55 ? 1 : 0) * (1 - d); } else pct.style.color = "#FFFFFF";
+        fin.style.opacity = d; const ck = fin.querySelector("path"); ck.setAttribute("stroke-dasharray", "1"); ck.setAttribute("stroke-dashoffset", String(1 - easeOut(prog(t, TD + 0.05, 0.35))));
+      } }; } },
+
+  /* Spatial Panels (R8): glass cards float at the sides in 3D, turned toward the speaker. Overlay or full screen. */
+  panels: { overlay: true, build() {
+    const items = list("items", "Whey|Protein per serving;Creatine|Look for monohydrate;Electrolytes|Check the sodium;Multivitamin|Compare the daily value", ";").map((x) => x.split("|"));
+    const imgs = list("imgs", ""), n = Math.max(items.length, imgs.length) ? Math.min(4, Math.max(items.length, imgs.length)) : 0;
+    const PWd = 300 * S, PHt = TRANSPARENT ? 400 * S : 360 * S;
+    const slots = LAND ? [[0.16, 0.34, 1], [0.12, 0.66, 1], [0.84, 0.36, -1], [0.88, 0.68, -1]]
+      : TRANSPARENT ? [[0.19, 0.33, 1], [0.15, 0.58, 1], [0.81, 0.37, -1], [0.85, 0.62, -1]]      // beside the speaker
+      : [[0.22, 0.29, 1], [0.2, 0.69, 1], [0.78, 0.31, -1], [0.8, 0.71, -1]];                      // full screen: above and below the line
+    const world = el(stage, "", { position: "absolute", inset: 0, perspective: px(1700 * S) });
+    const cards = Array.from({ length: n }, (_, i) => {
+      const c = el(world, "mk-card nh-glass", { width: px(PWd), height: px(PHt), left: 0, top: 0, overflow: "hidden", whiteSpace: "normal" });
+      if (imgs[i]) { const b = el(c, "", { position: "absolute", inset: px(10 * S), borderRadius: px(20 * S), overflow: "hidden" }); b.appendChild(img(imgs[i], { width: "100%", height: "100%", objectFit: "cover" })); }
+      else { const [w, l] = items[i] || ["", ""];
+        c.innerHTML = `<div style="position:absolute;inset:${34 * S}px;display:flex;flex-direction:column;justify-content:space-between">
+          <i style="width:${30 * S}px;height:${30 * S}px;border-radius:50%;background:var(--nh-orange-grad)"></i>
+          <div><div class="nh-kicker" style="font-size:${22 * S}px">${esc(w)}</div><div style="margin-top:${12 * S}px;font:800 ${44 * S}px/1.08 var(--nh-font);letter-spacing:-.03em;color:${INK}">${esc(l || "")}</div></div></div>`; }
+      return c; });
+    const head = !TRANSPARENT && str("text", "Read before you buy") ? words(stage, str("text", "Read before you buy"), { font: `800 ${84 * S}px/1.1 var(--nh-font)`, letterSpacing: "-.035em" }) : null;
+    const D = parseFloat(str("dur", "4.6"));
+    return { dur: D, sfx: [{ t: 0.18, sfx: "whoosh", gain: -5, what: "panels swing in" }],
+      seek(t) {
+        const out = easeIn(prog(t, D - 0.45, 0.45));
+        cards.forEach((c, i) => { const [sx, sy, side] = slots[i]; const p = spring(t, 0.2 + i * 0.12, 11);
+          const ry = side * lerp(82, 36, p) + side * 46 * out, tx = -side * (1 - p) * 140 * S, fl = Math.sin((t / 2.6) * 2 * Math.PI + i * 1.7) * 10 * S;
+          c.style.opacity = clamp(p * 1.6) * (1 - out);
+          c.style.transform = `translate(${sx * W - PWd / 2 + tx}px, ${sy * H - PHt / 2 + fl}px) rotateY(${ry}deg)`; });
+        if (head) { rise(head, t, 0.5); head.style.opacity = 1 - out; setXY(head, CX, CY, 0.5, 0.5); }
+      } }; } },
+
+  /* Photo Strip (R10): a column of photos scrolls up between two words. */
+  strip: { overlay: false, build() {
+    const imgs = list("imgs", ""), cw = 340 * S, th = 250 * S, gap = 20 * S, count = Math.ceil((H * 2) / (th + gap)) + 2;
+    const col = el(stage, "", { position: "absolute", left: px(CX - cw / 2), top: 0, width: px(cw), height: px(H), overflow: "visible" });
+    const tiles = Array.from({ length: count }, (_, i) => {
+      const t = el(col, "mk-tile", { left: 0, width: px(cw), height: px(th), borderRadius: px(22 * S) });
+      if (imgs.length) t.appendChild(img(imgs[i % imgs.length], { width: "100%", height: "100%", objectFit: "cover" }));
+      else t.innerHTML = `<div class="mk-ph${i % 5 === 2 ? " is-orange" : ""}" style="font-size:${20 * S}px">Photo ${(i % 6) + 1}</div>`;
+      return t; });
+    const FS = 58 * S;
+    const L = words(stage, str("left", "The ones"), { font: `800 ${FS}px/1.05 var(--nh-font)`, letterSpacing: "-.035em" });
+    const R = words(stage, str("right", "who check"), { font: `800 ${FS}px/1.05 var(--nh-font)`, letterSpacing: "-.035em" });
+    return { dur: 3.6, sfx: [{ t: 0.1, sfx: "whoosh", gain: -6, what: "photo strip" }],
+      seek(t) {
+        const off = 300 * S * (t - 0.35 * (1 - Math.exp(-t / 0.35)));   // eases up to 300 px/s, never stops
+        tiles.forEach((e, i) => { e.style.top = px(H * 0.62 + i * (th + gap) - off - H * 0.5); });
+        col.style.opacity = easeOut(prog(t, 0, 0.3));
+        rise(L, t, 0.3); rise(R, t, 0.55);
+        setXY(L, CX - cw / 2 - 30 * S, CY, 1, 0.5); setXY(R, CX + cw / 2 + 30 * S, CY, 0, 0.5);
+      } }; } },
+
+  /* Echo Stack (R10): the line lands, then faint copies spread above and below it. Optional photo behind, washed white. */
+  echo: { overlay: false, build() {
+    const pic = str("img", "");
+    if (pic) { const b = el(stage, "", { position: "absolute", inset: 0 }); b.appendChild(img(pic, { width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(1) contrast(.9) brightness(1.12)" }));
+      el(stage, "", { position: "absolute", inset: 0, background: "rgba(255,255,255,.62)" }); }
+    const lines = str("text", "ORIGINAL|ONLY").split("|");
+    let FS = 170 * S;
+    const font = () => `800 ${FS}px/.92 var(--nh-font)`;
+    FS *= fit(Math.max(...lines.map((l) => measure(esc(l), font(), { letterSpacing: "-.04em" })[0])), 940 * S);
+    const block = (cls) => { const b = el(stage, "mk", { font: font(), letterSpacing: "-.04em", textAlign: "center", lineHeight: 0.92 });
+      b.innerHTML = lines.map((l) => `<div><span class="mk-w"><span>${esc(l)}</span></span></div>`).join(""); b._w = [...b.querySelectorAll(".mk-w > span")]; return b; };
+    const copies = [-2, -1, 1, 2].map((k) => { const b = block(); b.style.color = MIST; b._k = k; return b; });
+    const main = block(); const BH = main.offsetHeight;
+    return { dur: 3.0, sfx: [{ t: 0.55, sfx: "whoosh", gain: -6, what: "echo spreads" }],
+      seek(t) {
+        rise(main, t, 0.1, 0.08, 0.5); setXY(main, CX, CY, 0.5, 0.5);
+        const s = spring(t, 0.55, 9);
+        copies.forEach((b) => { b._w.forEach((x) => { x.style.transform = "none"; });
+          b.style.opacity = (Math.abs(b._k) === 1 ? 0.2 : 0.08) * s * s * s;
+          setXY(b, CX, CY + b._k * (BH + 12 * S) * s, 0.5, 0.5); });
+      } }; } },
+
+  /* Tracking Reveal (R8): small capitals open their letter-spacing slowly; never still. Full screen, or a chip over footage. */
+  tracking: { overlay: true, build() {
+    const text = str("text", "ORIGINAL"), D = parseFloat(str("dur", "3.0"));
+    const y = TRANSPARENT ? (LAND ? H * 0.2 : H * 0.24) : CY;
+    const chip = TRANSPARENT ? el(stage, "mk", { height: px(108 * S), borderRadius: px(54 * S), background: "rgba(255,255,255,.94)", boxShadow: "var(--nh-shadow-sm)" }) : null;
+    const word = el(stage, "mk", { font: `600 ${56 * S}px/1 var(--nh-font)`, color: INK, textTransform: "uppercase" }, esc(text));
+    return { dur: D, sfx: [{ t: 0.1, sfx: "whoosh", gain: -8, what: "tracking reveal" }],
+      seek(t) {
+        const p = easeOut(prog(t, 0, D)), o = easeOut(prog(t, 0, 0.7));
+        word.style.letterSpacing = `${lerp(0.22, 0.85, p)}em`; word.style.paddingLeft = word.style.letterSpacing;   // keep it centred
+        word.style.opacity = o; word.style.filter = o < 1 ? `blur(${(1 - o) * 6}px)` : "none";
+        setXY(word, CX, y, 0.5, 0.5);
+        if (chip) { chip.style.width = px(word.offsetWidth + 110 * S); chip.style.opacity = easeOut(prog(t, 0, 0.45)); setXY(chip, CX, y, 0.5, 0.5); }
+      } }; } },
+
+  /* Comment Banner (R11, R15): a two-line label at the top: a topic tag and "Comment KEYWORD for the full guide". Overlay. */
+  banner: { overlay: true, build() {
+    const top = str("top", "Label check"), line = str("line", "Comment *LABEL* for the full guide"), D = parseFloat(str("dur", "5"));
+    const y = Math.max(300 * S, LAND ? H * 0.12 : 300 * S);
+    const a = el(stage, "mk", { padding: `${16 * S}px ${28 * S}px`, borderRadius: px(14 * S), background: INK, color: "#FFFFFF", display: "flex", alignItems: "center", gap: px(14 * S),
+      font: `800 ${38 * S}px/1 var(--nh-font)`, letterSpacing: ".06em", textTransform: "uppercase" }, `<i class="nh-dot"></i>${esc(top)}`);
+    const b = el(stage, "mk", { padding: `${16 * S}px ${28 * S}px`, borderRadius: px(14 * S), background: "#FFFFFF", color: INK, boxShadow: "var(--nh-shadow-sm)",
+      font: `700 ${36 * S}px/1 var(--nh-font)`, letterSpacing: "-.005em" }, esc(line).replace(/\*(.+?)\*/g, `<b style="color:var(--nh-orange-text);font-weight:800">“$1”</b>`));
+    return { dur: D, sfx: [{ t: 0.12, sfx: "pop", what: "comment banner" }],
+      seek(t) {
+        const out = easeIn(prog(t, D - 0.4, 0.4));
+        [[a, 0.1, 0], [b, 0.22, 86 * S]].forEach(([e, at, dy]) => { const p = easeOut(prog(t, at, 0.5)); e.style.opacity = p * (1 - out);
+          setXY(e, CX, y + dy + (1 - p) * -18 * S - out * 12 * S, 0.5, 0.5); });
+      } }; } },
+
+  /* Comment CTA (R18's ending): a liquid glass card with the topic, an orange "Comment KEYWORD" pill and the handle. */
+  cta: { overlay: true, build() {
+    const title = str("title", "Label check guide"), sub = str("sub", "Free, in your DMs"), key = str("keyword", "LABEL"), handle = str("handle", "@nutritionhubkhanna");
+    const cy = TRANSPARENT ? SLOT_Y : CY, CW = 760 * S;
+    const card = el(stage, "mk-card nh-glass", { width: px(CW), left: px(CX - CW / 2), padding: `${46 * S}px ${40 * S}px`, textAlign: "center", whiteSpace: "normal" },
+      `<div style="font:800 ${64 * S}px/1.05 var(--nh-font);letter-spacing:-.035em;color:${INK}">${esc(title)}</div>
+       <div style="margin-top:${12 * S}px;font:500 ${32 * S}px/1.3 var(--nh-font);color:${SLATE}">${esc(sub)}</div>`);
+    const pill = el(stage, "mk", { padding: `${26 * S}px ${54 * S}px`, borderRadius: px(60 * S), background: "var(--nh-orange-grad)", color: "#FFFFFF",
+      font: `700 ${40 * S}px/1 var(--nh-font)`, boxShadow: "0 18px 36px -16px rgba(240,120,43,.7), inset 0 1.5px 0 rgba(255,255,255,.45)" },
+      `Comment <b style="font-weight:800;letter-spacing:.04em;margin-left:.25em">${esc(key)}</b>`);
+    const chip = el(stage, "mk nh-chip", { fontSize: px(24 * S) }, esc(handle));
+    const ch = card.offsetHeight;
+    return { dur: parseFloat(str("dur", "3.6")), sfx: [{ t: 0.12, sfx: "pop", what: "cta card" }, { t: 0.62, sfx: "tick", what: "comment pill" }],
+      seek(t) {
+        const c = easeOut(prog(t, 0.08, 0.6)); card.style.opacity = c; card.style.top = px(cy - ch / 2 - 80 * S);
+        const fl = Math.sin(t * 2 * Math.PI / 2.6) * 5 * S * c;          // the brand float: never a frozen hold
+        card.style.transform = `translateY(${(1 - c) * 24 + fl}px) scale(${0.96 + 0.04 * c})`;
+        const p = spring(t, 0.55, 15); pill.style.opacity = clamp(p * 2); setXY(pill, CX, cy + ch / 2 - 10 * S, 0.5, 0.5, `scale(${0.85 + 0.15 * p})`);
+        const q = easeOut(prog(t, 0.85, 0.5)); chip.style.opacity = q; setXY(chip, CX, cy + ch / 2 + 100 * S + (1 - q) * 12 * S, 0.5, 0.5);
+      } }; } },
+
+  /* Photo Scatter (R12): a headline in the middle; real photos pop in around it and drift outward slowly. */
+  photos: { overlay: false, build() {
+    const imgs = list("imgs", "");
+    const L = LAND ? [[-620, -250, 230, 280, -5], [560, -280, 260, 190, 4], [-700, 160, 220, 170, 3], [640, 170, 200, 250, -4], [-260, -380, 180, 140, 3], [260, 360, 230, 160, -3]]
+      : [[-300, -560, 230, 280, -5], [250, -600, 260, 190, 4], [330, -300, 190, 230, 6], [-350, 300, 250, 190, 4], [300, 340, 210, 260, -5], [-40, 620, 230, 160, 2], [-360, -250, 170, 200, -3]];
+    const tiles = L.map(([x, y, w, h, r], i) => { const e = el(stage, "mk-tile", { width: px(w * S), height: px(h * S), border: `${6 * S}px solid #FFFFFF`, borderRadius: px(20 * S), boxSizing: "border-box" });
+      if (imgs.length) e.appendChild(img(imgs[i % imgs.length], { width: "100%", height: "100%", objectFit: "cover", borderRadius: px(14 * S) }));
+      else e.innerHTML = `<div class="mk-ph${i === 2 ? " is-orange" : ""}" style="font-size:${18 * S}px;border-radius:${14 * S}px">Photo</div>`;
+      e._g = [x * S, y * S, r, 0.6 + (i % 3) * 0.25]; return e; });
+    const lines = str("text", "Worth knowing|before you buy").split("|");
+    const heads = lines.map((l) => words(stage, l, { font: `800 ${80 * S}px/1.08 var(--nh-font)`, letterSpacing: "-.035em" }));
+    return { dur: 3.6, sfx: [{ t: 0.4, sfx: "pop", what: "photos" }],
+      seek(t) {
+        heads.forEach((h, i) => { rise(h, t, 0.1 + i * 0.12); setXY(h, CX, CY + (i - (heads.length - 1) / 2) * 92 * S, 0.5, 0.5); });
+        tiles.forEach((e, i) => { const [x, y, r, depth] = e._g, p = spring(t, 0.35 + i * 0.07, 13), drift = 1 + 0.035 * depth * Math.max(0, t - 0.35);
+          e.style.opacity = clamp(p * 2); setXY(e, CX + x * drift, CY + y * drift, 0.5, 0.5, `rotate(${r}deg) scale(${0.85 + 0.15 * p})`); });
+      } }; } },
+};
+
+/* ---------- boot ---------- */
+window.__logoStatus = "loading";            // render.cjs waits for this; the kit has no logo
+async function boot() {
+  const sc = SCENES[NAME];
+  if (!sc) { window.__error = `unknown scene "${NAME}". Scenes: ${Object.keys(SCENES).join(", ")}`; window.__logoStatus = "none"; return; }
+  if (TRANSPARENT && !sc.overlay) {
+    window.__error = `"${NAME}" is a full-screen beat: render it as an MP4 (no --transparent) and cut it in with broll.py. Overlays: ` +
+      Object.keys(SCENES).filter((k) => SCENES[k].overlay).join(", ");
+    window.__logoStatus = "none"; return; }
+  if (TRANSPARENT) stage.classList.add("is-transparent");
+  orbs();
+  await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 3000))]);
+  const s = sc.build();
+  await Promise.all(images);
+  window.__duration = s.dur;
+  window.__sfx = s.sfx.filter((c) => c.t < s.dur);
+  window.__seek = (t) => s.seek(Math.max(0, t));
+  window.__seek(P.has("t") ? parseFloat(P.get("t")) : 0);
+  window.__logoStatus = "none";
+}
+boot().catch((e) => { window.__error = String(e && e.stack || e); window.__logoStatus = "none"; });
+</script>
+</body>
+</html>

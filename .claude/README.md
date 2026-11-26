@@ -7,9 +7,12 @@ else does the heavy lifting under its rules.
 
 | Skill | What it adds |
 |---|---|
-| `nutrition-hub-white-glass` | The White Glass brand and motion system: original logo, palette, Inter type, glass components, motion timings, caption style, footage grade, HTML templates and the render pipeline. Now also `scripts/captions.py` (word timings → on-brand captions), `scripts/qa.py` (automated delivery QA), a routing table for the companions below (SKILL.md §10), and realistic 3D: `templates/molecule-3d.html` (17 supplement molecules as ceramic and frosted-glass models from verified computed conformers, studio light, contact shadow, real-camera motion blur and depth of field) and `templates/product-hero-3d.html` (your real product photo in a 3D studio with shadow, reflection and parallax, label untouched). |
-| `molecular-film` | Blender-grade protein and enzyme films from real PDB / AlphaFold structures with the [Molecular_Animation](https://github.com/AmadeusBio-ai/Molecular_Animation) framework (Apache-2.0, pinned commit), given the White Glass look. Needs Blender 5.2 and a GPU, so it runs on your own machine. |
+| `nutrition-hub-white-glass` | The Liquid Glass brand and motion system: original logo, palette, Inter type, glass components, motion timings, caption style, footage grade, HTML templates and the render pipeline. 2026-11-26: renamed Liquid Glass in the docs (the skill id is unchanged); real liquid glass over footage (`scripts/glass.py`), 17 motion-kit beats from the owner's references (`templates/motion-kit.html`), a screen insert (`scripts/screen_insert.py`), motion blur (`render.cjs --blur`), and a DaVinci Resolve export (`timeline.py export`). Also `scripts/captions.py` (word timings → on-brand captions), `scripts/qa.py` (automated delivery QA), a routing table for the companions below (SKILL.md §10), and realistic 3D: `templates/molecule-3d.html` (17 supplement molecules as ceramic and frosted-glass models from verified computed conformers, studio light, contact shadow, real-camera motion blur and depth of field) and `templates/product-hero-3d.html` (your real product photo in a 3D studio with shadow, reflection and parallax, label untouched). |
+| `molecular-film` | Blender-grade protein and enzyme films from real PDB / AlphaFold structures with the [Molecular_Animation](https://github.com/AmadeusBio-ai/Molecular_Animation) framework (Apache-2.0, pinned commit), given the Liquid Glass look. Needs Blender 5.2 and a GPU, so it runs on your own machine. |
 | `use-3d-software` | Exact Blender 5.x and three.js steps for realistic materials, glass, lighting, HDRI, depth of field and headless renders. Vendored from [codepawl/creator-generalist](https://github.com/codepawl/creator-generalist) (MIT). |
+| `cinetic` | Premium launch, product and promo films from code, held to measured gates (words in the middle, one element carried, hidden cuts, copy check, forensics). Vendored from [Leonxlnx/cinetic](https://github.com/Leonxlnx/cinetic) (MIT) @ f4bbfc8, found on prompt-motion.com; its description defers to the Liquid Glass skill. |
+| `product-film` | A product film built on the brand's own design system and cut to music on measured beats (Remotion). Vendored from [Rieranthony/product-film-skill](https://github.com/Rieranthony/product-film-skill) (MIT) @ fe11efc. |
+| `camera-3d-captions` | Captions in 3D around a talking head: depth groups, a hero word behind the head, a ring of words (HyperFrames). Vendored from [heygen-com/hyperframes-community-skills](https://github.com/heygen-com/hyperframes-community-skills) (Apache-2.0) @ ba7a0bb. No camera zooms on Nutrition Hub reels. |
 | `halfsize` | Compress a finished video to an exact size cap (WhatsApp 16 MB, Gmail, Outlook) and report the measured quality. Vendored from [YKLovePython/halfsize](https://github.com/YKLovePython/halfsize) (MIT), pinned to v0.2.0. See `skills/halfsize/SOURCE.md`. |
 
 ## Project plugin (`.claude/settings.json`)
@@ -43,9 +46,9 @@ These were added from the plugin catalog on claude.ai, not from files in this re
 ## Considered and left out
 
 From the 526 repos in `data/skills.json`, these were read and not added because they fight
-the White Glass rules or duplicate a plugin above:
+the Liquid Glass rules or duplicate a plugin above:
 
-- `Tejashmakwana/motionmaxxing`: bans kickers, centred stat callouts, on-screen source notes and fades, which are core White Glass components.
+- `Tejashmakwana/motionmaxxing`: bans kickers, centred stat callouts, on-screen source notes and fades, which are core Liquid Glass components.
 - `hughminhphan/motion-kit`: declares its motion rules override every other skill.
 - `iart-ai/tiktok-video-skills`: recommends zoom punches, whip pans and spring "pop" captions, all banned here.
 - `louisedesadeleer/cut-video`: macOS/Homebrew install; IT Reelsmaker cuts pauses and retakes.

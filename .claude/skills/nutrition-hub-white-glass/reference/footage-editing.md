@@ -1,4 +1,4 @@
-# Editing real footage in the White Glass style
+# Editing real footage in the Liquid Glass style
 
 These ffmpeg recipes take raw footage to a finished branded reel. All of them were run end
 to end on a test clip (1920×1080 at 25 fps in, 1080×1920 at 30 fps out). The grade numbers
@@ -52,7 +52,15 @@ python3 $SK/scripts/timeline.py render edit.json           # the finished reel, 
   7. end card through a dip to white (§6)
   8. SFX from every cue sheet, then −14 LUFS (§7b)
   9. `qa.py`
-  - Intermediate files go to `timeline_work/`.
+  - Intermediate files go to `timeline_work/`, named by what made them (so an old render is never reused).
+  - A b-roll entry can be a motion-kit beat: `{"start": 8, "end": 11.2, "template": "motion-kit.html?scene=wheel&pick=Creatine"}`.
+    It renders, keeps its colours ungraded, and its sounds join the mix.
+  - Overlays get real liquid glass (§3b); `"glass": "flat"` on an overlay keeps the near-opaque panel.
+  - `"motion_blur": 4` renders every graphic with motion blur.
+- **`export`:** `edit.otio` + `edit.srt` for DaVinci Resolve (File > Import > Timeline), Premiere or Kdenlive:
+  V1 the graded take then the end card, V2 b-roll and beats, V3 overlays (ProRes 4444), A1 voice, A2 each SFX as a
+  clip at its cue, effects as markers on V1. Tested on a 10 s take with a beat and an overlay: 2 s once rendered.
+- **Rhythm:** `check` warns after 6 s with no new picture (no b-roll, effect, overlay or beat).
 - **Tested** on a 10 s take:
   - With every track except overlays, it took 1 min 37 s.
   - With a chat-takeover overlay, it took 36 s.
@@ -208,6 +216,39 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
 - Over footage the glass goes near-opaque automatically. Keep callout text on its glass card;
   only caption words go straight on video (§4).
 - The callout sits in the upper safe area (y about 270) so it never meets the captions.
+
+## 3b. Liquid glass over footage (SKILL.md §4 A)
+
+The glass is done at composite time, because a separately rendered overlay can't see the footage:
+
+```bash
+T="$SK/templates/motion-kit.html?scene=prompt"
+node $SK/scripts/render.cjs "$T" --transparent --real-glass --out prompt.mov        # words, icons, clear panels
+node $SK/scripts/render.cjs "$T" --transparent --glass-mask --out prompt.mask.mov   # the panel shapes only
+python3 $SK/scripts/glass.py graded.mp4 over.mp4 --content prompt.mov --mask prompt.mask.mov --at 1
+```
+
+- Under each panel: refraction at a 20 px rim (IOR 1.5), faint colour split, 8 px frost, a porcelain tint that
+  adapts so ink reads (about 0.86 luminance), a lit rim from the top left, and a materialize as the panel reveals.
+- `--compare flat.mov` writes a side-by-side (old flat panel left, liquid glass right) for checking.
+- `--variant clear` for panels without small text. `--frost 0` for clear liquid glass.
+- Tested on a 6 s 1080×1920 take (bright interior): 32 s for 180 frames; text reads over hands, hair and a dark chair.
+- Any template works; panels are whatever carries `.nh-glass`. A template without glass just gets its overlay.
+
+## 3c. Screen insert (SKILL.md §4 M)
+
+```bash
+node $SK/scripts/render.cjs "$SK/templates/motion-kit.html?scene=menu" --size 1920x1080 --out beat.mp4
+python3 $SK/scripts/screen_insert.py store-tv.mp4 beat.mp4 tv.mp4 --preview tv.png   # check the corners first
+python3 $SK/scripts/screen_insert.py store-tv.mp4 beat.mp4 tv.mp4 --at 0.5
+```
+
+- A lit screen is found by itself (edges and brightness, screen-shaped, not cut off by the frame); a switched-off
+  screen with `--detect dark`; otherwise `--corners x1,y1,…` (top-left, top-right, bottom-right, bottom-left).
+- Tested: R15's curved monitor and R11's dark monitor (`--detect dark`), both locked off, look real. A handheld
+  laptop shot that runs off the frame (R16) needs `--corners`, and `--track` drifts there after about a second:
+  film the store TV locked off.
+- The result is b-roll: cut it in with `broll.py` or a b-roll entry in `edit.json`.
 
 ## 4. Captions
 

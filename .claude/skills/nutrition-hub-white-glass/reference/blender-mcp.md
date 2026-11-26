@@ -2,7 +2,7 @@
 
 The `blender` server in this repo's `.mcp.json` lets Claude Code inspect and change the scene
 in a running Blender, look through its camera, and render. Claude can build and light a product
-or molecule scene in the White Glass look while you watch, instead of you clicking through menus.
+or molecule scene in the Liquid Glass look while you watch, instead of you clicking through menus.
 
 - **Package:** [`mcp-for-blender`](https://github.com/ahujasid/mcp-for-blender) (MIT, by Siddharth Ahuja;
   not affiliated with the Blender Foundation). It was called `blender-mcp` before.
@@ -48,7 +48,7 @@ These were checked in the 2.2.7 source, not just its README.
 | Tool | Used for |
 |---|---|
 | `get_scene_info` | Read the scene: objects, materials, lights, camera |
-| `execute_blender_code` | Build and change things with Blender Python: geometry, White Glass materials, lights, camera, animation, render settings |
+| `execute_blender_code` | Build and change things with Blender Python: geometry, Liquid Glass materials, lights, camera, animation, render settings |
 | `look` | See the result through the viewport or the camera, from several angles, or as an animation strip, in solid, material or rendered mode. It also shows a render. |
 | `search_assets`, `import_asset` | Poly Haven HDRIs and textures (CC0), Sketchfab and Poly Pizza models (licence varies) |
 | `generate_3d` | AI-generated models (Tripo, Hunyuan3D, Rodin, Meshy). Restricted, see below. |
@@ -67,7 +67,7 @@ These were checked in the 2.2.7 source, not just its README.
   - Poly Haven HDRIs and textures are CC0, so they're fine to use.
   - Sketchfab and Poly Pizza models each have their own licence. Use CC0 or CC-BY (with a credit) only;
     never NC (non-commercial), because this is a business.
-- **The look is White Glass:**
+- **The look is Liquid Glass:**
   - White and ice-mist studio, ceramic and frosted-glass materials, one orange accent.
   - Soft high-key light, no neon or dark sci-fi.
   - The constants are in `molecular-film/SKILL.md`; the motion rules are in SKILL.md §5.

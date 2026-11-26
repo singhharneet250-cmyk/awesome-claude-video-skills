@@ -15,7 +15,7 @@ All six are 9:16 Instagram exports: 720×1280, 30 fps, mastered at about −14 L
 | R5 | `I'll be honest with you. This video is packed with information…mp4` | 65.6 s | 15 (a shot about every 4 s: jump cuts, b-roll) | Talking head in a bright real interior; two-tier captions with text behind the head |
 | R6 | `AI is replacing video editing... Or is it.mp4` | 61.6 s | 0 (one take) | Talking head at a desk mic, blue studio grade; running white word captions + script-accent lockups + app tiles and glass cards |
 
-R2, R3 and R4 are already close to White Glass: a white or light stage, near-black type, **one**
+R2, R3 and R4 are already close to Liquid Glass: a white or light stage, near-black type, **one**
 accent colour, frosted white cards. Swap their accent for signal orange #F0782B and they fit.
 
 ## What each one does
@@ -141,7 +141,7 @@ confirmed.
 | R5 | Heavy neo-grotesk for headline words, upper or lower case (it looks like Helvetica Neue Bold or Inter Bold); bold white sans for the chest captions | Small lowercase lead words, white | Lead words above-left + big word behind the head; separate one-word chest captions |
 | R6 | Bold white neo-grotesk (it looks like SF Pro or Inter Bold) | A *swashy italic script/serif* in the **same white**: accent by typeface, not colour | Running one-word line at mic height; big-word + stacked small words + script word lockups |
 
-### White Glass version (Inter, plus the two approved accent faces)
+### Liquid Glass version (Inter, plus the two approved accent faces)
 
 | Element | Spec on 1080×1920 |
 |---|---|
@@ -155,7 +155,7 @@ confirmed.
 | Rhythm | A new key word about every 1 s, on the voice. Kinetic type reveal (§5); no pops or bounces. |
 | Never | Text over the face or hands, or in the bottom 420 px platform zone. The chest line is the only text allowed on the body. |
 
-## Adopt as-is (fits White Glass)
+## Adopt as-is (fits Liquid Glass)
 
 | Technique (ref) | How to do it here |
 |---|---|
@@ -188,7 +188,7 @@ confirmed.
 | Jump cut to a tighter crop on an emphasis word (R5) | A hard cut between about 100% and 115–120% framing, never an animated zoom punch (§5). At most one every 4–6 s, and the reframe stays sharp (1080p source or better). |
 | A different colour fill per headline word (R5: teal, maroon-orange, gold metallic) | One accent only: ink headline words, with the claim or number word in orange. No gradients or metallic fills. |
 
-## Leave out (conflicts with White Glass)
+## Leave out (conflicts with Liquid Glass)
 
 - **An all-blue studio grade (R6):** footage keeps the soft studio light grade (footage-editing.md §2).
 - **Cards covering the hands or mic (R6):** cards sit above, beside or below the speaker's gestures.
@@ -200,7 +200,7 @@ confirmed.
 
 ## Owner decisions (all decided 2026-11-25)
 
-These refs used type, motion and colour that White Glass had ruled out. The owner has decided each one:
+These refs used type, motion and colour that Liquid Glass had ruled out. The owner has decided each one:
 
 1. **Italic serif accent word** (R2, R3, R4: "expensive", "every second", "indifference"): **adopted.**
    Instrument Serif Italic, bundled in `assets/fonts/`, class `.nh-accent`. One orange word per line at
@@ -246,7 +246,7 @@ These refs used type, motion and colour that White Glass had ruled out. The owne
 A 23.8 s talking head with a two-column checklist at the top that lights up each effect as it plays, about 1 s
 each. Timings were measured by tracking the lit row:
 
-| s | Effect | White Glass |
+| s | Effect | Liquid Glass |
 |---|---|---|
 | 0–1.6 | hook caption, "claude, can you make all of these effects?" | captions (§6) |
 | 1.6–3.0 | 01 headline wall | built: `headline-wall.html` |
@@ -274,3 +274,103 @@ The owner's Instagram link for this style could not be opened (Instagram is bloc
 - A new element about every 0.5–1 s inside a beat; each idea holds about 1–1.5 s.
 - Talking-head pieces: the caption block changes on the voice, about every 0.5–1 s, with one bold word per change.
 - These run faster than §5's "beat every 1.5–3 s". Use §5 for explainers that need reading time, and these targets for punchy social reels.
+
+## R8–R16 and R18: motion design, product promos and liquid glass (added 2026-11-26)
+
+The owner uploaded ten more videos (R16 and R17 are the same file), then a liquid-glass demo (R18). They are other
+creators' work, so they are not stored here; this is the memory of what they do. Measured with frame differencing
+(cuts, holds, moves), spectral-flux onsets (sound on cut), EBU R128 (loudness) and k-means on sampled frames (colours).
+
+| # | File the owner shared (start) | Length, size | Type |
+|---|---|---|---|
+| R8 | `Finally_Created__Not_just_saved…cinematic` | 6.1 s, 16:9 | Cinematic: keyboard → eye match cut carrying the word "CREATE", then 3D floating panels around a person |
+| R9 | `A_collection_of_my_motion_design_work_from_2025_to_2026…` | 73.9 s, 16:9 | Motion-design showreel: neon logo reveals, circular text, glossy icons, flat illustration, Arabic type |
+| R10 | `storytelling_is_the_moat.` | 19.8 s, 16:9 | Kinetic storytelling: tiny pixel accents, a search pill typing over a photo, a photo strip, echo-stacked headline over b&w portraits |
+| R11 | `Comment__CLAUDE__for_the_full_GUIDE…` | 12.0 s, 9:16 | A UI promo playing on a monitor in a dark room, with a two-line "COMMENT 'CLAUDE'" banner on top |
+| R12 | `wanna_see_what_Holo_could_create…` | 44.6 s, 16:9 | SaaS promo (Holo): vivid gradient blobs, a rolling word list, a menu list with cards, photo scatter, a count-up with bars |
+| R13 | `FYLR_-_Product_Promo…` | 44.4 s, 16:9, 25 fps | Dark-green product promo: progress bar, timeline scrubber comments, device radar, glass cube |
+| R14 | `ChatGPT_-_Codex…SaaS-style promotional video` | 35.6 s, 16:9 | White and lavender promo: dock icons, "Meet [icon] Codex", a prompt box with a cursor, phone mockups |
+| R15 | `Made_this_UI_motion_video_on_kinso.app…` | 44.5 s, 9:16 | A Kinso promo on a curved monitor in an orange-lit room: word splits, a highlighter bar, a gradient orb, a big scrolling line |
+| R16 | `Easy_ways_to_make_motion_graphics_with_Claude…` | 38.4 s, 9:16 | Handheld phone film of a laptop: prompt-motion.com, then a "Shape morphing through UI states" study |
+| R18 | `Follow_and_comment_GLASS…liquid_glass` | 16.6 s, 9:16 | Liquid glass vs CSS blur, split screen over silk and pool footage; a drop-in web component (zerowing.in/glass) |
+
+### Rhythm (measured)
+
+| Ref | Cuts / 10 s | Median shot | Median gap between visual events | Still share | Median hold | Median move | Sound on a cut | LUFS (true peak) |
+|---|---|---|---|---|---|---|---|---|
+| R8 | 4.9 | 1.7 s | 0.93 s | 29% | 1.57 s | 0.27 s | 0/3 | −13.6 (+2.6) |
+| R9 | 4.9 | 1.8 s | 1.95 s | 10% | 1.75 s | 0.27 s | 20/36 | −14.2 (+0.4) |
+| R10 | 7.1 | 0.57 s | 0.97 s | 40% | 0.72 s | 0.27 s | 7/14 | −14.3 (+0.3) |
+| R12 | 2.5 | 2.4 s | 2.47 s | 15% | 0.90 s | 1.23 s | 7/11 | −14.4 (−0.6) |
+| R13 | 2.9 | 2.0 s | 1.56 s | 24% | 0.74 s | 0.76 s | 8/13 | −14.1 (+2.1) |
+| R14 | 2.0 | 3.7 s | 1.40 s | 34% | 0.63 s | 0.37 s | 2/7 | −14.2 (+0.3) |
+| R15 | 1.1 | 6.0 s | 1.97 s | 29% | 0.53 s | 0.20 s | 2/5 | −15.1 (+2.9) |
+| R11, R16 | filmed screens: the camera never stops, so holds can't be measured | | | | | | | −14.2, −15.4 |
+
+What this means for us (SKILL.md §5): a new visual event every 1–2.5 s in motion pieces; moves of 0.2–0.4 s that
+land and hold 0.5–0.9 s; a sound on about half the cuts; −14 LUFS like theirs, but with a true peak under −1.5
+(four of them clip above 0 dBTP).
+
+### Colours, backgrounds and type (memory)
+
+Hex values are k-means centres of sampled frames (screens filmed in a room were sampled on the screen). Type names
+are visual matches, not confirmed files.
+
+| Ref | Background | Text | Accent | Type (looks like) |
+|---|---|---|---|---|
+| R8 | warm black `#1E1D19`, deep navy `#041018` | white `#EBEFEF`, letter-spaced | cool blue `#498CC3`, skin `#9A6A4E` | thin wide-tracked sans (Helvetica Neue Light), "C R E A T E" |
+| R9 | near black `#050811`, off-white `#E4E0E1` | white, ink | teal-green glow, blue `#188BD4`, terracotta `#C67245`, ochre `#DB9C4E` | rounded heavy geometric (Montserrat Black), script "Reel", Arabic display |
+| R10 | black `#04070C`, white `#FDFDFD` | white on black, ink on white | small blue `#3265A4` / yellow / red pixel clusters | neo-grotesk (Inter / Helvetica), bold caps for "THEY MADE THE WORLD" |
+| R11 | dark room `#2A1A0D`; screen black → grey glow | white, light grey | orange lamp `#F06C45` | SF Pro; condensed bold caps for the banner (Bebas-like) |
+| R12 | white `#FCFCFC` | ink `#221E22`, grey `#93918E` | coral `#F27067`, magenta `#E46AA7`, periwinkle `#9095E7` gradient | Inter / SF Pro medium; bold for numbers; one italic serif ("Chief Marketing") |
+| R13 | forest black `#0E1413` | white `#CDDAD3`, soft | green `#0F965A` / `#4BC391` glow | Inter / SF Pro regular, light weights |
+| R14 | white `#FDFDFD`, lavender `#C6BEF7` → `#9291F3` blur | ink `#212120` | violet `#8580F2` | SF Pro semibold |
+| R15 | screen: warm off-white `#E1DFDC` with peach `#E4AC90` → mint `#A4B1AD` gradients; room `#150E09` | ink | orange `#F1642D` highlight bar | Inter / Söhne, large tight grotesk |
+| R16 | warm grey canvas `#C6C8C1`, black UI | black, white | Claude orange `#C5401A` | Geist (named in the prompt); Inter |
+| R18 | silk red/blue, pool blue, violet ribbons (backdrops for the glass) | white | none; colour comes from the backdrop through the glass | SF Pro semibold, mono for code |
+
+The Nutrition Hub palette does not change: porcelain `#FFFFFF`, ice `#EAF0F6`, ink `#202B38`, orange `#F0782B`
+(text `#E66D2A`), slate `#596879`, mist `#8290A0`; Inter, Bebas Neue for slams, Instrument Serif Italic for one
+accent word. R15's warm off-white with an orange highlight and R14's white canvas are the closest to it.
+
+### Editing details worth keeping
+
+- **One element carried through** (R8 "CREATE" across a match cut; R16 one shape through every UI state; R12 the
+  gradient sphere; the prompt-motion "orange dot" film). Our version: the orange dot in every motion-kit beat.
+- **Words in the middle**, 1–5 words at a time; a line types or rises, never word-pops (R10, R14, R15).
+- **Real UI moments**: a prompt typing with a caret, a cursor that clicks, a toggle that flips, a progress pill in
+  steps (R11 18% → 92% → 100%, R13, R14).
+- **Screens in rooms** (R11, R15, R16): the promo plays on a monitor filmed in a dark, warm room; the screen glows.
+- **Comment hook banner** at the top (R11): a topic tag plus "Comment KEYWORD for the full guide".
+- **Liquid glass** (R18): CSS blur only smears; real glass bends light at a rigid rim, splits colour faintly at the
+  edge and shows a lit rim; it "appears" by bending light in.
+
+### What became of each effect
+
+| Effect (ref) | Liquid Glass |
+|---|---|
+| Rolling word list (R12) | built: Word Wheel |
+| Menu list with a card (R12) | built: Menu Switch |
+| Count-up with bars (R12) | built: Count-up Bars (real source required) |
+| Autopilot toggle (R12) | built: Toggle List |
+| Word split with an icon (R15 "some…here", R14 "Meet [icon] Codex") | built: Word Split |
+| Highlighter bar (R15) | built: Highlighter Sweep |
+| Search or prompt pill with a cursor (R10, R14) | built: Prompt Box |
+| Shape morphing through UI states (R16) | built: Shape Morph |
+| Big scrolling line (R15) | built: Big Scroll |
+| Circular text (R9) | built: Text Ring |
+| Progress in steps (R11, R13) | built: Progress Pill |
+| Floating panels around a person (R8) | built: Spatial Panels |
+| Photo strip (R10) | built: Photo Strip |
+| Echo-stacked headline (R10) | built: Echo Stack |
+| Wide-tracked word (R8) | built: Tracking Reveal |
+| Comment banner (R11, R15) | built: Comment Banner |
+| Photos around a headline (R12) | built: Photo Scatter |
+| UI on a screen in a room (R11, R15, R16) | built: Screen Insert (`screen_insert.py`) |
+| Liquid glass (R18) | built: Liquid Glass over footage (`glass.py`) and the liquid `.nh-glass` |
+| Split screen with a moving line and a handle, headline "Same website. Watch the line." (R18's attention style) | built: Watch the Line (`fx.py wipe --mode line`) |
+| Glass card + orange "Comment GLASS" pill + URL chip (R18's ending) | built: Comment CTA (`scene=cta`) |
+| Match cut carrying a word (R8) | recipe: Word Bridge |
+| UI tunnel fly-through (R11), dock zoom (R14) | not built: camera zooms (§5) |
+| Neon glow (R9, R13), gradient smear (R12), pixel sparkles (R10), flat illustration (R9) | not built: off-palette; their layouts were used |
+| Device radar (R13), timeline scrubber comments (R13) | not built: no Nutrition Hub use yet |

@@ -14,6 +14,7 @@ Checks:
   format      size is 1080x1920, 1920x1080 or 1080x1350; 30 fps
   video       H.264 High, yuv420p
   audio       AAC, 48 kHz (a silent piece with no audio track is a WARN)
+  rhythm      no frozen stretch over 1.6 s (graphics) or 2.5 s (footage), end card left out (WARN)
   faststart   moov atom before mdat
   loudness    integrated -14 LUFS ±1, true peak <= -1.5 dBTP (ffmpeg ebur128)
   logo        assets/logo/nutrition-hub-logo.png matches its sha256
@@ -198,6 +199,37 @@ def check_pixels(path, meta, graphics):
         report("PASS", "black", f"no near-black frames in {len(frames)} samples")
 
 
+def check_rhythm(path, meta, graphics):
+    """Frozen stretches: the owner's references hold a fully still frame 0.5-0.9 s (median), rarely over 1.5 s
+    (style-references.md, R8-R16). The last 3 s (end card) are left out."""
+    try:
+        import numpy as np
+    except ImportError:
+        return
+    fps, w = 10, 96
+    h = round(meta["h"] * w / meta["w"] / 2) * 2
+    r = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-vf", f"fps={fps},scale={w}:{h},format=gray", "-f", "rawvideo", "-"],
+                       capture_output=True)
+    n = len(r.stdout) // (w * h)
+    if n < 3:
+        return
+    f = np.frombuffer(r.stdout[:n * w * h], np.uint8).reshape(n, h, w).astype(np.float32)
+    still = np.abs(np.diff(f, axis=0)).mean(axis=(1, 2)) < 0.2
+    stop = max(0, n - 1 - 3 * fps)
+    best, run, at = 0, 0, 0
+    for i in range(stop):
+        run = run + 1 if still[i] else 0
+        if run > best:
+            best, at = run, (i - run + 1) / fps
+    limit = 1.6 if graphics else 2.5
+    secs = best / fps
+    if secs > limit:
+        report("WARN", "rhythm", f"the picture is frozen for {secs:.1f} s from {at:.1f} s; the references hold a still frame "
+                                 "0.5-0.9 s: keep something moving (a float, a drift, the next beat)")
+    else:
+        report("PASS", "rhythm", f"longest frozen stretch {secs:.1f} s (limit {limit:g} s, end card left out)")
+
+
 def contact_sheet(path, meta, out):
     cols = 10
     n = max(1, int(meta["dur"] * 2))
@@ -228,6 +260,7 @@ def main():
     check_logo()
     if meta:
         check_pixels(args.video, meta, args.graphics)
+        check_rhythm(args.video, meta, args.graphics)
         contact_sheet(args.video, meta, args.sheet or args.video.with_suffix(".sheet.png"))
 
     fails, warns = results.count("FAIL"), results.count("WARN")

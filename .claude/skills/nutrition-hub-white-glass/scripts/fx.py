@@ -316,6 +316,8 @@ def main():
     ap.add_argument("--stage", choices=["ice", "blur"], default="ice"); ap.add_argument("--top", type=float, default=0.35)
     ap.add_argument("--text", help="sticky: the sticker's words"); ap.add_argument("--badge", help="sticky: a short number or tag in an orange badge")
     ap.add_argument("--anchor", choices=["chest", "head", "hand"], default="chest", help="sticky: what it sticks to")
+    ap.add_argument("--mode", choices=["sweep", "line"], default="sweep",
+                    help="wipe: sweep (one light bar) or line (R18's attention style: a moving divider with a glass handle)")
     ap.add_argument("--before", help="wipe: the same take before the edit"); ap.add_argument("--bg", help="bgswap: a clip, an image, stage or blur")
     a = ap.parse_args()
     try:

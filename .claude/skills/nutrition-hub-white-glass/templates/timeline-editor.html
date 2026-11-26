@@ -120,13 +120,15 @@ const LABELS = { orbit: "Orbit", escape: "Frame escape", sticky: "Sticky text", 
 const lbl = (k) => LABELS[k] || k;
 function push() { history.push(JSON.stringify(E)); if (history.length > 80) history.shift(); }
 function ovDur(o) { return DATA.overlayDur[o.template] || 3; }
+// a b-roll is a file, or a motion-kit beat rendered from a template (its scene name is shown)
+function bn(b) { if (b.template) { const m = /scene=([a-z]+)/.exec(b.template); return "beat: " + (m ? m[1] : b.template.split("?")[0]); } return (b.file || "").split("/").pop(); }
 
 /* ---------- rules (same as timeline.py check) ---------- */
 function check() {
   const out = [], bad = new Set();
   const br = E.broll.map((b, i) => ({ ...b, i })).sort((a, b) => a.start - b.start);
   br.forEach((b, k) => {
-    const tag = `B-roll ${fmt(b.start)}–${fmt(b.end)} (${b.file.split("/").pop()})`;
+    const tag = `B-roll ${fmt(b.start)}–${fmt(b.end)} (${bn(b)})`;
     if (b.start < R.hook) { out.push(["FAIL", `${tag}: inside the ${R.hook} s hook, which shows the speaker`]); bad.add("broll" + b.i); }
     const d = b.end - b.start;
     if (d < R.minShot) { out.push(["FAIL", `${tag}: ${d.toFixed(2)} s, shorter than ${R.minShot} s`]); bad.add("broll" + b.i); }
@@ -174,9 +176,9 @@ function draw() {
   const th = DATA.thumbs;
   lane("speaker").innerHTML = `<div class="thumbs" style="width:${X(D)}px">${th.images.map((src) => `<img src="${src}" alt="" style="width:${X(th.every)}px">`).join("")}</div>` +
     (END ? `<div class="clip end" style="left:${X(D - 0.4)}px;width:${X(END)}px">End card + logo</div>` : "");
-  lane("broll").innerHTML = E.broll.map((b, i) => clip("broll", i, b.start, b.end, `${b.file.split("/").pop()} · ${b.transition || "cut"}`, bad)).join("");
+  lane("broll").innerHTML = E.broll.map((b, i) => clip("broll", i, b.start, b.end, `${bn(b)} · ${b.transition || "cut"}`, bad)).join("");
   lane("fx").innerHTML = E.effects.map((f, i) => clip("fx", i, f.start, f.end, lbl(f.effect) + (f.words ? ` · ${f.words}` : f.text ? ` · ${f.text}` : ""), bad)).join("");
-  lane("ov").innerHTML = E.overlays.map((o, i) => clip("ov", i, o.start, Math.min(o.start + ovDur(o), D), o.template.split("?")[0].replace(".html", ""), bad, true)).join("");
+  lane("ov").innerHTML = E.overlays.map((o, i) => clip("ov", i, o.start, Math.min(o.start + ovDur(o), D), bn({ template: o.template }).replace("beat: ", ""), bad, true)).join("");
   lane("cap").innerHTML = DATA.words.filter((w) => w.start < D).map((w) => `<div class="word" style="left:${X(w.start)}px;width:${Math.max(2, X(Math.min(w.end, D) - w.start))}px" title="${esc(w.text)}"></div>`).join("");
   lane("sfx").innerHTML = E.sfx.map((s, i) => `<div class="sfx${sel && sel.kind === "sfx" && sel.i === i ? " sel" : ""}" data-kind="sfx" data-i="${i}" style="left:${X(s.t)}px" tabindex="0" role="button" aria-label="Sound ${esc(s.sfx)} at ${fmt(s.t)} s"><span>${esc(s.sfx)}</span></div>`).join("");
   lane("mom").innerHTML = (DATA.moments || []).map((m) => `<div class="moment ${m.type}" style="left:${X(m.t)}px" title="${m.type.replace("_", " ")} ${fmt(m.t)} s"></div>`).join("");
@@ -202,7 +204,8 @@ function inspector() {
   let html = "";
   if (sel.kind === "broll") {
     const b = E.broll[sel.i];
-    html = `<div class="field"><label for="f-file">Clip</label><select id="f-file">${DATA.library.concat(DATA.library.includes(b.file) ? [] : [b.file]).map((f) => `<option${f === b.file ? " selected" : ""}>${esc(f)}</option>`).join("")}</select></div>
+    html = (b.template ? `<div class="field"><span>Beat</span><span>${esc(bn(b))} (motion kit; edit its words in edit.json)</span></div>`
+      : `<div class="field"><label for="f-file">Clip</label><select id="f-file">${DATA.library.concat(DATA.library.includes(b.file) ? [] : [b.file]).map((f) => `<option${f === b.file ? " selected" : ""}>${esc(f)}</option>`).join("")}</select></div>`) + `
       <div class="field"><label for="f-start">Start (s)</label>${num("f-start", b.start)}</div><div class="field"><label for="f-end">End (s)</label>${num("f-end", b.end)}</div>
       <div class="field"><label for="f-tr">Transition</label><select id="f-tr">${["cut", "white", "soft"].map((v) => `<option value="${v}"${(b.transition || "cut") === v ? " selected" : ""}>${{ cut: "Cut", white: "Dip to white", soft: "Soft dissolve" }[v]}</option>`).join("")}</select></div>`;
   } else if (sel.kind === "fx") {

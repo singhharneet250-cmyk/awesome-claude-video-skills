@@ -146,11 +146,37 @@ class Wipe:
             sys.exit("wipe needs --before FILE: the same take before the edit (e.g. the ungraded reframe).")
         bi = fx.probe(a.before)
         self.reader = fx.frames(a.before, {**info, "dur": bi["dur"]}, a.s, a.e + 0.1)
-        self.chip_b = fx.chip("Before", 0.42 * fh_px)
-        self.chip_a = fx.chip("After", 0.42 * fh_px)
+        labels = [x.strip() for x in (getattr(a, "words", None) or "Before,After").split(",")][:2] + ["After"]
+        self.chip_b = fx.chip(labels[0], 0.42 * fh_px)
+        self.chip_a = fx.chip(labels[1], 0.42 * fh_px)
         self.a, self.W, self.H = a, W, H
+        # "line" (the attention style of the owner's liquid-glass reference, R18): the divider keeps moving, a glass
+        # handle rides it, the labels sit at the top under an optional headline pill ("Same reel. Watch the line.")
+        self.line = getattr(a, "mode", "sweep") == "line"
+        if self.line:
+            self.handle = self._handle(int(78 * W / 1080))
+            self.head = fx.chip(a.text, 0.5 * fh_px) if getattr(a, "text", None) else None
         xs = np.arange(W, dtype=np.float32)
         self.xs = xs
+
+    @staticmethod
+    def _handle(d):
+        """A porcelain glass knob with two ink chevrons, RGBA float."""
+        from PIL import Image, ImageDraw, ImageFilter
+        ss, pad = 3, d // 3
+        D, P = d * ss, pad * ss
+        im = Image.new("RGBA", (D + 2 * P, D + 2 * P), (0, 0, 0, 0))
+        sh = Image.new("RGBA", im.size, (0, 0, 0, 0))
+        ImageDraw.Draw(sh).ellipse((P, P + D * 0.1, P + D, P + D * 1.1), fill=(32, 43, 56, 70))
+        im = Image.alpha_composite(im, sh.filter(ImageFilter.GaussianBlur(D * 0.1)))
+        g = ImageDraw.Draw(im)
+        g.ellipse((P, P, P + D, P + D), fill=(255, 255, 255, 240), outline=(255, 255, 255, 255), width=ss * 2)
+        c, r, w = P + D / 2, D * 0.13, int(ss * 2.6)
+        for sgn in (-1, 1):
+            x = c + sgn * D * 0.13
+            g.line([(x + sgn * -r * 0.0, c - r), (x + sgn * r * 0.8, c), (x, c + r)], fill=(32, 43, 56, 255), width=w, joint="curve")
+        im = im.resize((im.width // ss, im.height // ss), Image.LANCZOS)
+        return np.asarray(im).astype(np.float32) / 255
 
     def __call__(self, f, matte, face, t, **_):
         a, W, H = self.a, self.W, self.H
@@ -162,6 +188,25 @@ class Wipe:
         k = fx.envelope(t, a.s, a.e)
         if k <= 0:
             return f
+        if self.line:
+            P = max(2.4, min(4.0, a.e - a.s))                            # one slow swing right, left and back
+            bar = W * (0.5 + 0.3 * np.sin(2 * np.pi * (t - a.s) / P) * k)
+            m = np.clip((self.xs - bar) / 2 + 0.5, 0, 1)[None, :, None]
+            out = before * (1 - m) + f * m
+            d = np.abs(self.xs - bar)
+            glow = (np.exp(-(d / 2.2) ** 2) * 0.95 + np.exp(-(d / 40) ** 2) * 0.16)[None, :, None] * k
+            out = out * (1 - glow) + fx.WHITE * glow
+            hd = self.handle.copy(); hd[..., 3] *= k
+            fx.over(out, hd, bar - hd.shape[1] / 2, 0.52 * H - hd.shape[0] / 2)           # chest height: clear of the face and the lower overlays
+            cb, ca = self.chip_b.copy(), self.chip_a.copy()
+            cb[..., 3] *= k; ca[..., 3] *= k
+            u = W / 1080
+            fx.over(out, cb, 72 * u, 0.2 * H)
+            fx.over(out, ca, W - 72 * u - ca.shape[1], 0.2 * H)
+            if self.head is not None:
+                hh = self.head.copy(); hh[..., 3] *= k
+                fx.over(out, hh, (W - hh.shape[1]) / 2, 0.135 * H - hh.shape[0] / 2)
+            return out
         start = a.s + 0.35
         p = fx.ease_out(min(1, max(0, (t - start) / self.SWEEP))) if t >= start else 0.0
         bar = W * (1.04 - 1.08 * p)                                       # sweeps right → left

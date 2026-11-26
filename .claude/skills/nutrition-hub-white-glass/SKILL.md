@@ -1,14 +1,20 @@
 ---
 name: nutrition-hub-white-glass
-description: Brand and motion system for Nutrition Hub Khanna (the "White Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, IT Reelsmaker, Motion Reel, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade, a tested render pipeline, realistic 3D molecule and product-hero templates, a caption generator, an automated delivery QA, and which companion skill or plugin to use for each job (this skill wins wherever they disagree).
+description: Brand and motion system for Nutrition Hub Khanna (the "Liquid Glass Motion System"). Use for EVERY video edit or video graphic made for Nutrition Hub, whatever the tool (ffmpeg, HTML/Playwright, HyperFrames, Remotion, IT Reelsmaker, Motion Reel, CapCut, ManyMotions, Clipzi, OpusClip, Picsart and so on). That includes reels, shorts, product films, supplement explainers, captions, title cards, data callouts, lower thirds, thumbnails and end cards. Holds the original logo file (always use it, never redraw it), the palette, type, glass components, motion timings, caption style, footage grade, a tested render pipeline, realistic 3D molecule and product-hero templates, a caption generator, an automated delivery QA, and which companion skill or plugin to use for each job (this skill wins wherever they disagree).
 ---
 
-# Nutrition Hub Khanna: White Glass Motion System
+# Nutrition Hub Khanna: Liquid Glass Motion System
 
 A premium, science-led visual language for supplement education, product films and
 high-retention fitness reels. **Clarity first. Depth second. Accent with intent.**
 White-on-white layers, translucent surfaces, restrained orange highlights and precise
 3D graphics. Keep every frame clean, legible and editorial.
+
+**Liquid Glass** *(owner, 2026-11-26)*: the system was called White Glass. The owner moved every glass surface to
+liquid glass (clearer, light bending at a rigid rim, after Apple's Liquid Glass and the owner's reference) and renamed
+the system in the docs. The palette, type and rules are unchanged, and the skill keeps its id
+(`nutrition-hub-white-glass`, `?scheme=white-glass`) so every command still works. The name describes the look:
+never use Apple's logos, icons or system controls in a Nutrition Hub video.
 
 `reference/playbook.png` is the source playbook. Look at it when in doubt. Everything
 marked *(derived)* below adapts the playbook to video. Unmarked values come straight from it.
@@ -68,7 +74,7 @@ Supporting tones sampled from the playbook:
   - `mustard`: cream with mustard
   - `navy-lime`: dark navy with lime
   Each keeps one accent colour, Inter plus the §3 accent faces, the motion rules and the original logo
-  (on a white plate on navy, because the logo's KHANNA line is dark). White Glass stays the default.
+  (on a white plate on navy, because the logo's KHANNA line is dark). Liquid Glass stays the default.
   Use another scheme only when the owner asks or to match a video's colours, and keep one scheme per video.
 - White text on signal orange fails contrast, so don't use it for words. Calls to action
   are ink text on a white chip with an orange dot.
@@ -116,10 +122,18 @@ Headlines are short, sentence case and end in a full stop ("Creatine, explained 
 
 All of these are implemented in `assets/brand.css`.
 
-- **A · Glass panels:** frosted information cards with an edge light, a soft shadow and an
-  18–28 px radius (`.nh-glass`, `.nh-glass--sm`). Over footage they go near-opaque
+- **A · Liquid glass panels:** clear-frosted information cards with a rigid rim that catches the light (brightest
+  top-left and bottom-right), a lens edge and lower-edge thickness, a soft shadow and an 18–28 px radius
+  (`.nh-glass`, `.nh-glass--sm`). Inner corners are concentric (an element inside a panel takes the panel's radius
+  minus its padding), and glass never sits on glass. Over footage they go near-opaque
   automatically (`.is-transparent`). **Every word over footage sits on a panel**, except caption
   words: those are bare, with no glass (§6).
+  - **Real glass over footage** *(owner reference "liquid glass", 2026-11-26)*: CSS blur only smears, and an
+    overlay rendered on its own can't see the footage. `scripts/glass.py` does the glass at composite time:
+    under every `.nh-glass` panel the footage is refracted through a rounded rim (IOR 1.5), split a little in
+    colour at the edge, frosted, tinted porcelain until ink text reads (auto, about 0.86 luminance), with a
+    thin specular rim lit from the top left. Two passes of the overlay feed it (`render.cjs --real-glass` and
+    `--glass-mask`). `timeline.py render` uses it for every overlay; `"glass": "flat"` keeps the old panels.
 - **B · 3D science:** molecular science visuals with realistic materials and controlled
   detail. The SVG atom in `reel-9x16.html` is a stand-in; use a real 3D render:
   - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,
@@ -202,7 +216,7 @@ All of these are implemented in `assets/brand.css`.
     pass in front.
   - Use it for one signature beat per reel, 2.5–4 s.
 - **H · Frame escape (owner request 2026-11-25).** The picture closes into a porcelain-bordered frame on the
-  White Glass stage, while the speaker's head and raised hands stay outside it.
+  Liquid Glass stage, while the speaker's head and raised hands stay outside it.
   - Command: `scripts/fx.py escape --at 2-5`.
   - It needs a real outline of the speaker. Two sources:
     - `--matte wall` keys a plain, evenly lit wall (the "Free Space" set-up).
@@ -230,13 +244,13 @@ All of these are implemented in `assets/brand.css`.
     busy rooms, wooden furniture and blonde hair can fool the hand finder (R5), so check the preview.
     The head track is reliable in both.
 - **K · The R7 effect pack (owner request 2026-11-25).** From the owner's reference "16 video effects Claude can
-  create" (`reference/style-references.md` R7). The White Glass versions of the effects that fit:
+  create" (`reference/style-references.md` R7). The Liquid Glass versions of the effects that fit:
 
   | Effect | How | Rules |
   |---|---|---|
   | Sticky text | `fx.py sticky --text "3–5 g a day" --badge 12 --anchor chest\|head\|hand`: a porcelain sticker that follows the speaker | 2–6 words; one sticker on screen |
-  | Before + after | `fx.py wipe --before raw.mp4`: a white light bar sweeps right to left between "Before" and "After" chips | Only edits, grades or product views. Never body, health or results comparisons (§8). |
-  | Pull-back reveal | `fx.py pullback`: the picture pulls back into a White Glass editor (checklist, timeline with the take's real waveform), then pushes back in | — |
+  | Before + after | `fx.py wipe --before raw.mp4`: a white light bar sweeps right to left between "Before" and "After" chips. `--mode line` is the attention style of the owner's liquid-glass reference (R18): the divider keeps swinging with a glass ‹ › handle at chest height, labels at the top (`--words "Before,After"`) under an optional headline pill (`--text "Same reel. Watch the line."`) | Only edits, grades or product views. Never body, health or results comparisons (§8). |
+  | Pull-back reveal | `fx.py pullback`: the picture pulls back into a Liquid Glass editor (checklist, timeline with the take's real waveform), then pushes back in | — |
   | Depth scatter | `fx.py scatter --words "Label,first"`: the first word (white) behind the head, the second (orange) in front; letters fly in from scattered depths | Two short words only |
   | Green screen | `fx.py bgswap --matte wall\|FILE --bg clip\|image\|stage\|blur`: the room behind the speaker becomes another background | Needs a real outline. Backgrounds are your own, licensed or the stage; never memes or other people's footage. |
   | Headline wall | `templates/headline-wall.html`: porcelain cards with a highlighted phrase pop in around the speaker | Real headlines only, quoted, with outlet and date (§8); the template's example cards say "Example" |
@@ -246,9 +260,31 @@ All of these are implemented in `assets/brand.css`.
 
   - Orbit (§4 G), frame break (§4 H, the frame escape) and the chat (§4 I) were already built.
   - Not built: zoom-through cut, vertigo and digital zoom (zoom punches and camera zooms, banned in §5), and
-    paper cut and doodle boil (paper and doodle looks, not White Glass). Adding them needs the owner to change
+    paper cut and doodle boil (paper and doodle looks, not Liquid Glass). Adding them needs the owner to change
     those rules first.
   - Every pack effect runs through `timeline.py` like the others and writes its own SFX cue.
+- **L · The motion kit (owner references R8–R16, 2026-11-26).** `templates/motion-kit.html?scene=NAME`: 18 short
+  beats learned from the owner's motion-design references, rebuilt in Liquid Glass (porcelain, ink, one orange
+  dot carried through each beat, critically damped springs that never overshoot). Names and parameters:
+  `reference/effect-names.md`; what each came from: `reference/style-references.md` (R8–R16).
+
+  | Kind | Scenes | Use |
+  |---|---|---|
+  | Full-screen beats | `wheel` (Word Wheel), `menu` (Menu Switch), `count` (Count-up Bars), `split` (Word Split), `highlight` (Highlighter Sweep), `morph` (Shape Morph), `scroll` (Big Scroll), `ring` (Text Ring), `strip` (Photo Strip), `echo` (Echo Stack), `photos` (Photo Scatter) | Render as MP4 and cut in like b-roll: `"template"` in an `edit.json` b-roll entry, or `broll.py`. 3–4.5 s each. `--transparent` is refused (ink type never sits bare on footage). |
+  | Overlays | `toggle` (Toggle List), `prompt` (Prompt Box), `progress` (Progress Pill), `panels` (Spatial Panels), `tracking` (Tracking Reveal), `banner` (Comment Banner), `cta` (Comment CTA: a glass card, an orange "Comment KEYWORD" pill and the handle, R18's ending) | Over the speaker with `--transparent` (real glass in the timeline), or full screen. Lower band by default, `?slot=top` for the top band. |
+
+  - 16:9 for a TV or laptop: `--size 1920x1080`; every scene lays itself out for landscape.
+  - Honesty: `count` needs a real number and `?source=`; photos are real (`?img=`, `?imgs=`); the copy in the
+    template is example label-reading copy.
+  - Not built (they break §5 or §2): the UI tunnel fly-through (R11) and the dock zoom (R14) are camera zooms; the
+    neon glow looks (R9, R13), vivid gradient smears (R12) and multicolour pixel sparkles (R10) are off-palette.
+    Their layouts are used instead.
+- **M · Screen insert (R11, R15, R16).** `scripts/screen_insert.py plate.mp4 beat.mp4 out.mp4` puts a beat (render it
+  at 1920x1080) onto a real screen in footage: the store TV, a laptop, a monitor. It finds a lit screen by itself
+  (`--detect dark` for one that is off), or takes `--corners`; `--preview f.png` shows what it found. The screen
+  keeps a little of its own glare and spills a soft glow in dark rooms. `--track` follows gentle handheld moves; for
+  big camera moves, or a screen that runs off the frame, film locked off. Tested: R15's monitor and R11's monitor
+  (locked off) look real; R16's handheld pull-back drifts after about a second.
 - **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
@@ -274,6 +310,22 @@ All of these are implemented in `assets/brand.css`.
   - Introduce a new visual beat every 1.5–3 s.
   - Hold any text for at least 1 s plus 0.25 s per word.
   - Leave scenes fully before the next one reveals. Never overlap two glass reveals of different beats.
+- **Rhythm measured from the owner's references** *(R8–R16, 2026-11-26; numbers in `reference/style-references.md`)*:
+  - A new visual event (a cut, or motion starting after a hold) every **1.0–2.5 s** (median) in motion pieces;
+    a talking head changes the picture every 4–6 s. `timeline.py check` warns after 6 s with nothing new.
+  - Moves are short (**0.2–0.4 s** median), then the frame **holds 0.5–0.9 s**, rarely a fully still frame over
+    1.5 s. Keep something alive in a hold (the float, a drift). `qa.py` warns on frozen stretches.
+  - **Carry one element across every change** (the orange dot, a word, the shape), the way R8 carries "CREATE"
+    across a match cut and R16 morphs one shape through every state. No empty frame between beats.
+  - Text that swaps inside a moving container gets its own exit and entrance timing, so letters never overlap.
+  - A sound lands on about **half to two-thirds of the cuts** (R9, R10, R12, R13), not on every one. The references
+    master at −13.6 to −15.4 LUFS integrated; ours stays −14 with a true peak under −1.5 (several references clip
+    above 0 dBTP).
+- **Springs and motion blur** *(learned from prompt-motion.com build notes)*: every value is a pure function of
+  time. A spring is a closed-form, critically damped step (no overshoot); a value that changes target several times
+  is the sum of one spring per change (`motion-kit.html`: `spring`, `springTo`). For delivery, render graphics with
+  real motion blur: `render.cjs --blur 4` blends 4 sub-frames over a 180° shutter (or `"motion_blur": 4` in
+  `edit.json`).
 - **Sound effects** *(owner request 2026-11-25)*: SFX are calm, glassy and sparse, the sound of the
   motion above. `scripts/sfx.py` holds an original kit synthesised in code, so there are no samples
   and no licence to check.
@@ -398,7 +450,12 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
   - The rules re-check live as clips move.
   - "Copy edit.json" brings the edit back, to save over `edit.json`.
 - `python3 scripts/timeline.py render edit.json` builds the reel in the right order with the tested scripts
-  and ends with `qa.py`.
+  and ends with `qa.py`. Overlays get real glass (§4 A); a b-roll entry with `"template"` renders a motion-kit
+  beat (§4 L) and keeps its colours ungraded; `"motion_blur": 4` blurs every rendered graphic.
+- `python3 scripts/timeline.py export edit.json` writes `edit.otio` and `edit.srt`: the same edit as a real
+  timeline (V1 speaker then end card, V2 b-roll and beats, V3 overlays, A1 voice, A2 every SFX as a clip, effects as
+  markers) for **DaVinci Resolve** (File > Import > Timeline), Premiere or Kdenlive. Rendered media are named by what
+  made them, so an old render is never picked up.
 - The steps below still apply. The timeline is how they are written down and run.
 
 1. **Read the brief and probe the footage:**
@@ -416,11 +473,14 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
    - `headline-wall.html`, `phone-mockup.html`, `ui-world.html`: the R7 overlays (§4 K).
    - `chat-takeover.html`: a chat sequence (list → pick → typed message → send → reply), above the head or
      taking over the frame (§4 I).
+   - `motion-kit.html?scene=NAME`: the 18 motion-kit beats and overlays (§4 L).
 5. **Render** (from this skill's folder):
    - Full video: `node scripts/render.cjs templates/reel-9x16.html --out out.mp4`
    - Overlay for footage: `node scripts/render.cjs templates/overlay-callout.html --transparent --out callout.mov`
    - End card only: `node scripts/render.cjs templates/reel-9x16.html --from 8.15 --out endcard.mp4`
    - QA still: `node scripts/render.cjs <page> --out frame.png --still 5.2`
+   - With motion blur: add `--blur 4` (4 sub-frames per frame, 180° shutter; render time grows 4×)
+   - Real glass over footage: `--transparent --real-glass` and `--transparent --glass-mask`, then `scripts/glass.py`
    - 3D molecule: `node scripts/render.cjs "templates/molecule-3d.html?molecule=caffeine" --out caffeine.mp4`
    - 3D product hero: `node scripts/render.cjs "templates/product-hero-3d.html?photo=/abs/pack.png" --out hero.mp4`
    - Add `&samples=8` to either for the delivery look (motion blur and depth of field). On a
@@ -434,7 +494,8 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
 7. **QA before you deliver.** Run `python3 scripts/qa.py out.mp4` (add `--graphics` for an
    all-graphics piece, `--expect <s>` for the planned length). It checks format, codec,
    audio, faststart, loudness, the logo hash, stray hues and black frames, writes a
-   contact sheet, and exits 1 on any FAIL. Then look at the sheet and at full-size stills. Check that:
+   contact sheet, warns on frozen stretches (rhythm), and exits 1 on any FAIL. Then look at the sheet and at
+   full-size stills. Check that:
    - the logo is the original file, unaltered, with clear space and no name repeated beside it
    - at most one serif accent word per line and one slam per beat; the serif is never on a number
    - the palette holds 55/20/15/10, there is one accent focal point, and no stray hues (a matched
@@ -460,13 +521,13 @@ inputs in the last column.
 | A project that is already in Remotion | `remotion` plugin | `Easing.bezier(.22,1,.36,1)`; springs `{damping: 200, overshootClamping: true}` |
 | Product film or showreel rendered from code (no footage) | `motion-reel` plugin | Real product photos only (§4 D); palette, logo, §5 motion |
 | A realistic 3D molecule (small molecule) | `templates/molecule-3d.html` (§4 B) | A molecule id; new ones via `scripts/make_molecule.py` |
-| A realistic protein or enzyme film from a PDB / AlphaFold structure | `molecular-film` skill (Blender, GPU machine) | Its White Glass look constants; labels from our callouts |
+| A realistic protein or enzyme film from a PDB / AlphaFold structure | `molecular-film` skill (Blender, GPU machine) | Its Liquid Glass look constants; labels from our callouts |
 | A realistic product hero shot | `templates/product-hero-3d.html` (§4 D) | The real cut-out product photo, never a regenerated one |
 | Any step inside Blender or three.js (materials, glass, lighting, HDRI, depth of field, headless render) | `use-3d-software` skill | §2 palette and §5 motion as the targets |
-| Live control of Blender on the owner's computer: read the scene, build and light it, look through the camera, render a still | `blender` MCP server (`.mcp.json`, set-up and rules in `reference/blender-mcp.md`) | Real product photos only (never `generate_3d` for products, labels or logos); White Glass look constants from `molecular-film`; safe mode stays on |
+| Live control of Blender on the owner's computer: read the scene, build and light it, look through the camera, render a still | `blender` MCP server (`.mcp.json`, set-up and rules in `reference/blender-mcp.md`) | Real product photos only (never `generate_3d` for products, labels or logos); Liquid Glass look constants from `molecular-film`; safe mode stays on |
 | Cut b-roll into a talking head (on spoken words or at set times) | `scripts/broll.py` (§4 F) | The owner's clips, named as in `reference/broll-shot-list.md`, plus word timings |
 | Orbit, frame escape, chat takeover, the R7 pack (sticky, before + after, pull-back, depth scatter, green screen, headline wall, phone, UI world, comment); head and hand motion | `scripts/fx.py` + `fx_pack.py`, the overlay templates, `scripts/motion_track.py` (§4 G–K) | A plain-wall take or a matte video for the escape; real, consented chats or the "Example chat" label |
-| A rough cut on a real timeline the owner can see and tweak: transcript cuts, pause removal, beat order, b-roll placement, FCPXML | OpenChatCut v0.2.17 on the owner's computer, through the `openchatcut` MCP server (`.mcp.json`; set-up and rules in `reference/openchatcut.md`) | `approvalMode: "manual"`; §5 transitions only (no glitch or zoom punch); captions per §6 or burned after export; then the White Glass finishing pass and `qa.py` |
+| A rough cut on a real timeline the owner can see and tweak: transcript cuts, pause removal, beat order, b-roll placement, FCPXML | OpenChatCut v0.2.17 on the owner's computer, through the `openchatcut` MCP server (`.mcp.json`; set-up and rules in `reference/openchatcut.md`) | `approvalMode: "manual"`; §5 transitions only (no glitch or zoom punch); captions per §6 or burned after export; then the Liquid Glass finishing pass and `qa.py` |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
 | Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
@@ -475,6 +536,12 @@ inputs in the last column.
 | Licensed music (and SFX beyond the kit) | Epidemic Sound connector, only with a commercial plan for the business | Music calm and clean, 18–22 dB under the voice; SFX by §5 rules |
 | Fit a size cap (WhatsApp 16 MB, Gmail, Outlook) | `halfsize` skill (`--for whatsapp`), or the tested ffmpeg fallback in `reference/footage-editing.md` §9 | — |
 | Hooks, scripts, captions for the post | `social-media-skills` (hook-writer, reels-script, caption-writer) | §8 content rules |
+| A launch film, feature film or promo rendered from code, held to measured gates (words in the middle, one element carried, hidden cuts, copy check, forensics) | `cinetic` skill (vendored, MIT; `.claude/skills/cinetic`) | This skill's tokens as the supplied brand kit: its "no orange accent", "no serif" and "no glassmorphism" bans don't apply to Nutrition Hub (its own rule: a supplied brand wins) |
+| A product film built on the product's own design system, cut to music on measured beats | `product-film` skill (vendored, MIT) | Liquid Glass as the design system; honest claims (§8) |
+| Captions in 3D around a talking head: depth groups, a hero word behind the head, a ring of words in front | `camera-3d-captions` skill (vendored, Apache-2.0, HyperFrames) | §6 type and colours; **no whip-ins, push-ins or camera zooms** (§5): depth, rings and words behind the head only |
+| Ideas: 240 Claude motion videos with the prompt or skill behind each | prompt-motion.com (allowed in this repo's cloud environment; `reference/learned-tools.md`) | Borrow the technique, rebuild it in Liquid Glass |
+| Finish or re-cut the edit on a desktop editor | DaVinci Resolve via `timeline.py export` (.otio) | Effects are markers; render them with `timeline.py render` |
+| Royalty-free music | Mixkit (free licence covers social and ads, no attribution; check each track's licence page) or Epidemic Sound with a commercial plan | 18–22 dB under the voice |
 | Final check | `scripts/qa.py`, then §9.7 by eye | — |
 
 **When a companion disagrees with this skill, this skill wins.** Take structure and
@@ -512,6 +579,7 @@ templates/chat-takeover.html   chat sequence overlay (R4): ?layout=top (above th
 templates/headline-wall.html   R7: real headlines on porcelain cards pop in around the speaker
 templates/phone-mockup.html    R7: a porcelain phone swings in beside the head with a real screenshot or photo
 templates/ui-world.html        R7: glass UI cards act out a task (prompt, progress, filmstrip, preview)
+templates/motion-kit.html      R8–R18: 18 motion-kit beats and overlays by name (?scene=), springs, carried orange dot
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
@@ -519,8 +587,8 @@ assets/wg3d.js                 the 3D studio: PBR materials, light, shadow catch
 assets/molecules/              computed conformers of 17 supplement molecules (+ library.json of verified SMILES)
 assets/vendor/three/           three.js r170 (MIT), vendored
 scripts/make_molecule.py       SMILES → verified 3D molecule JSON (needs RDKit)
-scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg)
-scripts/captions.py            word timings / SRT → White Glass .ass captions (+ .srt sidecar)
+scripts/render.cjs             HTML → MP4 / ProRes 4444 / VP9-alpha / PNG (Playwright + ffmpeg); --blur motion blur; real-glass passes
+scripts/captions.py            word timings / SRT → Liquid Glass .ass captions (+ .srt sidecar)
 scripts/caption_colors.py      reads a video and picks caption colours to match it (used by captions.py --match)
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
 scripts/broll.py               b-roll cutaways over a talking head: on spoken words or set times; cut, white dip or dissolve
@@ -529,18 +597,21 @@ scripts/fx.py                  person-aware effects: orbit (spheres or word chip
 scripts/fx_pack.py             R7 pack for fx.py: sticky text, before + after wipe, pull-back reveal, depth scatter, green screen
 scripts/person_matte.py        person mattes for fx.py: head shape from the face track, plain-wall key, or a matte video
 scripts/motion_track.py        head (full frame rate) and hand tracking, gesture / hands-up / head-move moments, --preview
-scripts/timeline.py            one edit.json timeline for the whole edit: check (rules + drawing), edit (drag-and-trim page), render (every step, then qa.py)
+scripts/timeline.py            one edit.json timeline for the whole edit: check (rules + drawing), edit (drag-and-trim page), render (every step, then qa.py), export (.otio for DaVinci Resolve)
 templates/timeline-editor.html the drag-and-trim timeline page timeline.py edit fills in (style locked; live rule checks; copy edit.json)
 scripts/person_track.py        finds where the person is (face track) for auto caption placement and the blur band
 scripts/layout_plan.py         picks the vacant slot around the person for each caption and when the blur band is needed
-scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, contact sheet)
+scripts/qa.py                  automated delivery QA (specs, loudness, logo hash, hues, frozen stretches, contact sheet)
+scripts/glass.py               real glass over footage: refraction, dispersion, frost, porcelain tint, rim light under each panel
+scripts/screen_insert.py       put a beat on a real screen in footage (auto-detect, --corners, --track, glare and glow)
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass
 reference/footage-editing.md   tested ffmpeg recipes for real footage
 reference/broll-shot-list.md   what to film in the store for b-roll, how to film it and how to name the files
 reference/blender-mcp.md       Blender MCP (the repo's .mcp.json): one-time set-up on the owner's computer and the rules for using it
-reference/openchatcut.md       OpenChatCut MCP (the repo's .mcp.json): timeline editing with draft approval, set-up, and the White Glass rules inside it
+reference/openchatcut.md       OpenChatCut MCP (the repo's .mcp.json): timeline editing with draft approval, set-up, and the Liquid Glass rules inside it
 reference/ghost-editor.md      ghost-editor on the owner's Mac: only its raw cut (retakes out) and its person matte for the frame escape
 reference/effect-names.md      every effect, style, sound and tool by the name the owner uses, mapped to its command
-reference/style-references.md  the owner's reference reels: techniques, caption layout and placement, open decisions
+reference/style-references.md  the owner's reference reels: techniques, measured rhythm, colours and fonts, open decisions
+reference/learned-tools.md     what was learned from prompt-motion.com and the tools the owner shared, and what was installed
 ```

@@ -9,7 +9,15 @@
  *
  *   node render.cjs <page.html> --out endcard.mp4 --from 8         # only t=8s → end
  *
+ *   node render.cjs <page.html> --out reel.mp4 --blur 4             # motion blur: 4 sub-frames per frame
+ *
+ *   Real glass over footage (scripts/glass.py bends, frosts and lights the footage under each glass panel):
+ *   node render.cjs <page.html> --transparent --real-glass --out content.mov   # words and icons, panels left clear
+ *   node render.cjs <page.html> --transparent --glass-mask --out mask.mov      # only the panel shapes, solid white
+ *
  * Options: --fps 30  --size 1080x1920  --from <s> (start, default 0)
+ *          --blur <n> sub-frames blended per frame over a half-frame shutter (180°): real motion blur on fast
+ *          moves, nothing changes on still frames. 3-4 is plenty; render time grows n times. Default 1 (off).
  *          --duration <s> (default: page's window.__duration minus --from)
  *          --logo <path>  (original logo file, if not at assets/logo/)  --crf 16
  *
@@ -31,6 +39,7 @@ function parseArgs(argv) {
     if (!a.startsWith("--")) { pos.push(a); continue; }
     const key = a.slice(2);
     if (key === "transparent") { o.transparent = true; continue; }
+    if (key === "real-glass" || key === "glass-mask") { o[key] = true; continue; }
     o[key] = argv[++i];
   }
   o.page = pos[0];
@@ -70,6 +79,18 @@ async function main() {
   const hasSeek = await page.evaluate(() => typeof window.__seek === "function");
   if (!hasSeek) { await browser.close(); throw new Error("Page has no window.__seek(t) — use a template from templates/."); }
 
+  // Real-glass passes (SKILL.md §4 A): the content pass leaves glass panels clear; the mask pass draws only them
+  if (o["real-glass"] !== undefined) await page.addStyleTag({ content: `
+    .nh-glass { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+      border-color: transparent !important; box-shadow: 0 30px 70px -30px rgba(32, 43, 56, .30) !important; }` });
+  if (o["glass-mask"] !== undefined) await page.addStyleTag({ content: `
+    html, body, .nh-stage { background: transparent !important; }
+    body * { visibility: hidden !important; }
+    .nh-glass { visibility: visible !important; background: #FFFFFF !important; border-color: #FFFFFF !important; box-shadow: none !important;
+      -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+    .nh-glass::before, .nh-glass::after { display: none !important; }
+    .nh-glass * { visibility: hidden !important; }` });
+  if (o["glass-mask"] !== undefined || o["real-glass"] !== undefined) await page.evaluate(() => window.__seek(0));
   const shot = () => page.screenshot({ type: "png", omitBackground: o.transparent });
 
   if (o.still !== undefined || o.out.endsWith(".png")) {
@@ -117,13 +138,21 @@ async function main() {
   else if (o.transparent) throw new Error("--transparent needs a .mov or .webm output");
   else codec = ["-c:v", "libx264", "-preset", "slow", "-crf", String(o.crf), "-pix_fmt", "yuv420p", "-profile:v", "high", "-movflags", "+faststart"];
 
-  const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(fps), "-c:v", "png", "-i", "-", ...codec, "-r", String(fps), o.out], { stdio: ["pipe", "inherit", "inherit"] });
+  // motion blur (learned from the prompt-motion build notes): n sub-frames per frame spread over a 180° shutter,
+  // averaged by ffmpeg tmix; then one blended frame is kept per output frame
+  const blur = Math.max(1, Math.round(Number(o.blur ?? 1)));
+  const SHUTTER = 0.5;
+  const blurVf = blur > 1 ? ["-vf", `tmix=frames=${blur},select='eq(mod(n\\,${blur})\\,${blur - 1})',setpts=N/(${fps}*TB)`] : [];
+  const ff = spawn("ffmpeg", ["-y", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(fps * blur), "-c:v", "png", "-i", "-", ...blurVf, ...codec, "-r", String(fps), o.out], { stdio: ["pipe", "inherit", "inherit"] });
   const done = new Promise((res, rej) => ff.on("close", (c) => (c === 0 ? res() : rej(new Error("ffmpeg exited " + c)))));
 
   for (let f = 0; f < frames; f++) {
-    await page.evaluate((t) => window.__seek(t), from + f / fps);
-    const buf = await shot();
-    if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
+    for (let k = 0; k < blur; k++) {
+      const dt = blur > 1 ? ((k + 0.5) / blur - 0.5) * SHUTTER / fps : 0;      // centred on the frame time
+      await page.evaluate((t) => window.__seek(t), Math.max(0, from + f / fps + dt));
+      const buf = await shot();
+      if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once("drain", r));
+    }
     if (f % fps === 0) process.stdout.write(`\r${f}/${frames} frames`);
   }
   ff.stdin.end();
