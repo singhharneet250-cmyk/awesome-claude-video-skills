@@ -2,7 +2,7 @@
 
 [ghost-editor](https://github.com/kurbaitaev/ghost-editor) (MIT, by kurbaitaev) is a Claude Code skill
 that edits talking-head reels on an Apple-silicon Mac. Nutrition Hub uses **two of its parts only**, and
-White Glass does the rest:
+Liquid Glass does the rest:
 
 1. **The raw cut.** From one long recording with retakes and false starts, it finds every spoken try, keeps
    the best take of each line, smooths the voice across the joins, and checks faces on every frame.

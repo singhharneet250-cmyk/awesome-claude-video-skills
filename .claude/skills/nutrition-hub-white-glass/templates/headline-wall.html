@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub headline wall</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; overflow: hidden; }
+  .card { position: absolute; width: 470px; padding: 26px 28px 22px; border-radius: 22px; background: #FFFFFF;
+    box-shadow: 0 1px 2px rgba(32, 43, 56, .06), 0 22px 44px -22px rgba(32, 43, 56, .45); border: 1.5px solid rgba(32, 43, 56, .07);
+    opacity: 0; font-family: var(--nh-font); color: var(--nh-ink); }
+  .card h3 { margin: 0; font: 800 40px/1.12 var(--nh-font); letter-spacing: -.015em; }
+  .card h3 mark { background: linear-gradient(transparent 58%, rgba(240, 120, 43, .38) 58%); color: inherit; padding: 0 2px; }
+  .card .src { margin-top: 12px; font: 500 21px/1.3 var(--nh-font); color: var(--nh-slate); }
+  .card .src b { color: var(--nh-orange-text); font-weight: 700; letter-spacing: .06em; font-size: 17px; text-transform: uppercase; margin-right: 8px; }
+</style>
+</head>
+<body>
+<!--
+  Headline wall (R7 #01): real headlines on porcelain cards pop in around the speaker, one after another.
+  Render: node ../scripts/render.cjs headline-wall.html --transparent --out wall.mov   (overlay it on the footage)
+  HONESTY (SKILL.md §8, §4 K): only REAL headlines, quoted as published, each with its outlet and date.
+  The copy below is an EXAMPLE and says so. Mark one key phrase per card with *asterisks* for the orange highlight.
+  Slots avoid the middle of the frame where the face usually is; move them in SCENE if your framing differs.
+-->
+<div class="nh-stage is-transparent" id="stage"></div>
+<script>
+/* ===== Edit this object ===== */
+const SCENE = {
+  start: 0.2, stagger: 0.28, hold: 1.8,
+  cards: [
+    { text: "Read the *label* before you buy", source: "Example card: replace with a real headline", x: 72, y: 220, rot: -3 },
+    { text: "Protein per *serving*, not per tub", source: "Example card: outlet, date", x: 540, y: 330, rot: 2.5 },
+    { text: "Check the *added sugar* line", source: "Example card: outlet, date", x: 72, y: 1180, rot: 2 },
+    { text: "Original or *fake*? Scan the code", source: "Example card: outlet, date", x: 538, y: 1290, rot: -2 },
+  ],
+};
+/* ============================ */
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const stage = document.getElementById("stage");
+stage.innerHTML = SCENE.cards.map((c, i) => `<div class="card" id="c${i}" style="left:${c.x}px;top:${c.y}px">
+  <h3>${esc(c.text).replace(/\*(.+?)\*/g, "<mark>$1</mark>")}</h3><div class="src"><b>Source</b>${esc(c.source)}</div></div>`).join("");
+function bez(x1, y1, x2, y2) { return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
+  for (let i = 0; i < 8; i++) { const cx = 3 * x1 * t * (1 - t) ** 2 + 3 * x2 * t * t * (1 - t) + t ** 3 - x; const d = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t; if (Math.abs(d) < 1e-6) break; t = Math.min(1, Math.max(0, t - cx / d)); }
+  return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3; }; }
+const easeOut = bez(.22, 1, .36, 1), easeIn = bez(.64, 0, .78, 0);
+const n = SCENE.cards.length;
+const OUT = SCENE.start + SCENE.stagger * (n - 1) + 0.6 + SCENE.hold;
+const END = OUT + 0.45;
+function render(t) {
+  const pout = easeIn(Math.min(1, Math.max(0, (t - OUT) / 0.45)));
+  SCENE.cards.forEach((c, i) => {
+    const p = easeOut(Math.min(1, Math.max(0, (t - SCENE.start - i * SCENE.stagger) / 0.55)));
+    const el = document.getElementById("c" + i);
+    el.style.opacity = p * (1 - pout);
+    el.style.transform = `translateY(${(1 - p) * 22}px) rotate(${c.rot}deg) scale(${(0.94 + 0.06 * p) * (1 - 0.02 * pout)})`;
+  });
+}
+window.__logoStatus = "none";
+window.__duration = END;
+window.__sfx = SCENE.cards.map((c, i) => ({ t: SCENE.start + i * SCENE.stagger + 0.05, sfx: "tick", what: "headline " + (i + 1) }));
+window.__seek = render;
+render(new URLSearchParams(location.search).has("t") ? parseFloat(new URLSearchParams(location.search).get("t")) : 0);
+</script>
+</body>
+</html>

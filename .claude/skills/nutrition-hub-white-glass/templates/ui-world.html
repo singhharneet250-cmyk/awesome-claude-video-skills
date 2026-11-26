@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Nutrition Hub UI world</title>
+<link rel="stylesheet" href="../assets/brand.css">
+<style>
+  html, body { margin: 0; width: 1080px; height: 1920px; background: transparent; overflow: hidden; }
+  .card { position: absolute; opacity: 0; font-family: var(--nh-font); color: var(--nh-ink); padding: 22px 24px; box-sizing: border-box; }
+  .lbl { font: 700 16px/1 var(--nh-font); letter-spacing: .12em; color: var(--nh-mist); text-transform: uppercase; }
+  .prompt { left: 72px; top: 1080px; width: 540px; }
+  .prompt .txt { margin-top: 12px; font: 700 34px/1.2 var(--nh-font); min-height: 41px; }
+  .caret { display: inline-block; width: 3px; height: 34px; background: var(--nh-orange); vertical-align: -5px; margin-left: 2px; }
+  .prog { margin-top: 16px; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; font: 600 20px/1 var(--nh-font); color: var(--nh-slate); }
+  .track { grid-column: 1 / -1; height: 10px; border-radius: 5px; background: var(--nh-ice); overflow: hidden; }
+  .fill { height: 100%; width: 0; background: var(--nh-orange-grad); border-radius: 5px; }
+  .film { left: 72px; top: 1330px; width: 560px; }
+  .tiles { margin-top: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; position: relative; }
+  .tiles span { height: 88px; border-radius: 10px; background: linear-gradient(160deg, var(--nh-ice), #C9D5E2); }
+  .tiles span:nth-child(3) { background: linear-gradient(160deg, #FDAA62, var(--nh-orange)); }
+  .ph { position: absolute; top: -6px; bottom: -6px; width: 3px; background: var(--nh-ink); border-radius: 2px; }
+  .preview { left: 660px; top: 1080px; width: 348px; }
+  .shot { margin-top: 14px; height: 300px; border-radius: 16px; background: linear-gradient(170deg, #FFFFFF, var(--nh-ice)); display: grid; place-items: center; overflow: hidden; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; }
+  .ok { margin-top: 14px; display: flex; gap: 10px; align-items: center; font: 700 22px/1 var(--nh-font); }
+  .ok i { width: 28px; height: 28px; border-radius: 50%; background: var(--nh-orange-grad); display: grid; place-items: center; }
+  .ok i::after { content: ""; width: 7px; height: 13px; border: solid #FFFFFF; border-width: 0 3px 3px 0; transform: translateY(-2px) rotate(45deg); }
+</style>
+</head>
+<body>
+<!--
+  UI world (R7 #08): frosted UI cards act out a task around the speaker: a prompt types, a progress bar runs
+  to 100%, a filmstrip plays, and a preview card ticks done. They sit in the lower half, clear of the face.
+  Preview image: ?preview=/abs/path.png (a real photo or screenshot). Render with --transparent and overlay it.
+-->
+<div class="nh-stage is-transparent" id="stage">
+  <div class="card nh-glass prompt" id="prompt"><div class="lbl">Ask</div><div class="txt" id="txt"></div>
+    <div class="prog"><span id="plabel"></span><span id="pct">0%</span><div class="track"><div class="fill" id="fill"></div></div></div></div>
+  <div class="card nh-glass film" id="film"><div class="lbl">Timeline</div><div class="tiles"><span></span><span></span><span></span><span></span><i class="ph" id="ph"></i></div></div>
+  <div class="card nh-glass preview" id="preview"><div class="lbl">Preview</div><div class="shot" id="shot"></div><div class="ok" id="ok"><i></i><span id="oktext"></span></div></div>
+</div>
+<script>
+/* ===== Edit this object ===== */
+const SCENE = {
+  start: 0.15, cps: 20, hold: 1.4,
+  prompt: "Check this label for me", progress: "Checking", done: "Label checked",
+};
+/* ============================ */
+const P = new URLSearchParams(location.search);
+const $ = (id) => document.getElementById(id);
+$("plabel").textContent = SCENE.progress + "…";
+$("oktext").textContent = SCENE.done;
+if (P.get("preview")) $("shot").innerHTML = `<img alt="" src="${P.get("preview").startsWith("/") ? "file://" + P.get("preview") : P.get("preview")}">`;
+function bez(x1, y1, x2, y2) { return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
+  for (let i = 0; i < 8; i++) { const cx = 3 * x1 * t * (1 - t) ** 2 + 3 * x2 * t * t * (1 - t) + t ** 3 - x; const d = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t; if (Math.abs(d) < 1e-6) break; t = Math.min(1, Math.max(0, t - cx / d)); }
+  return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3; }; }
+const easeOut = bez(.22, 1, .36, 1), easeIn = bez(.64, 0, .78, 0);
+const T = {}; T.prompt = SCENE.start; T.type = T.prompt + 0.35; T.typed = T.type + SCENE.prompt.length / SCENE.cps;
+T.film = T.prompt + 0.25; T.prog = T.typed + 0.15; T.full = T.prog + 1.3; T.preview = T.prog + 0.3; T.ok = T.full;
+T.out = T.full + SCENE.hold; T.end = T.out + 0.45;
+const reveal = (el, t, at, k) => { const p = easeOut(Math.min(1, Math.max(0, (t - at) / 0.6)));
+  el.style.opacity = p * k; el.style.transform = `translateY(${(1 - p) * 24}px) scale(${0.96 + 0.04 * p})`; };
+function render(t) {
+  const k = 1 - easeIn(Math.min(1, Math.max(0, (t - T.out) / 0.45)));
+  reveal($("prompt"), t, T.prompt, k); reveal($("film"), t, T.film, k); reveal($("preview"), t, T.preview, k);
+  const n = Math.max(0, Math.min(SCENE.prompt.length, Math.floor((t - T.type) * SCENE.cps)));
+  const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  $("txt").innerHTML = esc(SCENE.prompt.slice(0, n)) + (t < T.prog && ((t * 1.1) % 1 < 0.6 || t < T.typed) ? '<span class="caret"></span>' : "");
+  const pr = Math.min(1, Math.max(0, (t - T.prog) / (T.full - T.prog)));
+  const pe = easeOut(pr);
+  $("fill").style.width = (pe * 100).toFixed(1) + "%";
+  $("pct").textContent = Math.round(pe * 100) + "%";
+  $("ph").style.left = (Math.min(1, Math.max(0, (t - T.film) / (T.out - T.film))) * 100).toFixed(1) + "%";
+  const okp = easeOut(Math.min(1, Math.max(0, (t - T.ok) / 0.35)));
+  $("ok").style.opacity = okp; $("ok").style.transform = `scale(${0.9 + 0.1 * okp})`;
+}
+window.__logoStatus = "none";
+window.__duration = T.end;
+window.__sfx = [{ t: T.prompt + 0.06, sfx: "pop", what: "UI in" }, { t: T.ok + 0.02, sfx: "tick", what: "done" }];
+window.__seek = render;
+const img = document.querySelector("#shot img");
+if (img) { window.__logoStatus = "loading"; img.onload = () => { window.__logoStatus = "none"; render(0); }; img.onerror = () => { window.__error = "preview image did not load"; window.__logoStatus = "none"; }; }
+render(P.has("t") ? parseFloat(P.get("t")) : 0);
+</script>
+</body>
+</html>

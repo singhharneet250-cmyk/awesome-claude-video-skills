@@ -19,7 +19,10 @@ speaker's head and hands stay outside it, as if stepping out of the frame.
   --stage ice (white to ice-mist) | blur (the room, blurred and washed light)
   --top 0.35   where the frame's top edge sits, in face heights below the chin
 
-Both follow the head at the full frame rate (motion_track.py), so nods and leans are followed; with the
+MORE (the R7 pack, fx_pack.py): sticky, wipe (before + after), pullback, scatter (depth scatter), bgswap
+(green screen without a green screen). See fx_pack.py for each one's options and rules.
+
+All follow the head at the full frame rate (motion_track.py), so nods and leans are followed; with the
 head matte, detected hands pass in front of orbit spheres (--no-hands to switch off).
 Timing: 0.6 s in (ease-out, no overshoot), 0.45 s out (ease-in), held in between (SKILL.md §5).
 Each run also writes <out>.sfx.json (a soft whoosh on the move) for sfx.py --cues.
@@ -72,7 +75,7 @@ def frames(video, info, s=0.0, e=None):
     e = info["dur"] if e is None else e
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-nostdin", "-ss", f"{s:.3f}", "-t", f"{e - s:.3f}", "-i", str(video),
                           "-vf", f"scale={W}:{H},fps={info['rate']}", "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
-                         stdout=subprocess.PIPE)
+                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)   # a reader stopped early would print "broken pipe"
     k0, n = int(round(s * info["fps"])), W * H * 3
     k = 0
     while True:
@@ -300,7 +303,8 @@ def escape_frame(frame_f, matte, face, t, a, W, H, stage_cache):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("effect", choices=["orbit", "escape"])
+    import fx_pack
+    ap.add_argument("effect", choices=["orbit", "escape", *fx_pack.EFFECTS])
     ap.add_argument("video"); ap.add_argument("out")
     ap.add_argument("--at", required=True, metavar="START-END")
     ap.add_argument("--matte", default=None, help="head | wall | a matte video (white = person)")
@@ -310,6 +314,11 @@ def main():
     ap.add_argument("--tilt", type=float, default=0.0); ap.add_argument("--no-ring", action="store_true")
     ap.add_argument("--no-hands", action="store_true", help="orbit: don't let detected hands pass in front")
     ap.add_argument("--stage", choices=["ice", "blur"], default="ice"); ap.add_argument("--top", type=float, default=0.35)
+    ap.add_argument("--text", help="sticky: the sticker's words"); ap.add_argument("--badge", help="sticky: a short number or tag in an orange badge")
+    ap.add_argument("--anchor", choices=["chest", "head", "hand"], default="chest", help="sticky: what it sticks to")
+    ap.add_argument("--mode", choices=["sweep", "line"], default="sweep",
+                    help="wipe: sweep (one light bar) or line (R18's attention style: a moving divider with a glass handle)")
+    ap.add_argument("--before", help="wipe: the same take before the edit"); ap.add_argument("--bg", help="bgswap: a clip, an image, stage or blur")
     a = ap.parse_args()
     try:
         a.s, a.e = (float(x) for x in a.at.split("-"))
@@ -322,16 +331,17 @@ def main():
         sys.exit(f"--at {a.at}: give the effect at least {IN_S + OUT_S + 0.5:.2f} s (in, hold, out).")
     if not 0 <= a.tilt <= 85:
         sys.exit("--tilt must be 0 to 85 degrees.")
-    matte_src = a.matte or ("head" if a.effect == "orbit" else None)
-    if a.effect == "escape" and matte_src in (None, "head"):
-        sys.exit("The frame escape needs a real outline of the speaker: --matte wall (plain wall behind them) "
-                 "or --matte FILE (a matte video from CapCut or Runway, white = person).")
+    matte_src = a.matte or ("head" if a.effect in ("orbit", "scatter") else None)
+    if a.effect in ("escape", "bgswap") and matte_src in (None, "head"):
+        sys.exit(f"The {a.effect} needs a real outline of the speaker: --matte wall (plain wall behind them) "
+                 "or --matte FILE (a cut-out or matte video from ghost-editor, CapCut or Runway).")
+    needs_matte = a.effect in ("orbit", "escape", "scatter", "bgswap")
 
     import person_matte as pm
     W, H = info["w"], info["h"]
     faces = pm.FaceSeries(a.video)
     key = pm.WallKey(W, H) if matte_src == "wall" else None
-    fm = pm.FileMatte(matte_src, W, H, info["frames"]) if matte_src not in ("head", "wall") else None
+    fm = pm.FileMatte(matte_src, W, H, info["frames"]) if matte_src not in (None, "head", "wall") else None
 
     sprites = []
     if a.effect == "orbit":
@@ -351,6 +361,11 @@ def main():
 
     import motion_track
     tracker = motion_track.MotionTracker(info["fps"])     # head at the full frame rate, and the hands
+    pack = None
+    if a.effect in fx_pack.EFFECTS:
+        fh_px = float(np.median(faces.v["fh"])) * H
+        cls = fx_pack.EFFECTS[a.effect]
+        pack = cls(a, W, H, fh_px, info) if a.effect in fx_pack.NEEDS_INFO else cls(a, W, H, fh_px)
     stage_cache, wall_q, tracked = {}, None, 0
     with Writer(a.out, info, a.video) as wr:
         for k, t, frame in frames(a.video, info):
@@ -361,20 +376,25 @@ def main():
             tracked += head is not None
             if key is not None and key.bg is None:
                 wall_q = key.fit(frame, face)
-            matte = key(frame, face) if key else fm(k) if fm else pm.head_matte(face, W, H)
-            if a.effect == "orbit" and matte_src == "head" and hand_mask is not None and not a.no_hands:
+            matte = (key(frame, face) if key else fm(k) if fm else pm.head_matte(face, W, H)) if needs_matte else None
+            if a.effect in ("orbit", "scatter") and matte_src == "head" and hand_mask is not None and not a.no_hands:
                 hm = cv2.GaussianBlur(cv2.resize(hand_mask, (W, H), interpolation=cv2.INTER_LINEAR), (0, 0), 3 * W / 1080)
                 matte = np.maximum(matte, hm)                   # hands pass in front of the spheres
             f = frame.astype(np.float32) / 255
-            res = orbit_frame(f, matte, face, t, a, sprites, W, H) if a.effect == "orbit" else \
-                escape_frame(f, matte, face, t, a, W, H, stage_cache)
+            if pack is not None:
+                res = pack(f, matte, face, t, hands=hands)
+            elif a.effect == "orbit":
+                res = orbit_frame(f, matte, face, t, a, sprites, W, H)
+            else:
+                res = escape_frame(f, matte, face, t, a, W, H, stage_cache)
             wr.write(np.clip(res * 255 + 0.5, 0, 255).astype(np.uint8))
     if wall_q is not None and wall_q > 12:
         print(f"note: the wall isn't very plain (ΔE {wall_q:.0f}); check the outline, or use a matte file")
     n_win = max(1, int((a.e - a.s) * info["fps"]))
     if tracked < 0.8 * n_win:
         print(f"note: the head was tracked in {tracked / n_win:.0%} of the effect's frames; the rest use the slower face track")
-    cues = [{"t": round(a.s + 0.25, 3), "sfx": "whoosh", "gain": -3, "what": f"{a.effect} in"}]
+    sound = {"sticky": ("pop", 0.12, 0), "wipe": ("swish", 0.8, -2)}.get(a.effect, ("whoosh", 0.25, -3))
+    cues = [{"t": round(a.s + sound[1], 3), "sfx": sound[0], "gain": sound[2], "what": f"{a.effect} in"}]
     Path(str(Path(a.out).with_suffix("")) + ".sfx.json").write_text(json.dumps(cues, indent=2))
     print(f"wrote {a.out} ({a.effect} {a.s:.2f}-{a.e:.2f} s, matte: {matte_src}); SFX cue → {Path(a.out).with_suffix('')}.sfx.json")
 

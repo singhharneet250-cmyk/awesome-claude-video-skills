@@ -1,14 +1,14 @@
 ---
 name: molecular-film
-description: Blender-grade, scientifically honest molecular films (proteins, enzymes, peptides, nucleic acids and their ligands) for Nutrition Hub supplement education, using the open-source Molecular_Animation framework (Apache-2.0) with the White Glass look. Use when a reel needs a real protein structure from the PDB or AlphaFold (whey's beta-lactoglobulin, collagen, an enzyme a supplement acts on) rendered photoreal in Cycles with measured thermal motion. For a small molecule (creatine, caffeine, amino acids, vitamin C) use the faster three.js template nutrition-hub-white-glass/templates/molecule-3d.html instead. Needs Blender 5.2 and ideally an NVIDIA GPU, so it runs on the user's own machine.
+description: Blender-grade, scientifically honest molecular films (proteins, enzymes, peptides, nucleic acids and their ligands) for Nutrition Hub supplement education, using the open-source Molecular_Animation framework (Apache-2.0) with the Liquid Glass look. Use when a reel needs a real protein structure from the PDB or AlphaFold (whey's beta-lactoglobulin, collagen, an enzyme a supplement acts on) rendered photoreal in Cycles with measured thermal motion. For a small molecule (creatine, caffeine, amino acids, vitamin C) use the faster three.js template nutrition-hub-white-glass/templates/molecule-3d.html instead. Needs Blender 5.2 and ideally an NVIDIA GPU, so it runs on the user's own machine.
 ---
 
-# Molecular film (White Glass edition)
+# Molecular film (Liquid Glass edition)
 
 [Molecular_Animation](https://github.com/AmadeusBio-ai/Molecular_Animation) turns a brief plus PDB/mmCIF or
 AlphaFold structures into a Blender 5.2 film: proteins as cartoons or spheres, ligands as ball-and-stick, thermal
 motion at literature rates, depth of field, and a production record that says what is experimental and what is
-illustrative. This skill sets it up at a reviewed commit and gives it the White Glass look. The film then goes
+illustrative. This skill sets it up at a reviewed commit and gives it the Liquid Glass look. The film then goes
 through the normal Nutrition Hub pipeline (captions, callouts, end card, QA).
 
 Load `nutrition-hub-white-glass` first. Its rules win over the framework's defaults (palette, type, motion, §8 evidence).
@@ -50,11 +50,11 @@ Update only on purpose: read the new commits, then change the hash here.
 2. Scaffold a vertical reel: `python pipeline.py new <name> --pdb <ID> --fps 30 --seconds 8 [--highlight <residues>]`
    (add `--loop` for a seamless orbit). Choose the PDB entry from RCSB yourself and write its ID, method and
    resolution into `brief.md`; don't take an ID from memory.
-3. In `projects/<name>/<name>.py`, set the frame and the White Glass look below, then build, still, preview and render
+3. In `projects/<name>/<name>.py`, set the frame and the Liquid Glass look below, then build, still, preview and render
    as the workflow says.
 4. Deliver the **clean** take (no framework labels) and finish it in the Nutrition Hub pipeline.
 
-## White Glass look constants
+## Liquid Glass look constants
 
 Replace these constants in the shot script (sRGB 0–255). They keep the palette at white, ice, ink and one orange
 accent (SKILL.md §2): no teal, green or purple chains, and no CPK blue nitrogen or red oxygen.
@@ -72,7 +72,7 @@ ELEMENT = {'C': ((226, 230, 235), (246, 248, 250)), 'N': ((188, 200, 214), (222,
            'P': ((170, 182, 196), (214, 222, 230))}  # elements told apart by tone and size, never by hue
 SECTION_RGB, SECTION_MIX = (234, 240, 246), 0.35
 BLOOM = {'threshold': 1.0, 'strength': 0.12, 'size': 0.4}   # no glow look (§4 B: avoid glowing particles)
-LABELS_ON = False                                    # labels come from the White Glass overlay instead
+LABELS_ON = False                                    # labels come from the Liquid Glass overlay instead
 ```
 
 Motion stays the framework's (measured thermal motion, one clock): it is physics, not decoration. Keep camera
@@ -82,7 +82,7 @@ brand asks for.
 ## Live control with the Blender MCP
 
 The repo's `.mcp.json` adds a `blender` server, so Claude Code on the same computer can work inside the open
-Blender. It can read the scene, set the White Glass materials and light below, check the framing by looking
+Blender. It can read the scene, set the Liquid Glass materials and light below, check the framing by looking
 through the camera, and render a test still.
 - **Set up once:** `nutrition-hub-white-glass/reference/blender-mcp.md`.
 - **Use it for:** look-dev and framing.
@@ -91,7 +91,7 @@ through the camera, and render a test still.
 
 ## Back into the Nutrition Hub pipeline
 
-- Labels, evidence tags and the source go on White Glass callouts, not burned in by Blender:
+- Labels, evidence tags and the source go on Liquid Glass callouts, not burned in by Blender:
   `templates/overlay-callout.html` rendered with `--transparent`, timed with `timeline.label_data` (the framework
   exports its label timings as data). Keep its honesty: say "motion illustrative" and name the PDB entry and method
   in the source note, e.g. "Structure: PDB <ID> (X-ray, <res> Å). Motion illustrative."

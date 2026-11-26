@@ -23,9 +23,9 @@ project on your computer.
 |---|---|
 | Rough cut you want to see and tweak: drop retakes and long pauses from the transcript, order the beats, place b-roll on a timeline | **OpenChatCut**, with Claude through MCP |
 | A project you will keep editing by hand, or send to Final Cut / Premiere (FCPXML) | **OpenChatCut** |
-| The White Glass finish: grade, bare matched captions (§6), orbit / frame escape / chat (§4 G–I), SFX kit, end card with the original logo, `qa.py` | **This skill's scripts**, on the MP4 exported from OpenChatCut |
+| The Liquid Glass finish: grade, bare matched captions (§6), orbit / frame escape / chat (§4 G–I), SFX kit, end card with the original logo, `qa.py` | **This skill's scripts**, on the MP4 exported from OpenChatCut |
 
-The usual order: shoot, cut in OpenChatCut, export the MP4, then the White Glass finishing pass, then `qa.py`.
+The usual order: shoot, cut in OpenChatCut, export the MP4, then the Liquid Glass finishing pass, then `qa.py`.
 
 ## Set up once
 
@@ -62,7 +62,7 @@ The usual order: shoot, cut in OpenChatCut, export the MP4, then the White Glass
 - **If you ever open the endpoint to another device:** set `OPENCHATCUT_MCP_TOKEN` and keep it off the public
   internet.
 
-## White Glass rules inside OpenChatCut
+## Liquid Glass rules inside OpenChatCut
 
 OpenChatCut can do many looks. This skill decides which ones Nutrition Hub uses (SKILL.md wins):
 

@@ -85,8 +85,7 @@ textarea { width: 100%; min-height: 160px; font: 12px/1.45 ui-monospace, Menlo, 
   </header>
   <div class="bar">
     <button type="button" id="add-broll">+ B-roll</button>
-    <button type="button" id="add-orbit">+ Orbit</button>
-    <button type="button" id="add-escape">+ Frame escape</button>
+    <button type="button" id="add-orbit">+ Effect</button>
     <button type="button" id="add-sfx">+ Sound</button>
     <button type="button" id="undo">Undo</button>
     <button type="button" id="reset">Reset</button>
@@ -117,15 +116,19 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&l
 E.broll = E.broll || []; E.effects = E.effects || []; E.overlays = E.overlays || []; E.sfx = E.sfx || [];
 document.getElementById("title").textContent = `Edit timeline · ${DATA.name} · ${D.toFixed(1)} s`;
 
+const LABELS = { orbit: "Orbit", escape: "Frame escape", sticky: "Sticky text", wipe: "Before + after", pullback: "Pull-back reveal", scatter: "Depth scatter", bgswap: "Green screen" };
+const lbl = (k) => LABELS[k] || k;
 function push() { history.push(JSON.stringify(E)); if (history.length > 80) history.shift(); }
 function ovDur(o) { return DATA.overlayDur[o.template] || 3; }
+// a b-roll is a file, or a motion-kit beat rendered from a template (its scene name is shown)
+function bn(b) { if (b.template) { const m = /scene=([a-z]+)/.exec(b.template); return "beat: " + (m ? m[1] : b.template.split("?")[0]); } return (b.file || "").split("/").pop(); }
 
 /* ---------- rules (same as timeline.py check) ---------- */
 function check() {
   const out = [], bad = new Set();
   const br = E.broll.map((b, i) => ({ ...b, i })).sort((a, b) => a.start - b.start);
   br.forEach((b, k) => {
-    const tag = `B-roll ${fmt(b.start)}–${fmt(b.end)} (${b.file.split("/").pop()})`;
+    const tag = `B-roll ${fmt(b.start)}–${fmt(b.end)} (${bn(b)})`;
     if (b.start < R.hook) { out.push(["FAIL", `${tag}: inside the ${R.hook} s hook, which shows the speaker`]); bad.add("broll" + b.i); }
     const d = b.end - b.start;
     if (d < R.minShot) { out.push(["FAIL", `${tag}: ${d.toFixed(2)} s, shorter than ${R.minShot} s`]); bad.add("broll" + b.i); }
@@ -137,14 +140,16 @@ function check() {
   if (share > R.maxShare) out.push(["WARN", `B-roll covers ${Math.round(share * 100)}% of the take (keep it under about ${Math.round(R.maxShare * 100)}%)`]);
   const seen = {};
   E.effects.forEach((f, i) => {
-    const tag = `${f.effect} ${fmt(f.start)}–${fmt(f.end)}`;
+    const tag = `${lbl(f.effect)} ${fmt(f.start)}–${fmt(f.end)}`;
     if (f.end - f.start < R.fxMin) { out.push(["FAIL", `${tag}: needs at least ${R.fxMin} s`]); bad.add("fx" + i); }
     if (f.end > D || f.start < 0) { out.push(["FAIL", `${tag}: outside the take`]); bad.add("fx" + i); }
     if (E.broll.some((b) => b.start < f.end && f.start < b.end)) { out.push(["FAIL", `${tag}: over b-roll; effects follow the speaker`]); bad.add("fx" + i); }
-    if (f.effect === "escape" && !f.matte) { out.push(["FAIL", `${tag}: needs a matte (wall or a matte video)`]); bad.add("fx" + i); }
+    if ((f.effect === "escape" || f.effect === "bgswap") && (!f.matte || f.matte === "head")) { out.push(["FAIL", `${tag}: needs a matte (wall or a cut-out video)`]); bad.add("fx" + i); }
+    if (f.effect === "sticky" && !f.text) { out.push(["FAIL", `${tag}: the sticker needs words`]); bad.add("fx" + i); }
+    if (f.effect === "scatter" && (f.words || "").split(",").filter((w) => w.trim()).length !== 2) { out.push(["FAIL", `${tag}: depth scatter needs two words`]); bad.add("fx" + i); }
     seen[f.effect] = (seen[f.effect] || 0) + 1;
   });
-  Object.entries(seen).forEach(([k, n]) => { if (n > 1) out.push(["WARN", `${k} is used ${n} times; use each effect once per reel`]); });
+  Object.entries(seen).forEach(([k, n]) => { if (n > 1) out.push(["WARN", `${lbl(k)} is used ${n} times; use each effect once per reel`]); });
   const ov = E.overlays.map((o, i) => ({ a: o.start, b: o.start + ovDur(o), i, t: o.template })).sort((x, y) => x.a - y.a);
   ov.forEach((o, k) => { if (k && o.a < ov[k - 1].b) { out.push(["FAIL", `Overlays overlap at ${fmt(o.a)} s`]); bad.add("ov" + o.i); } });
   E.sfx.forEach((s, i) => { if (s.t < 0 || s.t >= D) { out.push(["FAIL", `Sound ${s.sfx} at ${fmt(s.t)} s is outside the take`]); bad.add("sfx" + i); } });
@@ -171,9 +176,9 @@ function draw() {
   const th = DATA.thumbs;
   lane("speaker").innerHTML = `<div class="thumbs" style="width:${X(D)}px">${th.images.map((src) => `<img src="${src}" alt="" style="width:${X(th.every)}px">`).join("")}</div>` +
     (END ? `<div class="clip end" style="left:${X(D - 0.4)}px;width:${X(END)}px">End card + logo</div>` : "");
-  lane("broll").innerHTML = E.broll.map((b, i) => clip("broll", i, b.start, b.end, `${b.file.split("/").pop()} · ${b.transition || "cut"}`, bad)).join("");
-  lane("fx").innerHTML = E.effects.map((f, i) => clip("fx", i, f.start, f.end, f.effect + (f.words ? ` · ${f.words}` : ""), bad)).join("");
-  lane("ov").innerHTML = E.overlays.map((o, i) => clip("ov", i, o.start, Math.min(o.start + ovDur(o), D), o.template.split("?")[0].replace(".html", ""), bad, true)).join("");
+  lane("broll").innerHTML = E.broll.map((b, i) => clip("broll", i, b.start, b.end, `${bn(b)} · ${b.transition || "cut"}`, bad)).join("");
+  lane("fx").innerHTML = E.effects.map((f, i) => clip("fx", i, f.start, f.end, lbl(f.effect) + (f.words ? ` · ${f.words}` : f.text ? ` · ${f.text}` : ""), bad)).join("");
+  lane("ov").innerHTML = E.overlays.map((o, i) => clip("ov", i, o.start, Math.min(o.start + ovDur(o), D), bn({ template: o.template }).replace("beat: ", ""), bad, true)).join("");
   lane("cap").innerHTML = DATA.words.filter((w) => w.start < D).map((w) => `<div class="word" style="left:${X(w.start)}px;width:${Math.max(2, X(Math.min(w.end, D) - w.start))}px" title="${esc(w.text)}"></div>`).join("");
   lane("sfx").innerHTML = E.sfx.map((s, i) => `<div class="sfx${sel && sel.kind === "sfx" && sel.i === i ? " sel" : ""}" data-kind="sfx" data-i="${i}" style="left:${X(s.t)}px" tabindex="0" role="button" aria-label="Sound ${esc(s.sfx)} at ${fmt(s.t)} s"><span>${esc(s.sfx)}</span></div>`).join("");
   lane("mom").innerHTML = (DATA.moments || []).map((m) => `<div class="moment ${m.type}" style="left:${X(m.t)}px" title="${m.type.replace("_", " ")} ${fmt(m.t)} s"></div>`).join("");
@@ -199,16 +204,22 @@ function inspector() {
   let html = "";
   if (sel.kind === "broll") {
     const b = E.broll[sel.i];
-    html = `<div class="field"><label for="f-file">Clip</label><select id="f-file">${DATA.library.concat(DATA.library.includes(b.file) ? [] : [b.file]).map((f) => `<option${f === b.file ? " selected" : ""}>${esc(f)}</option>`).join("")}</select></div>
+    html = (b.template ? `<div class="field"><span>Beat</span><span>${esc(bn(b))} (motion kit; edit its words in edit.json)</span></div>`
+      : `<div class="field"><label for="f-file">Clip</label><select id="f-file">${DATA.library.concat(DATA.library.includes(b.file) ? [] : [b.file]).map((f) => `<option${f === b.file ? " selected" : ""}>${esc(f)}</option>`).join("")}</select></div>`) + `
       <div class="field"><label for="f-start">Start (s)</label>${num("f-start", b.start)}</div><div class="field"><label for="f-end">End (s)</label>${num("f-end", b.end)}</div>
       <div class="field"><label for="f-tr">Transition</label><select id="f-tr">${["cut", "white", "soft"].map((v) => `<option value="${v}"${(b.transition || "cut") === v ? " selected" : ""}>${{ cut: "Cut", white: "Dip to white", soft: "Soft dissolve" }[v]}</option>`).join("")}</select></div>`;
   } else if (sel.kind === "fx") {
     const f = E.effects[sel.i];
-    html = `<div class="field"><label for="f-eff">Effect</label><select id="f-eff">${["orbit", "escape"].map((v) => `<option value="${v}"${f.effect === v ? " selected" : ""}>${v === "orbit" ? "Orbit" : "Frame escape"}</option>`).join("")}</select></div>
-      <div class="field"><label for="f-start">Start (s)</label>${num("f-start", f.start)}</div><div class="field"><label for="f-end">End (s)</label>${num("f-end", f.end)}</div>` +
-      (f.effect === "orbit" ? `<div class="field"><label for="f-words">Words</label><input id="f-words" placeholder="blank = spheres" value="${esc(f.words || "")}"></div>
-        <div class="field"><label for="f-tilt">Ring</label><select id="f-tilt"><option value="0"${!f.tilt ? " selected" : ""}>Flat, around the head</option><option value="65"${f.tilt ? " selected" : ""}>Tilted, behind the head</option></select></div>`
-        : `<div class="field"><label for="f-matte">Matte</label><input id="f-matte" value="${esc(f.matte || "wall")}"></div>`);
+    const KINDS = { orbit: "Orbit", escape: "Frame escape", sticky: "Sticky text", wipe: "Before + after", pullback: "Pull-back reveal", scatter: "Depth scatter", bgswap: "Green screen" };
+    html = `<div class="field"><label for="f-eff">Effect</label><select id="f-eff">${Object.entries(KINDS).map(([v, l]) => `<option value="${v}"${f.effect === v ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+      <div class="field"><label for="f-start">Start (s)</label>${num("f-start", f.start)}</div><div class="field"><label for="f-end">End (s)</label>${num("f-end", f.end)}</div>`;
+    if (f.effect === "orbit") html += `<div class="field"><label for="f-words">Words</label><input id="f-words" placeholder="blank = spheres" value="${esc(f.words || "")}"></div>
+        <div class="field"><label for="f-tilt">Ring</label><select id="f-tilt"><option value="0"${!f.tilt ? " selected" : ""}>Flat, around the head</option><option value="65"${f.tilt ? " selected" : ""}>Tilted, behind the head</option></select></div>`;
+    if (f.effect === "scatter") html += `<div class="field"><label for="f-words">Two words</label><input id="f-words" placeholder="behind,in front" value="${esc(f.words || "")}"></div>`;
+    if (f.effect === "sticky") html += `<div class="field"><label for="f-text">Sticker</label><input id="f-text" value="${esc(f.text || "")}"></div>
+        <div class="field"><label for="f-anchor">Sticks to</label><select id="f-anchor">${["chest", "head", "hand"].map((v) => `<option${(f.anchor || "chest") === v ? " selected" : ""}>${v}</option>`).join("")}</select></div>`;
+    if (f.effect === "escape" || f.effect === "bgswap" || f.effect === "scatter") html += `<div class="field"><label for="f-matte">Matte</label><input id="f-matte" value="${esc(f.matte || (f.effect === "scatter" ? "head" : "wall"))}"></div>`;
+    if (f.effect === "bgswap") html += `<div class="field"><label for="f-bg">Background</label><select id="f-bg">${["stage", "blur"].concat(DATA.library).map((v) => `<option${(f.bg || "stage") === v ? " selected" : ""}>${esc(v)}</option>`).join("")}</select></div>`;
   } else if (sel.kind === "ov") {
     const o = E.overlays[sel.i];
     html = `<div class="field"><span>Overlay</span><span>${esc(o.template.split("?")[0])} (${ovDur(o).toFixed(1)} s)</span></div><div class="field"><label for="f-start">Start (s)</label>${num("f-start", o.start)}</div>`;
@@ -231,8 +242,19 @@ function apply(el) {
   if (id === "f-t") item.t = n;
   if (id === "f-file") item.file = v;
   if (id === "f-tr") { if (v === "cut") delete item.transition; else item.transition = v; }
-  if (id === "f-eff") { item.effect = v; if (v === "escape") { delete item.words; delete item.tilt; item.matte = item.matte || "wall"; } else delete item.matte; }
-  if (id === "f-words") { if (v.trim()) item.words = v.split(",").map((w) => w.trim()).filter(Boolean).slice(0, 4).join(","); else delete item.words; }
+  if (id === "f-eff") {
+    const keep = { effect: v, start: item.start, end: item.end };
+    if (v === "escape" || v === "bgswap") keep.matte = item.matte && item.matte !== "head" ? item.matte : "wall";
+    if (v === "bgswap") keep.bg = "stage";
+    if (v === "sticky") keep.text = item.text || "3–5 g a day";
+    if (v === "scatter") keep.words = "Label,first";
+    if (v === "orbit" && item.words) keep.words = item.words;
+    Object.keys(item).forEach((k) => delete item[k]); Object.assign(item, keep);
+  }
+  if (id === "f-words") { if (v.trim()) item.words = v.split(",").map((w) => w.trim()).filter(Boolean).slice(0, item.effect === "scatter" ? 2 : 4).join(","); else delete item.words; }
+  if (id === "f-text") item.text = v.trim().slice(0, 28);
+  if (id === "f-anchor") item.anchor = v;
+  if (id === "f-bg") item.bg = v;
   if (id === "f-tilt") { if (v === "0") delete item.tilt; else item.tilt = 65; }
   if (id === "f-matte") item.matte = v.trim() || "wall";
   if (id === "f-sfx") item.sfx = v;
@@ -274,7 +296,6 @@ window.addEventListener("pointerup", () => { if (drag && !drag.moved) history.po
 const at = () => Math.max(R.hook, Math.min(D - 2, playhead || D / 2));
 document.getElementById("add-broll").addEventListener("click", () => { push(); E.broll.push({ start: snap(at()), end: snap(Math.min(D, at() + 2)), file: DATA.library[0] || "broll/clip-01.mp4", transition: "white" }); sel = { kind: "broll", i: E.broll.length - 1 }; draw(); });
 document.getElementById("add-orbit").addEventListener("click", () => { push(); E.effects.push({ effect: "orbit", start: snap(at()), end: snap(Math.min(D, at() + 3)) }); sel = { kind: "fx", i: E.effects.length - 1 }; draw(); });
-document.getElementById("add-escape").addEventListener("click", () => { push(); E.effects.push({ effect: "escape", start: snap(at()), end: snap(Math.min(D, at() + 3)), matte: "wall" }); sel = { kind: "fx", i: E.effects.length - 1 }; draw(); });
 document.getElementById("add-sfx").addEventListener("click", () => { push(); E.sfx.push({ t: snap(at()), sfx: "tick" }); sel = { kind: "sfx", i: E.sfx.length - 1 }; draw(); });
 document.getElementById("undo").addEventListener("click", () => { if (history.length) { E = JSON.parse(history.pop()); sel = null; draw(); } });
 document.getElementById("reset").addEventListener("click", () => { push(); E = JSON.parse(ORIGINAL); E.broll = E.broll || []; E.effects = E.effects || []; E.overlays = E.overlays || []; E.sfx = E.sfx || []; sel = null; draw(); });

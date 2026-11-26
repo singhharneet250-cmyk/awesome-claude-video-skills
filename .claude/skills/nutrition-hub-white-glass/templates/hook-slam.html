@@ -22,6 +22,8 @@
   /* the logo is made for light grounds (its KHANNA line is dark): on navy it sits on a white plate (SKILL.md §1) */
   .nh-stage[data-scheme="navy-lime"] .plate { background: linear-gradient(160deg, #FFFFFF, #EEF2F7); padding: 26px 34px 18px;
     box-shadow: 0 24px 60px -24px rgba(0,0,0,.55); }
+  .nh-stage[data-scheme="charcoal"] .nh-chip { background: #29292D; border-color: #29292D; color: #FFFFFF; box-shadow: 0 14px 28px -16px rgba(17,17,19,.7); }
+  .nh-stage[data-scheme="charcoal"] .nh-chip .nh-check { box-shadow: none; }
   .nh-stage[data-scheme="navy-lime"] .nh-chip { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.22); color: #E6EEFA; box-shadow: 0 10px 24px -14px rgba(0,0,0,.6); }
 </style>
 </head>
@@ -31,7 +33,7 @@
     1. condensed slam words (Bebas Neue) landing with the 04 / Slam entrance, two slams 5 s apart
     2. Inter lines revealed word by word, each ending on ONE serif accent word (Instrument Serif Italic)
     3. calm supporting lines and check pills, then the ORIGINAL logo
-  Colour schemes: ?scheme=white-glass (brand default) | mint | mustard | navy-lime
+  Colour schemes: ?scheme=white-glass (brand default) | charcoal (the label reel's charcoal cards) | mint | mustard | navy-lime
   Copy is EXAMPLE text; edit SCENE below.
   Render: node ../scripts/render.cjs "hook-slam.html?scheme=mint" --out hook-mint.mp4
 -->
@@ -73,6 +75,10 @@ const SCHEMES = {
                  "--nh-stage-bg": "radial-gradient(70% 45% at 100% 8%, rgba(34,192,20,.10) 0%, rgba(34,192,20,0) 70%), linear-gradient(160deg, #FFFFFF 0%, #F7FBF7 50%, #E9F3EA 100%)" },
   "mustard":   { "--nh-ink": "#1B1A17", "--nh-slate": "#5E584A", "--nh-orange": "#C9A227", "--nh-orange-text": "#A07C0A",
                  "--nh-stage-bg": "radial-gradient(70% 45% at 100% 8%, rgba(201,162,39,.12) 0%, rgba(201,162,39,0) 70%), linear-gradient(160deg, #FFFDF7 0%, #FAF6EA 50%, #F1EAD6 100%)" },
+  // the 60-second label reel's look (owner, 2026-11-24: "white hues background", "top with charcoal cards"):
+  // white stage, near-black type, charcoal cards with white words, the brand orange
+  "charcoal":  { "--nh-ink": "#111113", "--nh-slate": "#4A4A50",
+                 "--nh-stage-bg": "radial-gradient(70% 45% at 100% 8%, rgba(234,240,246,.6) 0%, rgba(234,240,246,0) 70%), linear-gradient(160deg, #FFFFFF 0%, #F5F7FA 50%, #EAF0F6 100%)" },
   "navy-lime": { "--nh-ink": "#FFFFFF", "--nh-slate": "#B6C4DC", "--nh-orange": "#C9F042", "--nh-orange-text": "#C9F042",
                  "--nh-stage-bg": "radial-gradient(80% 50% at 80% 10%, rgba(64,120,255,.28) 0%, rgba(64,120,255,0) 70%), linear-gradient(170deg, #0F2550 0%, #0A1A3D 55%, #061129 100%)" },
 };
