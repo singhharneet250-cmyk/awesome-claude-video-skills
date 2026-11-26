@@ -35,7 +35,7 @@
      real thing is done by scripts/glass.py (refraction, dispersion, frost, rim light). */
   /* gradient glass (owner 2026-11-26): warm peach at the lit corner → white → cool ice, light tints of orange and ice */
   --nh-glass-fill: linear-gradient(150deg, rgba(255, 223, 196, .5) 0%, rgba(255, 255, 255, .26) 50%, rgba(206, 224, 245, .5) 100%);
-  /* gradient type (owner 2026-11-26), top → bottom; render.cjs applies them to every template (assets/grad-text.js) */
+  /* gradient type (owner 2026-11-26), top → bottom; render.cjs applies them to every template (assets/gradients.js) */
   --nh-ink-grad: linear-gradient(180deg, #46668C 0%, #202B38 62%, #121922 100%);
   --nh-orange-text-grad: linear-gradient(180deg, #FDA65C 0%, #F0782B 55%, #DA5A1A 100%);
   --nh-slate-grad: linear-gradient(180deg, #7C90A6 0%, #596879 100%);

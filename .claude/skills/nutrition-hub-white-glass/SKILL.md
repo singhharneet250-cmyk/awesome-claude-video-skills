@@ -77,15 +77,24 @@ Supporting tones sampled from the playbook:
 | Orange text gradient | `#FDA65C → #F0782B → #DA5A1A`, top to bottom | Kickers, units, the accent word |
 | Slate gradient | `#7C90A6 → #596879`, top to bottom | Body copy, sub-lines, source notes |
 | Glass tint | warm peach `#FFD6B6` (lit corner) → white → cool ice `#C4D8F2` (far corner) | Every glass card, chip and handle |
-| Caption key word | its accent colour, lighter on the first letter → deeper on the last | Captions (subtitles can't fill top to bottom) |
+| Captions | white → ice `#D6E3F2` over footage; the ink gradient on light walls; the key word lighter → its accent → deeper | Every caption line, top to bottom |
+| Fills | each solid colour 26% lighter (top left) → itself → 8% deeper (bottom right); white → ice | Pills, buttons, toggles, bars, knobs, chips, icons |
 
 - Type gradients run **top to bottom and repeat on every line**, so a line that animates word by word, or a
-  paragraph on two lines, reads as one ramp. `render.cjs` applies them to every template (`assets/grad-text.js`;
-  `--flat-type` turns them off); `fx.py` draws chip and sticker words the same way (`fx.text_grad`).
+  paragraph on two lines, reads as one ramp. `render.cjs` applies them to every template (`assets/gradients.js`;
+  `--flat` turns them off); `fx.py` draws chip and sticker words the same way (`fx.text_grad`).
 - Text on a pill, chip or button (its own background) keeps its solid colour; white text on orange stays white.
 - Real glass over footage (`glass.py --grad 1.0`) is tinted and filters the light like coloured glass: peach on
   the lit side, ice on the far side; ink text still reads everywhere. `--grad 0` gives plain porcelain glass.
-- Gradients stay in the brand family: no rainbow, neon or off-palette colours, and never on the logo.
+- **Everything else too** *(owner, 2026-11-26: "gradient colour scheme for overall things")*: every solid fill in a
+  template becomes a soft diagonal gradient of itself, lighter top left and deeper bottom right (orange pills,
+  toggles, bars, markers, dots; ink buttons and banners; ice tracks; white knobs, chips and tiles going to ice), and
+  orange and ink SVG icons, rings and ticks take the same ramps (`assets/gradients.js`, every frame, so a colour that
+  animates never pops). In the Python effects: stickers and badges (`fx.grad_shape`), the pull-back editor, and the
+  orbit ring and wipe divider in the glass tint ramp (`fx.warm_cool`). Captions get a true top-to-bottom gradient on
+  every line: white to ice over footage, the ink ramp on light walls, the key word in its own accent ramp (drawn as
+  6 clipped strips per line; `captions.py --flat` for solid). `render.cjs --flat` turns the template gradients off.
+- Gradients stay in the brand family: no rainbow, neon or off-palette colours, and never on the logo, photos or video.
 
 - Use orange sparingly: key metrics, active states and call-to-action details.
   Allow **one orange focal point per frame** *(derived)*.

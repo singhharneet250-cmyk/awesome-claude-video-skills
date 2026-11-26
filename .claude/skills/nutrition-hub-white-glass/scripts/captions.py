@@ -285,21 +285,62 @@ def ass_escape(s: str) -> str:
     return s.replace("\\", "＼").replace("{", "(").replace("}", ")")
 
 
-def grad_word(word):
-    """The key word in a gradient of its accent colour (owner, 2026-11-26: gradient type): lighter on the first
-    letter, deeper on the last, one colour tag per letter (subtitles can't fill a gradient top to bottom)."""
-    hexv = ORANGE.split("&H", 1)[1].split("&", 1)[0][-6:]                     # BBGGRR
-    b, g, r = (int(hexv[i:i + 2], 16) for i in (0, 2, 4))
-    light = [c + (255 - c) * 0.32 for c in (r, g, b)]
-    deep = [c * 0.84 for c in (r, g, b)]
-    chars = list(word)
-    n = max(1, len(chars) - 1)
+# Gradient captions (owner, 2026-11-26: "gradient colour scheme for overall things"). Subtitles can't fill text with a
+# gradient, so each caption is drawn in BANDS horizontal strips (\clip), each in the colour of the ramp at that height:
+# together they make a true top-to-bottom gradient, and the shadow, drawn whole in every strip, stays seamless.
+BANDS = 6
+RAMPS = {"footage": ("#FFFFFF", "#FFFFFF", "#D6E3F2"),          # white to cool ice
+         "strong": ("#FFFFFF", "#FFFFFF", "#D6E3F2"),
+         "ink": ("#46668C", "#202B38", "#121922")}             # = the ink type gradient
+
+
+def _rgb(h):
+    return [int(h[i:i + 2], 16) for i in (1, 3, 5)]
+
+
+def ramp_at(stops, k):
+    """stops: 3 hex colours at 0, 0.55 and 1; k: 0 top … 1 bottom."""
+    a, b, c = (_rgb(x) for x in stops)
+    if k < 0.55:
+        f, x, y = k / 0.55, a, b
+    else:
+        f, x, y = (k - 0.55) / 0.45, b, c
+    return [round(x[i] + (y[i] - x[i]) * f) for i in range(3)]
+
+
+def ass_colour(rgb):
+    return "&H00%02X%02X%02X&" % (rgb[2], rgb[1], rgb[0])
+
+
+def key_ramp(acc):
+    r = _rgb(acc)
+    light = "#%02X%02X%02X" % tuple(round(c + (255 - c) * 0.32) for c in r)
+    deep = "#%02X%02X%02X" % tuple(round(c * 0.84) for c in r)
+    return (light, acc, deep)
+
+
+def gradient_events(start, end, style_name, margin_v, text, top, line_h, n_lines, base, key):
+    """The caption as strips (\\clip), each in the colour of the ramp at its height. The ramp repeats on every line,
+    like the gradient type in the graphics. Each strip is on its own layer at a fixed position: libass would otherwise
+    stack same-time captions upward."""
+    edges, ks = [0], []
+    for j in range(n_lines):
+        y0 = top + j * line_h + line_h * 0.12                   # the glyphs, not the line gap
+        y1 = top + (j + 1) * line_h - line_h * 0.06
+        for i in range(BANDS):
+            if i or j:
+                edges.append(round(y0 + (y1 - y0) * i / BANDS))   # a new line starts at its own glyph top: descenders above keep their colour
+            ks.append((i + 0.5) / BANDS)
+    edges.append(1920)
     out = []
-    for i, ch in enumerate(chars):
-        k = i / n
-        rr, gg, bb = (round(light[j] + (deep[j] - light[j]) * k) for j in range(3))
-        out.append("{\\c&H00%02X%02X%02X&}" % (bb, gg, rr) + ch)
-    return "".join(out)
+    for i, k in enumerate(ks):
+        bc, kc = ass_colour(ramp_at(base, k)), ass_colour(ramp_at(key, k))
+        t = text.replace(ORANGE, "{\\c" + kc + "}")
+        t = re.sub(r"\{\\r\\blur6", lambda m: "{\\r\\blur6\\1c" + bc, t)
+        pin = "" if "\\pos(" in t else "\\an2\\pos(540," + str(1920 - margin_v) + ")"
+        out.append(f"Dialogue: {i},{start},{end},{style_name},,0,0,{margin_v},,"
+                   + "{" + pin + "\\clip(0," + str(edges[i]) + ",1080," + str(edges[i + 1]) + ")\\1c" + bc + "}" + t)
+    return out
 
 
 def render_ass_text(tokens, span, lines=None, fs=62):
@@ -311,9 +352,11 @@ def render_ass_text(tokens, span, lines=None, fs=62):
         parts = []
         for t in line:
             word = ass_escape(t)
-            if span and span[0] <= idx < span[1]:
+            if span and idx == span[0]:
+                word = ORANGE + word
+            if span and idx == span[1] - 1:
                 core = word.rstrip(".,!?;:\"')”’")
-                word = grad_word(core) + (reset if idx == span[1] - 1 else "") + word[len(core):]
+                word = core + reset + word[len(core):]
             elif not (span and span[0] <= idx < span[1]) and not serif_used and \
                     t.lower().strip(".,!?;:\"'()”’") in SERIF_WORDS:
                 core = word.rstrip(".,!?;:\"')”’")
@@ -354,6 +397,7 @@ def main():
     ap.add_argument("--srt", type=Path, help="also write a plain .srt sidecar")
     ap.add_argument("--keywords", default="", help="comma-separated claim words to highlight when a caption has no number")
     ap.add_argument("--offset", type=float, default=0.0, help="shift every caption by this many seconds")
+    ap.add_argument("--flat", action="store_true", help="solid caption colours (default: top-to-bottom brand gradients)")
     ap.add_argument("--style", choices=sorted(STYLES), default=None,
                     help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
     ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
@@ -455,7 +499,17 @@ def main():
             placed.append(slot)
         else:
             text = render_ass_text(tokens, span)
-        events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,{margin_v},,{text}")
+        if args.flat:
+            events.append(f"Dialogue: 0,{ass_time(s)},{ass_time(e)},{STYLES[style]},,0,0,{margin_v},,{text}")
+        else:                                   # the caption's text box, top to bottom, for the gradient strips
+            if slot:
+                n_lines, fs_ = len(slot["lines"]), slot["fs"]
+                top = slot["y"] - n_lines * fs_ * 1.2 / 2
+            else:
+                n_lines, fs_ = len(wrap(tokens)), 62
+                top = 1920 - margin_v - n_lines * fs_ * 1.2
+            events += gradient_events(ass_time(s), ass_time(e), STYLES[style], margin_v, text,
+                                      top, fs_ * 1.2, n_lines, RAMPS[style], key_ramp(acc))
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")
