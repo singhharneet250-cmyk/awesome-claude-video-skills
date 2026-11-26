@@ -345,6 +345,9 @@ ink `#46668C → #202B38 → #121922`, orange `#FDA65C → #F0782B → #DA5A1A`,
 tinted warm peach `#FFD6B6` at the lit corner → white → cool ice `#C4D8F2`; the caption key word lighter to deeper
 letter by letter.
 
+**Glass lens (owner, 2026-11-26):** every glass card magnifies what is behind it (about 1.14× in the middle, easing to
+the edge); the `lens` scene with `"glass_lens": 0.35` is a round magnifier for a label or a detail.
+
 ### Editing details worth keeping
 
 - **One element carried through** (R8 "CREATE" across a match cut; R16 one shape through every UI state; R12 the

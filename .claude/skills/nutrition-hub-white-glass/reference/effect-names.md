@@ -89,6 +89,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Tracking Reveal | `tracking` | Small capitals slowly open their spacing; never still (overlay: in a chip) | `text`, `dur` |
 | Comment Banner | `banner` | Two labels at the top: a topic tag and "Comment KEYWORD for the full guide" (overlay) | `top`, `line=Comment *WORD* …`, `dur` |
 | Comment CTA | `cta` | A glass card, an orange "Comment KEYWORD" pill and your handle (R18's ending; overlay) | `title`, `sub`, `keyword`, `handle`, `dur` |
+| Glass Lens | `lens` | A round glass magnifier glides to a spot in your footage and magnifies it (overlay; give it `"glass_lens": 0.35`) | `x`, `y`, `to`, `size`, `label`, `from`, `dur` |
 | Photo Scatter | `photos` | A headline in the middle; real photos pop in around it and drift outward | `imgs`, `text` |
 
 For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
@@ -101,6 +102,7 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 | Clear Glass | The house default since 2026-11-26: see-through, ink text, no shadows | `glass.py` (default; `--variant regular` for the old frosted look) |
 | Liquid Edge | The thick rounded edge bends the picture like a drop of water | `glass.py --liquid 1.0` (0 = flat slab) |
 | Glossy Glass | Rim specular + bloom, a far-edge line, fresnel edges and a soft curved sheen | `glass.py --gloss 1.0` (0 = rim light only) |
+| Lens Cards | Every glass card is a convex lens: what is behind it is magnified ~1.14× in the middle, easing to the edge | `glass.py --lens 0.12` (default; 0 = flat), `"glass_lens"` per overlay |
 | Gradient Glass | Glass tinted warm peach (lit corner) to cool ice (far corner), filtering the light like coloured glass | `glass.py --grad 1.0` (default; 0 = plain) |
 | Gradient Type | Ink, orange and slate text as top-to-bottom gradients, repeated per line | automatic in `render.cjs` (`--flat-type` = solid); `fx.text_grad` for chips |
 | Glass Strength | The iOS 27-style slider: 0 opaque porcelain … 0.4 frosted … 0.9 house default (clear) … 1 completely clear | `glass.py --strength 0.6`, or `"glass_strength"` on an overlay |
