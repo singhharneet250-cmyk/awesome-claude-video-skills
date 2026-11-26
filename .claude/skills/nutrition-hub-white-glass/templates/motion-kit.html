@@ -352,14 +352,16 @@ const SCENES = {
   scroll: { overlay: false, build() {
     let text = str("text", "Original only."), dotEnd = text.endsWith(".");
     if (dotEnd) text = text.slice(0, -1);
-    const FS = parseFloat(str("size", "300")) * S;
+    const FS = parseFloat(str("size", "260")) * S;
     const line = el(stage, "mk", { font: `800 ${FS}px/1 var(--nh-font)`, letterSpacing: "-.045em" },
       esc(text) + (dotEnd ? `<i style="display:inline-block;width:.2em;height:.2em;border-radius:50%;background:var(--nh-orange-grad);margin-left:.06em"></i>` : ""));
     const kick = str("kicker", "At Nutrition Hub") ? el(stage, "mk nh-kicker", {}, esc(str("kicker", "At Nutrition Hub"))) : null;
     const TW = line.offsetWidth, D = parseFloat(str("dur", "3.4"));
     return { dur: D, sfx: [{ t: 0.05, sfx: "whoosh", gain: -4, what: "big scroll" }],
       seek(t) {
-        const p = bez(.3, 0, .2, 1)(prog(t, 0, D)), x = lerp(W * 0.92, W * 0.86 - TW, p);   // lands with the last word on screen
+        // starts already on screen (no empty frame) and glides at a readable, even pace (a sine ease, ~500 px/s on
+        // a 1080 frame); a fast front-loaded scroll smears into ghost letters even with motion blur
+        const p = bez(.37, 0, .63, 1)(prog(t, 0, D)), x = lerp(W * 0.5, W * 0.86 - TW, p);
         line.style.opacity = easeOut(prog(t, 0, 0.25)); setXY(line, x, CY + 40 * S, 0, 0.5);
         if (kick) { kick.style.opacity = easeOut(prog(t, 0.1, 0.5)); setXY(kick, CX, CY - 200 * S, 0.5, 0.5); }
       } }; } },

@@ -23,7 +23,7 @@ edit.json (paths are relative to the file; every track is optional):
   "effects":  [{"effect": "orbit", "start": 6, "end": 9.5, "words": "Whey,Creatine"},
                {"effect": "escape", "start": 1, "end": 4, "matte": "wall"}],
   "overlays": [{"template": "chat-takeover.html?bottom=560", "start": 10}],   "glass": "flat" keeps the old opaque panels; "glass_strength": 0-1 (0 opaque, 1 clear)
-  "captions": {"position": "auto", "keywords": ["protein"], "blur": true},
+  "captions": {"position": "auto", "keywords": ["protein"], "blur": true},   "max_words": 3 by default with auto
   "sfx":      [{"t": 4.9, "sfx": "thud"}],
   "endcard":  {"template": "reel-9x16.html", "from": 8.15},
   "motion_blur": 4                         sub-frames per frame for rendered graphics (render.cjs --blur); 1 = off
@@ -533,6 +533,9 @@ def render(e):
                 avoid.append(f"{o['start']:.2f}-{o['start'] + o['_dur']:.2f}:{box[0]},{box[1]},{box[2]},{box[3]}")
         if avoid and cap.get("position", "auto") == "auto":
             cmd += ["--avoid", ";".join(avoid)]
+        mw = cap.get("max_words", 3 if cap.get("position", "auto") == "auto" else None)   # short captions fit beside the head
+        if mw:
+            cmd += ["--max-words", str(mw)]
         if cap.get("keywords"):
             cmd += ["--keywords", ",".join(cap["keywords"])]
         if cap.get("blur"):
