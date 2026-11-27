@@ -42,6 +42,12 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
 6. **Captions**: in Roman script for Punjabi or Hindi speech (Roman Punjabi for the owner's talks), word-timed from a
    local transcription, short (3 words) and placed beside the head, never over a card; the key word highlighted;
    caption words keep their legibility shadow (§6).
+   **Use captions wisely** *(owner, 2026-11-27: "Use caption wisely. Double check their position", "Use this trick in
+   future work too")*: a caption never repeats a word that is already big on screen (a slam word, a word behind the
+   head, a Highlighter Sweep, a beat); it hands over to it instead ("But for your" above, then HEALTH lands under it)
+   or stays off while the graphic says the line. Each caption line goes where the frame is clean at that moment
+   (`{top}` / `{low}` per .srt cue, §6), the screen reads top to bottom, and every position is checked on preview
+   stills against the face, hands, big words, cards and prints on clothes before the render.
 7. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
 8. **Quality**: full HD at maximum quality, the biggest clean file the platforms accept (`encode.py`: CRF 4 steps,
    CRF 2 delivery, AAC 320k; owner 2026-11-27 "export size as maximum as possible"), -14 LUFS; ask for the original
@@ -481,6 +487,12 @@ All of these are implemented in `assets/brand.css`.
     sends every caption to red.
   - Caption words only. The logo, glass cards, callouts, kickers, data metrics and the serif
     accent keep the §2 palette.
+- **Captions hand over to big words, never repeat them** (standing decision 6): drop a caption, or cut it to the words
+  the graphic doesn't show, while a slam word, a word behind the head, a Highlighter Sweep or a beat says the line.
+  When positions must differ inside one video, start the cue's text in the .srt with `{top}` (text bottom y 330, just
+  under the top safe line), `{low}` (text bottom y 1492, e.g. under a chest print inside a frame break), `{bottom}`,
+  `{mic}` or `{chest}`; colours are read from that band. Check every caption on preview stills: clear of the face,
+  hands, big words, cards and any print on the clothes, inside y 250–1500, reading top to bottom.
 - One key word per caption (a number, a unit or a claim word) goes in that key-word colour.
   Don't use scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.

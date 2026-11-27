@@ -41,8 +41,10 @@ STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink", "strong": "NH-Captio
 POSITIONS = {"bottom": 520,   # §6 default: text bottom at y 1400 (73%)
              "mic": 731,      # R6 desk/mic shoots: caption centred about 58%, above a bottom blur band
              "chest": 885,    # R5 chest line: caption centred about 50%
-             "top": 1590}     # text bottom at y 330, just under the top safe line: for edits where big words behind
+             "top": 1590,     # text bottom at y 330, just under the top safe line: for edits where big words behind
                               # the head or a frame break fill the space around it (owner's IMG_0371 hook, 2026-11-27)
+             "low": 428}      # text bottom at y 1492, just above the bottom safe line: under a chest print, inside a frame
+                              # break. In an .srt a cue can pick its own position: start its text with {top} or {low}
 # typeface accent (R6): one word per caption in Instrument Serif Italic, same colour as the caption
 SERIF = r"{\fnInstrument Serif\b0\i1\fs80}"
 SERIF_WORDS = set()
@@ -142,13 +144,18 @@ def words_from_srt(text: str):
             sys.exit(f"Bad .srt timing line: {lines[timing].strip()!r} "
                      "(expected '00:00:01,000 --> 00:00:02,500').")
         tokens = " ".join(lines[timing + 1:]).split()
+        pos = None
+        if tokens and re.fullmatch(r"\{(\w+)\}", tokens[0]):   # {top} / {low} / ...: this cue's own position
+            pos = tokens.pop(0)[1:-1]
+            if pos not in POSITIONS:
+                sys.exit(f"Unknown caption position {{{pos}}} in the .srt (use {', '.join(sorted(POSITIONS))}).")
         if not tokens:
             continue
         total = sum(len(t) + 1 for t in tokens)
         t0 = start
         for tok in tokens:
             d = (end - start) * (len(tok) + 1) / total
-            words.append({"text": tok, "start": t0, "end": t0 + d})
+            words.append({"text": tok, "start": t0, "end": t0 + d, **({"pos": pos} if pos else {})})
             t0 += d
         words[-1]["cue_end"] = True          # an .srt cue is a caption the author chose: never merged with the next
     return words
@@ -480,14 +487,26 @@ def main():
     caps = fix_timing(groups)
 
     events, srt_blocks, highlighted = [], [], 0
+    own_schemes = {}
     used = {"footage": 0, "ink": 0, "strong": 0}; accents = set(); placed = []
     for n, (start, end, cap) in enumerate(caps, 1):
         tokens = [w["text"] for w in cap]
         span = key_span(tokens, keywords)
         highlighted += bool(span)
         s, e = max(0.0, start + args.offset), max(0.0, end + args.offset)
+        own = cap[0].get("pos")
         style, acc = pick(s, e)
-        slot = person.place(tokens, s, e) if person else None
+        if own and args.match and not args.style:          # colours from the band this cue sits in
+            if own not in own_schemes:
+                own_schemes[own] = analyse(args.match, zone=own)
+            sc = own_schemes[own]
+            style = "ink" if sc["base"] == "ink" or (sc["base"] == "mixed" and is_light_at(sc, s, e)) else \
+                "strong" if is_busy_at(sc, s, e) else "footage"
+            if not args.accent:
+                acc = ("#C40205" if style == "ink" else "#FC2B16") if clashes_at(sc, s, e) else \
+                    (sc["accent_deep"] if style == "ink" else sc["accent_bright"])
+                acc = acc.upper()
+        slot = person.place(tokens, s, e) if person and not own else None
         if slot and not args.style:
             # the slot's own background decides the word colour: ink on light, strong shadow on busy
             style = "ink" if slot["light"] else "strong" if slot["busy"] else "footage"
@@ -500,7 +519,7 @@ def main():
         ORANGE = "{\\c&H00" + acc[5:7] + acc[3:5] + acc[1:3] + "&}"
         used[style] += 1
         if span: accents.add(acc)
-        margin_v = POSITIONS.get(args.position, POSITIONS["bottom"])
+        margin_v = POSITIONS.get(own or args.position, POSITIONS["bottom"])
         if slot:
             text = "{\\an5\\pos(" + f"{slot['x']},{slot['y']}" + ")}" + render_ass_text(tokens, span, slot["lines"], slot["fs"])
             placed.append(slot)
