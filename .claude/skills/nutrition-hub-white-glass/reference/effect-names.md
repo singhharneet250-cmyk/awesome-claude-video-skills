@@ -26,7 +26,7 @@ footage, is kept out of this public repo).
 | Word Orbit | Word chips circle at chin level, passing behind the head | `fx.py orbit --words … --tilt 65` |
 | Frame Escape (Frame Break) | The picture shrinks into a frame; the head breaks out over its top edge, hands out of its sides | `fx.py escape --top -0.6` (edge at eye level: the real break; the old default 0.35 sits below the chin), `--stage blur` keeps your room, `--word HEALTH --word-at 4.3` a big red word behind the head |
 | Word Behind | One huge word slams in behind your head on the real background (a hook) | `fx.py behind --word SALARY` (white; `--color red`), needs a matte |
-| Depth Scatter | One big word behind the head, one in front | `fx.py scatter` |
+| Depth Scatter | One big word behind the top of the head, one in front on the chest | `fx.py scatter` (`--word-at` lands the second word on its spoken word; `--matte matte.mp4` from `person_cutout.py --matte-out` for a clean outline) |
 | Sticky Text | A sticker that follows the speaker | `fx.py sticky` |
 | Green Screen | The room behind becomes the stage, a blur or a clip | `fx.py bgswap` |
 

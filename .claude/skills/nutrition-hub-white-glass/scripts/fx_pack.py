@@ -319,14 +319,14 @@ class Scatter:
         rng = np.random.default_rng(7)
         self.a, self.W, self.H = a, W, H
         self.layers = []
-        for li, (word, px, color) in enumerate(((words[0], 1.7 * fh_px, fx.WHITE), (words[1], 1.25 * fh_px, fx.ORANGE))):
+        for li, (word, px, color) in enumerate(((words[0], 1.45 * fh_px, fx.WHITE), (words[1], 1.2 * fh_px, fx.ORANGE))):
             from PIL import ImageFont
             font = ImageFont.truetype(str(BEBAS), int(px))
             while px > 40 and sum(font.getlength(ch) * 1.04 for ch in word.upper()) > 0.9 * W:   # a close shot: never wider than the frame
                 px *= 0.94; font = ImageFont.truetype(str(BEBAS), int(px))
             letters = [text_sprite(ch, px, color, BEBAS, shadow=0.3) for ch in word.upper()]
             widths = [font.getlength(ch) * 1.04 for ch in word.upper()]      # the font's own advance, slightly open
-            self.layers.append({"letters": letters, "widths": widths,
+            self.layers.append({"letters": letters, "widths": widths, "px": px,
                                 "scatter": [(rng.uniform(-0.5, 0.5) * W, rng.uniform(-0.25, 0.25) * H, rng.uniform(0.4, 1.9), rng.uniform(-35, 35))
                                             for _ in letters], "behind": li == 0})
 
@@ -334,16 +334,26 @@ class Scatter:
         a, W, H = self.a, self.W, self.H
         if not a.s <= t <= a.e:
             return f
-        pin = fx.ease_out((t - a.s) / 0.6)
-        pout = fx.ease_in((t - (a.e - 0.45)) / 0.45) if t > a.e - 0.45 else 0.0
-        spread = (1 - pin) + pout
+        OUT = 0.3
+        pout = fx.ease_in((t - (a.e - OUT)) / OUT) if t > a.e - OUT else 0.0
+        # the first word lands 0.6 s in (start the effect 0.6 s before it is said); the second on --word-at if given
+        lands = [a.s + 0.6, a.word_at if getattr(a, "word_at", None) is not None else a.s + 0.6]
         fh = face["fh"] * H
         cx = face["cx"] * W
-        centres = [(cx, (face["top"] + face["chin"]) / 2 * H - 0.15 * fh), (cx, face["chin"] * H + 1.3 * fh)]
+        # first word BEHIND the top of the head (the head hides only the foot of the middle letters, so it still
+        # reads), second word in front on the upper chest; both inside the Reels safe area (13.5%-77% of the height)
+        cap = [0.72 * L["px"] for L in self.layers]
+        y0 = max(face["top"] * H - 0.68 * fh, 0.135 * H + cap[0] / 2)
+        y1 = min(face["chin"] * H + 0.75 * fh, 0.77 * H - cap[1] / 2)
+        centres = [(cx, y0), (cx, y1)]
         back = f.copy()
         out_front = []
-        for layer, (lx, ly) in zip(self.layers, centres):
+        for layer, (lx, ly), land in zip(self.layers, centres, lands):
+            dur_in = 0.6 if land == lands[0] else 0.45
+            pin = fx.ease_out((t - (land - dur_in)) / dur_in) if t > land - dur_in else 0.0
+            spread = (1 - pin) + pout
             total = sum(layer["widths"])
+            lx = min(max(lx, total / 2 + 0.05 * W), W - total / 2 - 0.05 * W)     # never off the side of the frame
             x = lx - total / 2
             for spr, w, (dx, dy, depth, rot) in zip(layer["letters"], layer["widths"], layer["scatter"]):
                 sc = 1 + (depth - 1) * spread

@@ -486,7 +486,7 @@ def main():
                     help="escape: the frame's top edge, in face heights below the chin; -0.6 puts it at eye level, so the "
                          "head breaks out over the edge (the frame break)")
     ap.add_argument("--word", help="escape: one big word (Bebas, Logo Red) on the stage behind the head, e.g. HEALTH")
-    ap.add_argument("--word-at", type=float, default=None, help="escape: when the word appears (default: 0.6 s into the effect)")
+    ap.add_argument("--word-at", type=float, default=None, help="escape: when the word appears (default: 0.6 s into the effect); scatter: when the second word lands")
     ap.add_argument("--color", choices=["white", "red"], default="white", help="behind: the word's colour")
     ap.add_argument("--text", help="sticky: the sticker's words"); ap.add_argument("--badge", help="sticky: a short number or tag in an orange badge")
     ap.add_argument("--anchor", choices=["chest", "head", "hand"], default="chest", help="sticky: what it sticks to")
@@ -537,22 +537,28 @@ def main():
 
     import motion_track
     tracker = motion_track.MotionTracker(info["fps"])     # head at the full frame rate, and the hands
+    steady = None
+    if a.effect in ("escape", "behind", "scatter"):         # the frame and the words hold still: the median face in the window
+        tt = np.asarray(faces.t, dtype=float); sel = (tt >= a.s - 0.5) & (tt <= a.e + 0.5)
+        if not sel.any():
+            sel = np.ones(len(tt), bool)
+        fh = faces.v["fh"]
+        sel &= fh >= 0.75 * fh[sel].max()                  # a print on a shirt can pass for a small face: keep the speaker's
+        steady = {kk: float(np.median(v[sel])) for kk, v in faces.v.items()}
     pack = None
     if a.effect in fx_pack.EFFECTS:
-        fh_px = float(np.median(faces.v["fh"])) * H
+        fh_px = (steady["fh"] if steady else float(np.median(faces.v["fh"]))) * H
         cls = fx_pack.EFFECTS[a.effect]
         pack = cls(a, W, H, fh_px, info) if a.effect in fx_pack.NEEDS_INFO else cls(a, W, H, fh_px)
     stage_cache, wall_q, tracked = {}, None, 0
-    steady = None
-    if a.effect in ("escape", "behind"):                    # the frame and the word hold still: the median face in the window
-        tt = np.asarray(faces.t, dtype=float); sel = (tt >= a.s) & (tt <= a.e)
-        steady = {kk: float(np.median(v[sel] if sel.any() else v)) for kk, v in faces.v.items()}
     with Writer(a.out, info, a.video) as wr:
         for k, t, frame in frames(a.video, info):
             head, hands, hand_mask = tracker.update(frame)
             if not a.s <= t <= a.e:
                 wr.write(frame); continue
             face = head or faces.at(t)
+            if steady is not None and abs(face["cx"] - steady["cx"]) > 0.6 * steady["fw"] or steady is not None and abs(face["top"] - steady["top"]) > 0.6 * steady["fh"]:
+                face = steady                               # the tracker jumped to something else (a print, a hand): stay on the face
             tracked += head is not None
             if key is not None and key.bg is None:
                 wall_q = key.fit(frame, face)
@@ -562,7 +568,7 @@ def main():
                 matte = np.maximum(matte, hm)                   # hands pass in front of the spheres
             f = frame.astype(np.float32) / 255
             if pack is not None:
-                res = pack(f, matte, face, t, hands=hands)
+                res = pack(f, matte, steady if a.effect == "scatter" else face, t, hands=hands)
             elif a.effect == "orbit":
                 res = orbit_frame(f, matte, face, t, a, sprites, W, H)
             else:
@@ -575,6 +581,8 @@ def main():
         print(f"note: the head was tracked in {tracked / n_win:.0%} of the effect's frames; the rest use the slower face track")
     sound = {"sticky": ("pop", 0.12, 0), "wipe": ("swish", 0.8, -2), "behind": ("thud", 0.18, 0)}.get(a.effect, ("whoosh", 0.25, -3))
     cues = [{"t": round(a.s + sound[1], 3), "sfx": sound[0], "gain": sound[2], "what": f"{a.effect} in"}]
+    if a.effect == "scatter" and a.word_at is not None:    # the second word lands on its own spoken word
+        cues.append({"t": round(a.word_at, 3), "sfx": "thud", "gain": -4, "what": "scatter second word"})
     if a.effect == "escape" and a.word:                    # the word behind the head lands with a soft thud
         cues.append({"t": round((a.word_at if a.word_at is not None else a.s + 0.6) + 0.12, 3), "sfx": "thud", "gain": -2, "what": f"word {a.word}"})
     Path(str(Path(a.out).with_suffix("")) + ".sfx.json").write_text(json.dumps(cues, indent=2))
