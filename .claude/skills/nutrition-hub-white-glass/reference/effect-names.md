@@ -4,6 +4,11 @@ The owner asks for things by these names, for example: *"Free Space style, Word 
 (Whey, Creatine), Sticky Text '3–5 g a day', B-roll Cutaways with White Dip, End Card."* Each name maps to the
 skill part listed here. Effects marked ✗ are not available because they break the Liquid Glass rules (§5).
 
+**Say the name** (owner, 2026-11-27): the owner asks for anything on this page by its name ("add Word Wheel at
+5 s", "Glass Lens on the label at 12 s", "Slam Hook in Mint"). Picture catalogue: `catalog/1-motion-kit.jpg`,
+`catalog/3-templates-3d-films.jpg`, `catalog/4-all-skills-by-name.png` (sheet 2, the effects on the owner's own
+footage, is kept out of this public repo).
+
 ## Talking-head styles
 
 | Name | What it is | Where |
@@ -113,6 +118,9 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 | Remove Background | Only when asked (off by default, owner 2026-11-26): you on the Liquid Glass stage (or a blur, white, or your own picture or clip), no room behind | `person_cutout.py take.mp4 out.mp4 --matte-out matte.mp4` |
 | Clear Voice | Clearer, natural voice: less mud, more presence, light denoise | `voice.py take.mp4 clean.mp4` (`--ab 0-10` to compare) |
 | Word Bridge | A word stays on screen across a cut (R8's match cut) | a Tracking Reveal or a caption that spans the b-roll cut |
+| Frost Wipe | A soft white band sweeps across a cut with a snow gust (the winter film's transition) | `templates/winter-wellness.html` |
+| High Quality | Full HD, visually lossless steps, CRF 14 delivery, -14 LUFS (the default) | `encode.py deliver` (automatic in `timeline.py render`) |
+| Handle Check | Where @nutritionhubkhanna and look-alikes exist (Sherlock) | `bash scripts/handle_check.sh` |
 
 ## Sound
 
@@ -143,22 +151,17 @@ The colours of R8–R16 (warm off-white, peach and mint, lavender, forest green,
 
 ## Connected skills and apps
 
-- **In the repo:** nutrition-hub-white-glass (the Liquid Glass system), molecular-film, use-3d-software, halfsize,
-  the HyperFrames plugin, Blender MCP, OpenChatCut MCP, and three skills from prompt-motion.com: **Cinetic**
-  (premium launch and promo films with measured gates), **Product Film** (a product film cut to music on measured
-  beats) and **3D Camera Captions** (captions in depth around a talking head; no camera zooms on our reels).
+- **In the repo:** nutrition-hub-white-glass (the Liquid Glass system), **video-shotcraft** (124 shot recipes, the
+  Ink Press promo, Freesound SFX; Apache-2.0), **Cinetic**, **Product Film**, **3D Camera Captions**, molecular-film,
+  use-3d-software, halfsize; plugins **Remotion** and **HyperFrames** (`.claude/settings.json`); Blender MCP and
+  OpenChatCut MCP; Sherlock (`Handle Check`).
 - **Ideas library:** prompt-motion.com (240 Claude motion videos with their prompts; `reference/learned-tools.md`).
-- **On the owner's computer, if wanted:** DaVinci Resolve (opens `timeline.py export`), pen.dev (design canvas
-  with an MCP), Rive (Rive Editor MCP). Details and set-up in `reference/learned-tools.md`.
-- **Already on the account:** the Remotion skills (synced as the Remotion plugin).
-- **On the owner's Mac:** ghost-editor (raw cut and matte only).
-- **Plugins:** IT Reelsmaker (raw take to reel), Remotion, Motion Reel, ffmpeg-llm, social-media-skills (hooks
-  and post captions).
-- **Connectors:**
-  - WhisperAI (transcripts)
-  - Epidemic Sound (music; needs a commercial plan)
-  - Clipzi and OpusClip (long video to shorts)
-  - ManyMotions and Runway (AI b-roll, only with the owner's OK)
+- **On the owner's computer, if wanted:** DaVinci Resolve (opens `timeline.py export`), pen.dev, Rive, ghost-editor
+  (Mac), Blender with a GPU (Protein Film).
+- **Plugins on the account:** IT Reelsmaker, Motion Reel, ffmpeg-llm, earshot, fonthound, social-media-skills (hooks,
+  post captions, plans).
+- **Connectors:** WhisperAI (transcripts); Clipzi and OpusClip (long video to shorts); Epidemic Sound (music, needs a
+  commercial plan); ManyMotions, Runway and Picsart (AI media, credits: only with the owner's OK).
 
 ## Not available (they break the Liquid Glass rules)
 
