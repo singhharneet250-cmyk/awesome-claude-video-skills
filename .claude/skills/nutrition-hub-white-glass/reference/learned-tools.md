@@ -98,12 +98,13 @@ Apple's guidance (Human Interface Guidelines: Materials; WWDC25 "Meet Liquid Gla
   tint and rim with the panel's reveal.
 - **Adaptivity**: the material adapts to what is behind it → the porcelain tint adapts so ink text always reads.
 - **Variants**: regular (works everywhere) and clear (more see-through, needs care for legibility) →
-  `--variant regular` (default) and `--variant clear` (no small text on it).
+  `--variant clear` (the house default since the owner's choice, 2026-11-26, with a porcelain legibility layer for ink
+  text) and `--variant regular` (the frosted fallback).
 - **Highlights respond to movement** → the rim light turns a little as a panel moves.
 - **Concentric shapes**, and **never glass on glass** → SKILL.md §4 A.
 - **iOS 27 (WWDC 2026)** refined Liquid Glass after a year of readability complaints: a system slider from fully
   opaque to completely clear, a more legible default, new rendering, and adaptation to Reduce Transparency and
-  Increase Contrast → `glass.py --strength` (0 opaque … 1 clear), house default 0.4, readable by design.
+  Increase Contrast → `glass.py --strength` (0 opaque … 1 clear), house default 0.9 (clear) since 2026-11-26.
 - **Clear variant, from the HIG (Materials) and SwiftUI `Glass.clear`, read 2026-11-26**: clear is "highly
   translucent", for components that float over photos and video, and only over visually rich backgrounds; regular
   "blurs and adjusts the luminosity" and suits text-heavy components. Clear needs a layer underneath for

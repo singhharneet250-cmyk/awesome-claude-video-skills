@@ -213,7 +213,7 @@ ffmpeg -i graded.mp4 -itsoffset 1 -i callout.mov \
 ```
 
 - `--transparent` writes ProRes 4444 (`.mov`) or VP9 with alpha (`.webm`).
-- Over footage the glass goes near-opaque automatically. Keep callout text on its glass card;
+- Over footage the glass is real clear Liquid Glass (§3b; `"glass": "flat"` falls back to near-opaque). Keep callout text on its glass card;
   only caption words go straight on video (§4).
 - The callout sits in the upper safe area (y about 270) so it never meets the captions.
 
