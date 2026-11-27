@@ -51,7 +51,7 @@ footage, is kept out of this public repo).
 | Soft Dissolve | A 0.25 s dissolve | `broll.py --transition soft` |
 | Before + After | A light bar wipes from before to after (edits and products only) | `fx.py wipe` |
 | Watch the Line | Before + After in R18's attention style: the line keeps swinging with a glass handle, labels and a headline pill on top | `fx.py wipe --mode line --words "Before,After" --text "Same reel. Watch the line."` |
-| Pull-back Reveal | The picture pulls back into an editing screen | `fx.py pullback` (`--text "Remember: not every supplement"` puts the spoken line in the editor's title bar) |
+| Pull-back Reveal | The picture pulls back (keeping its 9:16 shape) into an editing screen | `fx.py pullback` (`--text "Remember: not every supplement"` puts the spoken line in the editor's title bar; `--items` + `--list-title` set the numbered side list, e.g. the reel's chapters) |
 
 ## Captions and type
 

@@ -511,7 +511,7 @@ def render(e):
     for i, f in enumerate(sorted(e.get("effects", []), key=lambda f: f["start"])):
         nxt = work / f"03_fx{i}_{f['effect']}.mp4"
         cmd = [PY, HERE / "fx.py", f["effect"], cur, nxt, "--at", f"{f['start']}-{f['end']}"]
-        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before", "mode", "top", "word", "word_at", "color"):
+        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before", "mode", "top", "word", "word_at", "color", "items", "list_title"):
             if k in f:
                 v = f[k]
                 if k in ("matte", "bg", "before") and v not in ("wall", "head", "stage", "blur"):

@@ -489,6 +489,8 @@ def main():
     ap.add_argument("--word-at", type=float, default=None, help="escape: when the word appears (default: 0.6 s into the effect); scatter: when the second word lands")
     ap.add_argument("--color", choices=["white", "red"], default="white", help="behind: the word's colour")
     ap.add_argument("--text", help="sticky: the sticker's words"); ap.add_argument("--badge", help="sticky: a short number or tag in an orange badge")
+    ap.add_argument("--items", help="pullback: the editor's side list, comma separated, numbered 01, 02... (default: an edit checklist)")
+    ap.add_argument("--list-title", help="pullback: the side list's heading (default CHECKLIST; e.g. \"IN THIS REEL\")")
     ap.add_argument("--anchor", choices=["chest", "head", "hand"], default="chest", help="sticky: what it sticks to")
     ap.add_argument("--mode", choices=["sweep", "line"], default="sweep",
                     help="wipe: sweep (one light bar) or line (R18's attention style: a moving divider with a glass handle)")
