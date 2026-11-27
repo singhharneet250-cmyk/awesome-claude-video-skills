@@ -20,6 +20,7 @@ else does the heavy lifting under its rules.
 | Plugin | What it adds |
 |---|---|
 | `hyperframes@hyperframes` | HeyGen's HyperFrames skills (Apache-2.0): editable HTML-to-video projects, the CLI, the block registry, media, captions and Remotion ports. Claude Code offers to install it when you open this repo. Its main skill asks before sending HeyGen a usage note; say no to skip. |
+| `remotion@remotion` | Remotion's official Claude Code plugin (MIT, from [remotion-dev/claude-code-plugin](https://github.com/remotion-dev/claude-code-plugin)): best practices, captions, multimedia, 3D, rendering and Studio skills for videos in React. Claude Code offers to install it when you open this repo. Remotion itself is free for individuals and companies of up to 3 people; bigger companies need its company licence. |
 
 ## Project MCP servers (`.mcp.json` at the repo root)
 
