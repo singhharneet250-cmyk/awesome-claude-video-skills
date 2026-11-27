@@ -43,6 +43,12 @@ const SCENE = {
 const P = new URLSearchParams(location.search);
 if (P.get("side")) SCENE.side = P.get("side");
 if (P.get("top")) SCENE.top = parseFloat(P.get("top"));
+// ?start= and ?hold= (seconds) fit the phone to a spoken line: it is on screen start + 0.7 + hold + 0.45 s
+if (P.get("start")) SCENE.start = parseFloat(P.get("start"));
+if (P.get("hold")) SCENE.hold = parseFloat(P.get("hold"));
+// ?scale=0.85 makes the phone smaller (anchored at its outer top corner), for a close shot where a full-size phone
+// would cover the face
+SCENE.scale = P.get("scale") ? parseFloat(P.get("scale")) : 1;
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const content = document.getElementById("content");
 if (P.get("screen")) content.innerHTML = `<img alt="" src="${P.get("screen").startsWith("/") ? "file://" + P.get("screen") : P.get("screen")}">`;
@@ -52,6 +58,7 @@ const phone = document.getElementById("phone");
 const right = SCENE.side !== "left";
 phone.style.top = SCENE.top + "px";
 phone.style.left = (right ? 1080 - 72 - 330 : 72) + "px";
+phone.style.transformOrigin = right ? "100% 0%" : "0% 0%";
 function bez(x1, y1, x2, y2) { return (x) => { if (x <= 0) return 0; if (x >= 1) return 1; let t = x;
   for (let i = 0; i < 8; i++) { const cx = 3 * x1 * t * (1 - t) ** 2 + 3 * x2 * t * t * (1 - t) + t ** 3 - x; const d = 3 * x1 * (1 - t) ** 2 + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t; if (Math.abs(d) < 1e-6) break; t = Math.min(1, Math.max(0, t - cx / d)); }
   return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3; }; }
@@ -64,7 +71,7 @@ function render(t) {
   const rot = (right ? 1 : -1) * (4 + 10 * (1 - pin) + 10 * pout);
   const float = Math.sin((t - SCENE.start) * 2 * Math.PI / 2.6) * 6 * pin;
   phone.style.opacity = Math.min(1, pin * 1.4) * (1 - pout);
-  phone.style.transform = `translate(${off}px, ${float}px) rotate(${rot}deg)`;
+  phone.style.transform = `translate(${off}px, ${float}px) rotate(${rot}deg) scale(${SCENE.scale})`;
   const img = content.querySelector("img");
   if (img && img.naturalHeight) {                        // a tall screenshot scrolls slowly
     const over = Math.max(0, img.getBoundingClientRect().height - 664);

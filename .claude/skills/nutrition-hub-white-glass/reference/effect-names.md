@@ -34,12 +34,12 @@ footage, is kept out of this public repo).
 | Name | What it is | Where |
 |---|---|---|
 | Headline Wall | Real headlines on cards around the speaker | `templates/headline-wall.html` |
-| Phone Mockup | A phone beside the head with a screenshot or photo | `templates/phone-mockup.html` |
+| Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line) |
 | UI World | Glass app cards act out a task | `templates/ui-world.html` |
 | Chat Takeover | A chat: pick a contact, type, send, reply (above the head or full screen) | `templates/chat-takeover.html` |
 | Comment Bubble | A comment types the keyword, then a reply with "Open link" | `chat-takeover.html?layout=comment` |
 | Data Callout | A number with its unit and source on a glass card | `templates/overlay-callout.html` |
-| Slam Hook | A big condensed word slams in, then a line ending on a serif accent | `templates/hook-slam.html` |
+| Slam Hook | A big condensed word slams in, then a line ending on a serif accent | `templates/hook-slam.html` (`?slam1=Follow&line1=Nutrition Hub for&accent1=more.&support1=`, `?dur=2.2` for a short hook before a talking head; beat 2: `slam2`, `line2`, `accent2`, `chips=A\|B`) |
 
 ## Cuts and transitions
 
