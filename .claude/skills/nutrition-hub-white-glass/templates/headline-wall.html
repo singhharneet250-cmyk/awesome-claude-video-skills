@@ -37,6 +37,15 @@ const SCENE = {
   ],
 };
 /* ============================ */
+// per-video cards without editing the file (owner's supplements reel, 2026-11-27). REAL headlines only, quoted as
+// published, with outlet and date:  ?cards=Headline with *mark*|Outlet · 29 Oct 2025|x|y|rot;...  ?w=420&size=34 for a
+// close shot (smaller cards fit above the head and on the chest), ?start= ?stagger= ?hold=
+const HP = new URLSearchParams(location.search);
+if (HP.get("cards")) SCENE.cards = HP.get("cards").split(";").filter(Boolean).map((c) => { const [text, source, x, y, rot] = c.split("|");
+  return { text, source, x: parseFloat(x), y: parseFloat(y), rot: parseFloat(rot || "0") }; });
+["start", "stagger", "hold"].forEach((k) => { if (HP.has(k)) SCENE[k] = parseFloat(HP.get(k)); });
+if (HP.has("w")) document.head.insertAdjacentHTML("beforeend", `<style>.card{width:${parseFloat(HP.get("w"))}px}</style>`);
+if (HP.has("size")) document.head.insertAdjacentHTML("beforeend", `<style>.card h3{font-size:${parseFloat(HP.get("size"))}px}</style>`);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const stage = document.getElementById("stage");
 stage.innerHTML = SCENE.cards.map((c, i) => `<div class="card" id="c${i}" style="left:${c.x}px;top:${c.y}px">

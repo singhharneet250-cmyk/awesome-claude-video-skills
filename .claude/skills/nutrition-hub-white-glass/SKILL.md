@@ -48,6 +48,9 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
    or stays off while the graphic says the line. Each caption line goes where the frame is clean at that moment
    (`{top}` / `{low}` per .srt cue, §6), the screen reads top to bottom, and every position is checked on preview
    stills against the face, hands, big words, cards and prints on clothes before the render.
+   **Caption font stays Inter Bold** *(owner, 2026-11-27: "Don't change the font style for the caption")*: no serif
+   accent words in captions. When the key word's red sits on a red wall (contrast under 3:1), keep the red key word
+   and use the stronger shadow (`--style strong`, `"style": "strong"` in edit.json) so a dark halo lifts it.
 7. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
 8. **Quality**: full HD at maximum quality, the biggest clean file the platforms accept (`encode.py`: CRF 4 steps,
    CRF 2 delivery, AAC 320k; owner 2026-11-27 "export size as maximum as possible"), -14 LUFS; ask for the original
@@ -180,7 +183,7 @@ Headlines are short, sentence case and end in a full stop ("Creatine, explained 
 - Set it 1.3× the Inter words around it (the serif runs small).
 - Only in headlines and kinetic lines of 60 px or more. Never for numbers or units, captions,
   body copy, labels or source notes. Numbers stay Inter so they read instantly.
-- **Exception, captions (R6 typeface accent, owner request 2026-11-25):** one word per caption may
+- **Exception, captions (R6 typeface accent, owner request 2026-11-25) — withdrawn 2026-11-27, the owner keeps captions in Inter Bold (standing decision 6):** one word per caption may
   switch to Instrument Serif Italic **in the caption's own colour** (white or ink, not red), at about 1.3×.
   Use `captions.py --serif-words carefully,really`. Never on the coloured key word or on a number.
 

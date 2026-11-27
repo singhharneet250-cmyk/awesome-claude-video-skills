@@ -26,7 +26,8 @@ edit.json (paths are relative to the file; every track is optional):
   "captions": {"position": "auto", "keywords": ["protein"], "blur": true},   "max_words": 3 by default with auto
   "sfx":      [{"t": 4.9, "sfx": "thud"}],
   "endcard":  {"template": "reel-9x16.html", "from": 8.15},
-  "motion_blur": 4                         sub-frames per frame for rendered graphics (render.cjs --blur); 1 = off
+  "motion_blur": 4,                        sub-frames per frame for rendered graphics (render.cjs --blur); 1 = off
+  "continues": true                        this edit is a middle part of a longer reel: the 1.5 s hook rule is skipped
 }
 Rules checked: no b-roll in the 1.5 s hook; b-roll shots 1-4 s with 1 s of face between; effects need
 the speaker (not over b-roll), at least 1.55 s, each kind once; overlays don't overlap; everything
@@ -148,7 +149,7 @@ def check(e, motion=False):
                 bad("WARN", f"{tag}: the beat lasts {b['_dur']:.2f} s, so its last frame holds; shorten the slot or add &hold=")
         elif not Path(b["_file"]).is_file():
             bad("FAIL", f"{tag}: file not found")
-        if b["start"] < HOOK:
+        if b["start"] < HOOK and not e.get("continues"):   # "continues": true = a middle part of a longer reel (no hook here)
             bad("FAIL", f"{tag}: inside the {HOOK:g} s hook, which shows the speaker")
         if not MIN_SHOT <= b["end"] - b["start"] <= MAX_SHOT:
             bad("WARN" if b["end"] - b["start"] > MAX_SHOT else "FAIL", f"{tag}: {b['end'] - b['start']:.2f} s (shots are 1-4 s)")
@@ -541,6 +542,10 @@ def render(e):
             cmd += ["--max-words", str(mw)]
         if cap.get("keywords"):
             cmd += ["--keywords", ",".join(cap["keywords"])]
+        if cap.get("style"):                       # footage | strong | ink: e.g. "strong" for a darker halo on a red wall
+            cmd += ["--style", cap["style"]]
+        if cap.get("serif_words"):                 # serif accent words: NOT for the owner's videos (standing decision 6)
+            cmd += ["--serif-words", ",".join(cap["serif_words"])]
         if cap.get("blur"):
             cmd += ["--plan-out", work / "caption_plan.json"]
         run(cmd, "captions")
