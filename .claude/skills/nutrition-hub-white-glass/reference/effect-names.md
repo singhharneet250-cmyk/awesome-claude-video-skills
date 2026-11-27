@@ -165,3 +165,10 @@ The colours of R8–R16 (warm off-white, peach and mint, lavender, forest green,
 Zoom-through Cut, Vertigo, Digital Zoom (zoom punches and camera zooms, §5); Paper Cut, Doodle Boil (not the
 Liquid Glass look); UI Tunnel fly-through (R11) and Dock Zoom (R14) (camera zooms); Neon Glow (R9, R13), Gradient
 Smear (R12) and Pixel Sparkles (R10) (off-palette). The owner can change those rules to allow them.
+
+## Films
+
+| Name | What it is | Where |
+|---|---|---|
+| Winter Wellness | A 48 s premium 3D science reel: five nutrients (vitamin D3, vitamin C, zinc, omega-3, protein), cinematic camera moves, frost-wipe transitions, glass panels, original score, logo end card | `templates/winter-wellness.html` (`?samples=3` for motion blur and depth of field), `scripts/score.py` |
+| Original Score | Music made in code at 120 BPM, landing on every scene change: no licence needed | `python3 scripts/score.py music.wav --dur 48 --cuts 5,12,19,26,33,40` |

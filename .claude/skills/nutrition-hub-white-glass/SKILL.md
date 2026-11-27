@@ -662,6 +662,8 @@ templates/motion-kit.html      R8–R18: 18 motion-kit beats and overlays by nam
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
+templates/winter-wellness.html 48 s 3D science reel (owner brief 2026-11-26): snow, generic softgels/tablets/powder, bone,
+                               muscle, immune cells, citrus + vitamin C, zinc crystal, heart + membrane, BCAAs; frost wipes
 assets/wg3d.js                 the 3D studio: PBR materials, light, shadow catcher, camera, builders
 assets/molecules/              computed conformers of 17 supplement molecules (+ library.json of verified SMILES)
 assets/vendor/three/           three.js r170 (MIT), vendored
@@ -672,6 +674,7 @@ scripts/caption_colors.py      reads a video and picks caption colours to match 
 scripts/bottom_blur.py         R6 bottom blur band for footage: progressive blur + dark or light fade (--auto follows the person)
 scripts/broll.py               b-roll cutaways over a talking head: on spoken words or set times; cut, white dip or dissolve
 scripts/sfx.py                 original SFX kit (synthesised) + mixer: cue sheets, b-roll plans, levels under the voice, -14 LUFS master
+scripts/score.py               original music made in code (no licence): 120 BPM pad, FM pluck arpeggio, bells, sub pulse, swells on cuts
 scripts/fx.py                  person-aware effects: orbit (spheres or word chips around the head) and frame escape, plus the pack below
 scripts/fx_pack.py             R7 pack for fx.py: sticky text, before + after wipe, pull-back reveal, depth scatter, green screen
 scripts/person_matte.py        person mattes for fx.py: head shape from the face track, plain-wall key, or a matte video

@@ -258,9 +258,12 @@ def key_span(tokens, keywords):
             if j < len(tokens) and is_unit(tokens[j]) and tokens[j].lower().strip(".,") not in {"a", "per"}:
                 j += 1
             return i, j
-    for i, t in enumerate(tokens):
-        if t.strip(".,!?;:\"'()“”’").lower() in keywords:
-            return i, i + 1
+    # a keyword can be several words ("Vitamin D"), and a transcript may join them with a no-break space
+    norm = lambda t: t.replace("\xa0", " ").strip(".,!?;:\"'()“”’").lower()
+    for i in range(len(tokens)):
+        for n in (3, 2, 1):
+            if i + n <= len(tokens) and " ".join(norm(x) for x in tokens[i:i + n]) in keywords:
+                return i, i + n
     return None
 
 
@@ -465,7 +468,7 @@ def main():
             acc = "#E66D2A" if style == "ink" else "#F0782B"
         return style, acc.upper()
 
-    keywords = {k.strip().lower() for k in args.keywords.split(",") if k.strip()}
+    keywords = {" ".join(k.replace("\xa0", " ").split()).lower() for k in args.keywords.split(",") if k.strip()}
     words, from_srt = load_words(args.input)
     groups = group(words)
     if args.max_words:

@@ -54,7 +54,7 @@ Strudel music, X posting licence).
 
 | Tool | What it is | Decision |
 |---|---|---|
-| Remotion Skills (remotion.dev/skills) | Official skills for videos in React | **Already available**: they sync from the owner's Claude account as the Remotion plugin (`remotion:*` skills). Nothing to add. |
+| Remotion Skills (remotion.dev/skills) | Official skills for videos in React | **Added to the repo** (owner, 2026-11-27: "add remotion plugin"): `.claude/settings.json` enables `remotion@remotion` from the `remotion-dev/claude-code-plugin` marketplace (plugin MIT, 4.0.528), so every session on this repo has the `remotion:*` skills, not only the owner's account. Remotion itself is free for individuals and companies of up to 3 people; larger companies need a Remotion company licence. Brand rules still win (SKILL.md §10). |
 | pen.dev (formerly Pencil) | A free design canvas inside VS Code or Cursor that Claude Code reads and draws on through its own MCP, with `.pen` files next to the code | Useful for designing thumbnails and title cards by hand. Desktop only: install it on the owner's computer; its MCP registers itself while it runs (check with `/mcp`). |
 | Rive MCP (rive.app) | Claude builds Rive animations and state machines in the Rive Editor | Desktop editor (macOS, Windows) with a local server: `claude mcp add --transport http rive http://127.0.0.1:9791/mcp` while the editor is open. Good for interactive or looping UI pieces; for a reel, export a video. Never redraw the logo in it. |
 | Mobbin MCP (mobbin.com/mcp) | 600,000+ real app screens for design reference | Not added: it needs a paid Mobbin plan and Nutrition Hub has no app. |
