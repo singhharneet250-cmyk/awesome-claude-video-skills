@@ -55,7 +55,10 @@ async function main() {
   }
   const [W, H] = o.size.split("x").map(Number);
   const fps = Number(o.fps);
-  const [pagePath, query] = o.page.split("?");          // "page.html?molecule=caffeine" passes URL params
+  // "page.html?molecule=caffeine" passes URL params; split at the FIRST "?" only, so a "?" inside on-screen copy
+  // ("text=DAILY|ROUTINE?") is kept (it was cut off before, 2026-11-27)
+  const qi = o.page.indexOf("?");
+  const [pagePath, query] = qi < 0 ? [o.page, undefined] : [o.page.slice(0, qi), o.page.slice(qi + 1)];
   const url = pathToFileURL(path.resolve(pagePath));
   if (query) new URLSearchParams(query).forEach((v, k) => url.searchParams.set(k, v));
   if (o.transparent) url.searchParams.set("transparent", "1");

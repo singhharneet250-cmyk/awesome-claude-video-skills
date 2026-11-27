@@ -541,6 +541,8 @@ def render(e):
             cmd += ["--max-words", str(mw)]
         if cap.get("keywords"):
             cmd += ["--keywords", ",".join(cap["keywords"])]
+        if cap.get("serif_words"):                 # one white serif accent word per caption (§3), e.g. on a red wall
+            cmd += ["--serif-words", ",".join(cap["serif_words"])]
         if cap.get("blur"):
             cmd += ["--plan-out", work / "caption_plan.json"]
         run(cmd, "captions")

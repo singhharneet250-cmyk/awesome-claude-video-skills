@@ -79,7 +79,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Name | Scene | What it is | Main parameters |
 |---|---|---|---|
 | Word Wheel | `wheel` | A list rolls like a slot reel and lands on one word, with the red dot | `words`, `pick`, `kicker`, `note` |
-| Menu Switch | `menu` | A word list steps down; the dot travels; a glass card swaps per item | `items=Title\|line;…`, `imgs`, `step` |
+| Menu Switch | `menu` | A word list steps down; the dot travels; a glass card swaps per item | `items=Title\|line;…`, `imgs`, `step`, `times` (when each item lights up) |
 | Count-up Bars | `count` | A big number counts up while bars rise (last bar red) | `value`, `unit`, `decimals`, `label`, `source` (required: a real source) |
 | Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `times` (when each flips, e.g. `0.4,0.7`, to land on the spoken words), `slot=top` |
 | Word Split | `split` | A line opens and a check, chip or photo springs into the gap | `text=Read the\|label`, `chip`, `img`, `under` |
@@ -89,7 +89,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Big Scroll | `scroll` | One huge line slides across; its full stop is the red dot | `text`, `kicker`, `size` |
 | Text Ring | `ring` | Words run round a slowly turning circle around a product photo | `text`, `img`, `caption` |
 | Progress Pill | `progress` | A pill fills in steps (18% … 92% … 100%) then becomes a check (overlay) | `label`, `done` |
-| Spatial Panels | `panels` | Glass cards float at the sides in 3D, turned toward the speaker (overlay) | `items`, `imgs`, `text`, `dur` |
+| Spatial Panels | `panels` | Glass cards float at the sides in 3D, turned toward the speaker (overlay) | `items`, `imgs`, `text`, `dur`, `times` (when each card swings in; two cards sit one on each side) |
 | Photo Strip | `strip` | A column of photos scrolls up between two words | `imgs`, `left`, `right` |
 | Echo Stack | `echo` | The line lands, faint copies spread above and below (photo optional, washed white) | `text=LINE\|LINE`, `img` |
 | Tracking Reveal | `tracking` | Small capitals slowly open their spacing; never still (overlay: in a chip) | `text`, `dur` |
@@ -99,7 +99,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Glass Lens | `lens` | A round glass magnifier glides to a spot in your footage and magnifies it (overlay; give it `"glass_lens": 0.35`) | `x`, `y`, `to`, `size`, `label`, `from`, `dur` |
 | Photo Scatter | `photos` | A headline in the middle; real photos pop in around it and drift outward | `imgs`, `text` |
 | Dot Grid | `dots` | A sourced share made visible: 100 dots pop in, the share fills in Logo Red while the number counts up ("7 in 10" or "70%") | `value` + `of`, or `pct`; `label`, `text`, `source` (required for a real figure) |
-| Three Panels | `panels3` | Three choices fill the screen as full bands (stacked on 9:16, side by side on 16:9); the one you pick turns Logo Red | `items` (`Word\|line;…`), `pick` (1–3, 0 = none) |
+| Three Panels | `panels3` | Three choices fill the screen as full bands (stacked on 9:16, side by side on 16:9); the one you pick turns Logo Red | `items` (`Word\|line;…`), `pick` (1–3, 0 = none), `times` (when each band comes in, e.g. `0,0.2,1.3`) |
 
 For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 
