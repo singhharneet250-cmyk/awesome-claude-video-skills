@@ -35,7 +35,7 @@ footage, is kept out of this public repo).
 | Name | What it is | Where |
 |---|---|---|
 | Headline Wall | Real headlines on cards around the speaker | `templates/headline-wall.html` (`?cards=Headline with *mark*\|Outlet · 29 Oct 2025\|x\|y\|rot;…`: real headlines only, quoted as published; `?w=420&size=34` for a close shot; `?start=`, `?stagger=`, `?hold=`) |
-| Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line) |
+| Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line, `?inset=130` on the right to keep clear of the Reels like/comment/share buttons) |
 | UI World | Glass app cards act out a task | `templates/ui-world.html` |
 | Chat Takeover | A chat: pick a contact, type, send, reply (above the head or full screen) | `templates/chat-takeover.html` (`?message=`, `?reply=`, `?kicker=`, `?label=` (keep "Example chat" unless the chat is real and shared with consent), `?hold=`, `?cps=34` to fit the typing to the spoken line) |
 | Comment Bubble | A comment types the keyword, then a reply with "Open link" | `chat-takeover.html?layout=comment` |
