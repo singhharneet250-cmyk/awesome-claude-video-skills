@@ -3,7 +3,7 @@
  * render.cjs adds this to every template and runs it after each __seek(t), so every template gets it without edits.
  * The brand's text colours become vertical gradients in the same family (top lighter, bottom deeper):
  *   ink    #46668C → #202B38 → #121922   headlines, labels, card copy
- *   orange #FDA65C → #F0782B → #DA5A1A   kickers, units, the accent word
+ *   orange #F23A24 → #D30204 → #9A0103   kickers, units, the accent word
  *   slate  #7C90A6 → #596879             body copy, sub-lines, source notes
  * Vertical, so a line animated word by word (or letter by letter) still reads as one ramp. Text on a pill, chip or
  * button (an element with its own background) keeps its solid colour, and any text in another colour (white on
@@ -18,11 +18,11 @@
  */
 (() => {
   const INK = "linear-gradient(180deg, #46668C 0%, #202B38 62%, #121922 100%)";
-  const ORANGE = "linear-gradient(180deg, #FDA65C 0%, #F0782B 55%, #DA5A1A 100%)";
+  const ORANGE = "linear-gradient(180deg, #F23A24 0%, #D30204 55%, #9A0103 100%)";
   const SLATE = "linear-gradient(180deg, #7C90A6 0%, #596879 100%)";
   const MAP = {
     "rgb(32, 43, 56)": INK, "rgb(17, 17, 19)": INK,          // brand ink, charcoal-scheme ink
-    "rgb(230, 109, 42)": ORANGE, "rgb(240, 120, 43)": ORANGE, // orange text, signal orange
+    "rgb(196, 2, 5)": ORANGE, "rgb(211, 2, 4)": ORANGE, // orange text, signal orange
     "rgb(89, 104, 121)": SLATE,
   };
   const ownText = (el) => {
@@ -59,7 +59,7 @@
   };
 
   // ---- fills -------------------------------------------------------------------------------------------------
-  const ORANGE_FILL = "linear-gradient(150deg, #FDAA62 0%, #F0782B 58%, #E2611F 100%)";
+  const ORANGE_FILL = "linear-gradient(150deg, #FC2B16 0%, #D30204 58%, #940102 100%)";
   const INK_FILL = "linear-gradient(150deg, #46668C 0%, #202B38 60%, #121922 100%)";
   const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null;
     const v = m[1].split(",").map((x) => parseFloat(x)); return { r: v[0], g: v[1], b: v[2], a: v.length > 3 ? v[3] : 1 }; };
@@ -93,11 +93,11 @@
     const ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
     svg.setAttribute("width", "0"); svg.setAttribute("height", "0"); svg.style.position = "absolute";
     svg.innerHTML = `<defs>
-      <linearGradient id="nhg-orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FDAA62"/><stop offset=".58" stop-color="#F0782B"/><stop offset="1" stop-color="#E2611F"/></linearGradient>
+      <linearGradient id="nhg-orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FC2B16"/><stop offset=".58" stop-color="#D30204"/><stop offset="1" stop-color="#940102"/></linearGradient>
       <linearGradient id="nhg-ink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#46668C"/><stop offset=".6" stop-color="#202B38"/><stop offset="1" stop-color="#121922"/></linearGradient></defs>`;
     document.body.appendChild(svg);
   }
-  const SVG_MAP = { "rgb(240, 120, 43)": "url(#nhg-orange)", "rgb(230, 109, 42)": "url(#nhg-orange)", "rgb(32, 43, 56)": "url(#nhg-ink)" };
+  const SVG_MAP = { "rgb(211, 2, 4)": "url(#nhg-orange)", "rgb(196, 2, 5)": "url(#nhg-orange)", "rgb(32, 43, 56)": "url(#nhg-ink)" };
   const svgs = (root) => {
     const shapes = root.querySelectorAll("svg path, svg circle, svg rect, svg ellipse, svg polygon, svg polyline");
     if (!shapes.length) return;

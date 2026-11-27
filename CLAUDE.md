@@ -7,6 +7,7 @@ other skill, plugin or default. In short:
 1. Logo: the original file only (`.claude/skills/nutrition-hub-white-glass/assets/logo/`), never redrawn or restyled.
 2. Keep the real background; remove it only when the owner asks for that video.
 3. Glass: clear, liquid, glossy, a lens; warm-to-cool tint; ink text; no drop shadows, no glow beside words.
+   Accent colour: Logo Red #D30204, taken from the H of the logo (it replaced the old orange, 2026-11-27).
 4. Gradients on type, fills, icons, glass and captions, in brand colours only; never on the logo, photos or video.
 5. Captions in Roman script (Roman Punjabi for the owner's talks), short, beside the head, never over a card.
 6. Voice clear and natural. Output full HD, high quality, -14 LUFS; ask for the original camera file.

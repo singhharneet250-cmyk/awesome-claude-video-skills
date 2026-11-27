@@ -278,7 +278,7 @@ ffmpeg -i nobg.mp4 -i voice.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -
    transcription, or the WhisperAI connector. An `.srt` also works, but its word timing is
    estimated, so check the sync.
 2. Build the captions. They follow the limits in SKILL.md §6: 2 lines, about 28 characters
-   per line, 1–3 s each, one orange key word, never across a sentence end or a pause.
+   per line, 1–3 s each, one red key word, never across a sentence end or a pause.
 
 ```bash
 python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt --keywords creatine,protein,recovery --match over.mp4
@@ -286,7 +286,7 @@ python3 $SK/scripts/captions.py words.json --out captions.ass --srt captions.srt
 
    `--match` reads the video the captions go on. It picks white, ink or strong-shadow words from
    what is behind each caption, and takes the key-word colour from the video's own dominant colour
-   (signal orange when it has none). Check what it picked with
+   (logo red when it has none). Check what it picked with
    `python3 $SK/scripts/caption_colors.py over.mp4`. To fix a single caption by hand, the key word
    is written `{\c&H002B78F0&}word{\r\blur6}` (colour as `&H00BBGGRR`).
 3. Burn the captions in:

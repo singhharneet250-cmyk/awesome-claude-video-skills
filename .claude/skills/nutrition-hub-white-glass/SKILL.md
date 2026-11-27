@@ -7,7 +7,7 @@ description: Brand and motion system for Nutrition Hub Khanna (the "Liquid Glass
 
 A premium, science-led visual language for supplement education, product films and
 high-retention fitness reels. **Clarity first. Depth second. Accent with intent.**
-White-on-white layers, translucent surfaces, restrained orange highlights and precise
+White-on-white layers, translucent surfaces, restrained red highlights and precise
 3D graphics. Keep every frame clean, legible and editorial.
 
 **Liquid Glass** *(owner, 2026-11-26)*: the system was called White Glass. The owner moved every glass surface to
@@ -31,22 +31,25 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
 1. **Logo**: the original file only (`assets/logo/`), never redrawn, regenerated or restyled; the name is not repeated beside it.
 2. **Background**: keep the real background; remove it (§4 N) only when the owner asks for that video.
 3. **Glass**: clear Liquid Glass (strength 0.9), liquid edge, glossy highlights, every card a lens (about 1.14×),
-   tinted warm peach to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
-4. **Gradients on everything** in the brand colours: type top to bottom on every line, fills, icons, glass and
+   tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
+4. **Accent colour: Logo Red** *(2026-11-27)*: `#D30204`, measured from the red "H" of the original logo (highlight
+   `#FC2B16`, deep `#940102`; text `#C40205`), replaces the old signal orange everywhere. The token names
+   (`--nh-orange`, `ORANGE`) stay for compatibility and now hold the red.
+5. **Gradients on everything** in the brand colours: type top to bottom on every line, fills, icons, glass and
    captions; never on the logo, photos or video (§2).
-5. **Captions**: in Roman script for Punjabi or Hindi speech (Roman Punjabi for the owner's talks), word-timed from a
+6. **Captions**: in Roman script for Punjabi or Hindi speech (Roman Punjabi for the owner's talks), word-timed from a
    local transcription, short (3 words) and placed beside the head, never over a card; the key word highlighted;
    caption words keep their legibility shadow (§6).
-6. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
-7. **Quality**: full HD, high quality (`encode.py`: lossless steps, CRF 14 delivery), -14 LUFS; ask for the original
+7. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
+8. **Quality**: full HD, high quality (`encode.py`: lossless steps, CRF 14 delivery), -14 LUFS; ask for the original
    camera file, not a WhatsApp copy (§7).
-8. **Process**: show the plan, stills or a 5-10 s sample before any long render; never re-render or render a full
+9. **Process**: show the plan, stills or a 5-10 s sample before any long render; never re-render or render a full
    film unless the owner asks for it; tell the owner how long a render will take.
-9. **Sound**: original music (`score.py`) and the SFX kit by default; a licensed track, an AI voice, AI b-roll or any
+10. **Sound**: original music (`score.py`) and the SFX kit by default; a licensed track, an AI voice, AI b-roll or any
    tool that spends credits only with the owner's OK.
-10. **Claims**: every number has a unit and a source; authorised-claim wording, no cure claims; supplements carry
+11. **Claims**: every number has a unit and a source; authorised-claim wording, no cure claims; supplements carry
     a varied-diet line (§8).
-11. **Repository**: never remove the installed skills or plugins; merge to `main` only on the owner's yes; keep the
+12. **Repository**: never remove the installed skills or plugins; merge to `main` only on the owner's yes; keep the
     owner's personal details private.
 
 ## 1. Logo: always the original file
@@ -65,9 +68,9 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
   ship with a stand-in. `scripts/render.cjs` refuses to render when the logo fails to load.
 - The logo already says "NUTRITION HUB · KHANNA", so don't set the brand name again beside it.
 - The logo's gold and red belong to the logo only. Never sample them into graphics,
-  type or captions. The system palette stays white, ice, ink and orange.
+  type or captions. The system palette stays white, ice, ink and red.
 - **Placement** *(derived)*: on porcelain or ice backgrounds, or on a near-opaque white
-  glass plate over footage. Never on orange, and never straight on busy footage.
+  glass plate over footage. Never on red, and never straight on busy footage.
   - Clear space: at least the height of the "KHANNA" line on every side.
   - Size by width. On a 1080-wide canvas: corner bug 280–340 px, end card 720–860 px.
     On 16:9 (1920×1080): end card 640–760 px.
@@ -83,14 +86,14 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
 | Porcelain white | `#FFFFFF` | Canvas | 55% |
 | Ice mist | `#EAF0F6` | Depth, panels, gradient floor | 20% |
 | Graphite ink | `#202B38` | Type | 15% |
-| Signal orange | `#F0782B` | Accent: fills, shapes, icons | 10% |
+| Logo red | `#D30204` | Accent: fills, shapes, icons | 10% |
 
 Supporting tones sampled from the playbook:
 
 | Token | Hex | Use |
 |---|---|---|
-| Orange as text | `#E66D2A` | Kickers and units only. Bold, 28 px or larger. |
-| Orange gradient | `#FDAA62 → #F0782B → #EF732D` | Pills, check badges, bars |
+| Red as text | `#C40205` | Kickers and units only. Bold, 28 px or larger. |
+| Red gradient | `#FC2B16 → #D30204 → #A80103` | Pills, check badges, bars |
 | Slate | `#596879` | Body copy, source notes (5.7:1 on white) |
 | Mist grey | `#8290A0` | Labels and meta only (3.3:1, so never essential info) |
 
@@ -99,44 +102,44 @@ Supporting tones sampled from the playbook:
 | Gradient | Stops | Where |
 |---|---|---|
 | Ink gradient | `#46668C → #202B38 → #121922`, top to bottom | Headlines, labels, card copy, chip words |
-| Orange text gradient | `#FDA65C → #F0782B → #DA5A1A`, top to bottom | Kickers, units, the accent word |
+| Red text gradient | `#F23A24 → #D30204 → #9A0103`, top to bottom | Kickers, units, the accent word |
 | Slate gradient | `#7C90A6 → #596879`, top to bottom | Body copy, sub-lines, source notes |
-| Glass tint | warm peach `#FFD6B6` (lit corner) → white → cool ice `#C4D8F2` (far corner) | Every glass card, chip and handle |
+| Glass tint | soft rose `#FFD4CE` (lit corner) → white → cool ice `#C4D8F2` (far corner) | Every glass card, chip and handle |
 | Captions | white → ice `#D6E3F2` over footage; the ink gradient on light walls; the key word lighter → its accent → deeper | Every caption line, top to bottom |
 | Fills | each solid colour 26% lighter (top left) → itself → 8% deeper (bottom right); white → ice | Pills, buttons, toggles, bars, knobs, chips, icons |
 
 - Type gradients run **top to bottom and repeat on every line**, so a line that animates word by word, or a
   paragraph on two lines, reads as one ramp. `render.cjs` applies them to every template (`assets/gradients.js`;
   `--flat` turns them off); `fx.py` draws chip and sticker words the same way (`fx.text_grad`).
-- Text on a pill, chip or button (its own background) keeps its solid colour; white text on orange stays white.
+- Text on a pill, chip or button (its own background) keeps its solid colour; white text on red stays white.
 - Real glass over footage (`glass.py --grad 1.0`) is tinted and filters the light like coloured glass: peach on
   the lit side, ice on the far side; ink text still reads everywhere. `--grad 0` gives plain porcelain glass.
 - **Everything else too** *(owner, 2026-11-26: "gradient colour scheme for overall things")*: every solid fill in a
-  template becomes a soft diagonal gradient of itself, lighter top left and deeper bottom right (orange pills,
+  template becomes a soft diagonal gradient of itself, lighter top left and deeper bottom right (red pills,
   toggles, bars, markers, dots; ink buttons and banners; ice tracks; white knobs, chips and tiles going to ice), and
-  orange and ink SVG icons, rings and ticks take the same ramps (`assets/gradients.js`, every frame, so a colour that
+  red and ink SVG icons, rings and ticks take the same ramps (`assets/gradients.js`, every frame, so a colour that
   animates never pops). In the Python effects: stickers and badges (`fx.grad_shape`), the pull-back editor, and the
   orbit ring and wipe divider in the glass tint ramp (`fx.warm_cool`). Captions get a true top-to-bottom gradient on
   every line: white to ice over footage, the ink ramp on light walls, the key word in its own accent ramp (drawn as
   6 clipped strips per line; `captions.py --flat` for solid). `render.cjs --flat` turns the template gradients off.
 - Gradients stay in the brand family: no rainbow, neon or off-palette colours, and never on the logo, photos or video.
 
-- Use orange sparingly: key metrics, active states and call-to-action details.
-  Allow **one orange focal point per frame** *(derived)*.
+- Use red sparingly: key metrics, active states and call-to-action details.
+  Allow **one red focal point per frame** *(derived)*.
 - No other hues: no greens, blues, neons or black backgrounds. Two exceptions: the logo, and a caption
   key word matched to the video's own colour (§6).
 - **Alternate colour schemes** (owner request, 2026-11-25). `templates/hook-slam.html` also renders in
   four other schemes, chosen with `?scheme=`:
   - `charcoal`: the label reel's look (owner, 2026-11-24: white hues, charcoal cards on top): white stage,
-    near-black type, charcoal cards with white words, the brand orange
+    near-black type, charcoal cards with white words, the brand red
   - `mint`: white with green
   - `mustard`: cream with mustard
   - `navy-lime`: dark navy with lime
   Each keeps one accent colour, Inter plus the §3 accent faces, the motion rules and the original logo
   (on a white plate on navy, because the logo's KHANNA line is dark). Liquid Glass stays the default.
   Use another scheme only when the owner asks or to match a video's colours, and keep one scheme per video.
-- White text on signal orange fails contrast, so don't use it for words. Calls to action
-  are ink text on a white chip with an orange dot.
+- White text on logo red fails contrast, so don't use it for words. Calls to action
+  are ink text on a white chip with an red dot.
 - The stage background is a soft gradient from white (top left) to ice (bottom right),
   plus large faint white discs for depth (`.nh-stage`, `.nh-orb`).
 
@@ -152,9 +155,9 @@ Sizes below are for a 1080×1920 canvas. Multiply by 0.85 for 1920×1080 (`.nh-l
 | Display headline | 116 / 800, line-height 0.98 | −0.035em | ink |
 | H2 | 72 / 800 | −0.028em | ink |
 | Body | 40 / 500, line-height 1.45 | 0 | slate |
-| Kicker | 28 / 700 UPPERCASE | +0.20em | orange text |
+| Kicker | 28 / 700 UPPERCASE | +0.20em | red text |
 | Label / meta | 24 / 600 UPPERCASE | +0.14em | mist |
-| Data metric | 150–220 / 800, tabular numbers | −0.02em | ink, unit in orange |
+| Data metric | 150–220 / 800, tabular numbers | −0.02em | ink, unit in red |
 | Caption | 62 / 700 | 0 | bare words: white with a soft shadow on footage, ink on light backgrounds |
 
 Headlines are short, sentence case and end in a full stop ("Creatine, explained simply.").
@@ -162,20 +165,20 @@ Headlines are short, sentence case and end in a full stop ("Creatine, explained 
 **Accent serif: Instrument Serif Italic** (`.nh-accent`)
 - One word per line, and at most one per beat, inside an Inter headline or kinetic line:
   "Protein isn't the whole *story.*".
-- Always orange: #E66D2A as text on light backgrounds, #F0782B over footage.
+- Always red: #C40205 as text on light backgrounds, #D30204 over footage.
 - Set it 1.3× the Inter words around it (the serif runs small).
 - Only in headlines and kinetic lines of 60 px or more. Never for numbers or units, captions,
   body copy, labels or source notes. Numbers stay Inter so they read instantly.
 - **Exception, captions (R6 typeface accent, owner request 2026-11-25):** one word per caption may
-  switch to Instrument Serif Italic **in the caption's own colour** (white or ink, not orange), at about 1.3×.
+  switch to Instrument Serif Italic **in the caption's own colour** (white or ink, not red), at about 1.3×.
   Use `captions.py --serif-words carefully,really`. Never on the coloured key word or on a number.
 
 **Condensed slam: Bebas Neue** (`.nh-slam-word`)
-- One word or one number on its own line, in capitals, 200–320 px, ink or orange.
+- One word or one number on its own line, in capitals, 200–320 px, ink or red.
 - At most one per beat and about one every 5 s, so it stays a hit.
 - Never sentences, never on the same line as Inter, never in captions, and never with a unit
   ("33 g" stays an Inter data metric).
-- In one frame, use either the slam word or the orange serif accent as the orange focal point, not both.
+- In one frame, use either the slam word or the red serif accent as the red focal point, not both.
 
 ## 4. Graphic components
 
@@ -210,7 +213,7 @@ All of these are implemented in `assets/brand.css`.
   - **Small molecules** (creatine, caffeine, BCAAs, beta-alanine, carnitine, glutamine, arginine,
     citrulline, theanine, taurine, glycine, HMB, vitamin C, melatonin, curcumin):
     `templates/molecule-3d.html`. It is a physically based three.js studio (`assets/wg3d.js`): white
-    ceramic carbon and hydrogen, frosted-glass heteroatoms, one orange accent atom, studio reflections,
+    ceramic carbon and hydrogen, frosted-glass heteroatoms, one red accent atom, studio reflections,
     a soft contact shadow, and real-camera motion blur and depth of field with `?samples=8`. The
     atom positions are computed conformers from verified SMILES (`assets/molecules/`, checked for
     formula and stereochemistry by `scripts/make_molecule.py`, which also adds new molecules), so say
@@ -219,12 +222,12 @@ All of these are implemented in `assets/brand.css`.
   - **Proteins and enzymes** from a real PDB or AlphaFold structure: the `molecular-film` skill
     (Blender Cycles, on a GPU machine).
   - **A generated still**, only when neither fits, from this prompt base: *"translucent frosted-glass and white ceramic molecular model, one signal
-    orange (#F0782B) accent atom, seamless white studio, soft diffused key light, gentle
+    red (#D30204) accent atom, seamless white studio, soft diffused key light, gentle
     reflections, shallow depth of field, high-key, clean editorial, minimal"*.
   - Avoid: neon, dark backgrounds, sci-fi HUDs, lens flares, clutter, glowing particles.
-- **C · Data callouts:** evidence-led, with clear units, a source note and orange emphasis
+- **C · Data callouts:** evidence-led, with clear units, a source note and red emphasis
   (`.nh-callout`, `.nh-metric`, `.nh-unit`, `.nh-source`, `.nh-callout__bar`).
-  Keep text clear of the orange bar. The playbook sheet itself clips text into it, so don't repeat that.
+  Keep text clear of the red bar. The playbook sheet itself clips text into it, so don't repeat that.
 - **D · Product hero:** product spotlight with accurate packaging and soft reflections. Use
   real product photos or renders only. Never AI-regenerate or alter a label, logo, claim
   or flavour. Show the front label square-on and legible, on a white sweep with soft shadow.
@@ -277,7 +280,7 @@ All of these are implemented in `assets/brand.css`.
   - **Sound and captions:** the b-roll's own sound is dropped and the voice track is copied unchanged.
     Captions stay on during b-roll; run `captions.py --match` on the cut, so colours match the b-roll too.
   - **Order:** grade → b-roll → bottom blur band → captions → end card.
-- **G · Orbit (R5, owner request 2026-11-25).** Ceramic spheres (one signal orange) burst out from behind the
+- **G · Orbit (R5, owner request 2026-11-25).** Ceramic spheres (one logo red) burst out from behind the
   speaker's head onto a thin white ring, turn slowly (30°/s), then fold back behind the head.
   - Command: `scripts/fx.py orbit --at 3-6`.
   - A tilted ring (`--tilt 65`) is centred at the chin: its front half crosses the chest, its back half passes
@@ -297,7 +300,7 @@ All of these are implemented in `assets/brand.css`.
   - Use it for a hook or a reveal, 2.5–4 s, at most once per reel.
 - **I · Chat takeover (R4, owner request 2026-11-25).** `templates/chat-takeover.html`, rendered `--transparent`.
   - The sequence: a contact list → one contact picked (the rest blur away) → a message types out with an
-    orange caret → the orange send button → typing dots → a reply.
+    red caret → the red send button → typing dots → a reply.
   - `?layout=top` sits above the head: pass `?bottom=` (head top − 40 px) so it can't cover the face.
   - `?layout=full` takes over the frame with a frosted wash.
   - Honesty:
@@ -322,7 +325,7 @@ All of these are implemented in `assets/brand.css`.
   | Sticky text | `fx.py sticky --text "3–5 g a day" --badge 12 --anchor chest\|head\|hand`: a porcelain sticker that follows the speaker | 2–6 words; one sticker on screen |
   | Before + after | `fx.py wipe --before raw.mp4`: a white light bar sweeps right to left between "Before" and "After" chips. `--mode line` is the attention style of the owner's liquid-glass reference (R18): the divider keeps swinging with a glass ‹ › handle at chest height, labels at the top (`--words "Before,After"`) under an optional headline pill (`--text "Same reel. Watch the line."`) | Only edits, grades or product views. Never body, health or results comparisons (§8). |
   | Pull-back reveal | `fx.py pullback`: the picture pulls back into a Liquid Glass editor (checklist, timeline with the take's real waveform), then pushes back in | — |
-  | Depth scatter | `fx.py scatter --words "Label,first"`: the first word (white) behind the head, the second (orange) in front; letters fly in from scattered depths | Two short words only |
+  | Depth scatter | `fx.py scatter --words "Label,first"`: the first word (white) behind the head, the second (red) in front; letters fly in from scattered depths | Two short words only |
   | Green screen | `fx.py bgswap --matte wall\|FILE --bg clip\|image\|stage\|blur`: the room behind the speaker becomes another background | Needs a real outline. Backgrounds are your own, licensed or the stage; never memes or other people's footage. |
   | Headline wall | `templates/headline-wall.html`: porcelain cards with a highlighted phrase pop in around the speaker | Real headlines only, quoted, with outlet and date (§8); the template's example cards say "Example" |
   | Phone mockup | `templates/phone-mockup.html?side=left\|right&screen=/abs/shot.png`: a porcelain phone swings in beside the head | A real screenshot or product photo, never a redrawn label |
@@ -335,14 +338,14 @@ All of these are implemented in `assets/brand.css`.
     those rules first.
   - Every pack effect runs through `timeline.py` like the others and writes its own SFX cue.
 - **L · The motion kit (owner references R8–R16, 2026-11-26).** `templates/motion-kit.html?scene=NAME`: 18 short
-  beats learned from the owner's motion-design references, rebuilt in Liquid Glass (porcelain, ink, one orange
+  beats learned from the owner's motion-design references, rebuilt in Liquid Glass (porcelain, ink, one red
   dot carried through each beat, critically damped springs that never overshoot). Names and parameters:
   `reference/effect-names.md`; what each came from: `reference/style-references.md` (R8–R16).
 
   | Kind | Scenes | Use |
   |---|---|---|
   | Full-screen beats | `wheel` (Word Wheel), `menu` (Menu Switch), `count` (Count-up Bars), `split` (Word Split), `highlight` (Highlighter Sweep), `morph` (Shape Morph), `scroll` (Big Scroll), `ring` (Text Ring), `strip` (Photo Strip), `echo` (Echo Stack), `photos` (Photo Scatter) | Render as MP4 and cut in like b-roll: `"template"` in an `edit.json` b-roll entry, or `broll.py`. 3–4.5 s each. `--transparent` is refused (ink type never sits bare on footage). |
-  | Overlays | `toggle` (Toggle List), `prompt` (Prompt Box), `progress` (Progress Pill), `panels` (Spatial Panels), `tracking` (Tracking Reveal), `banner` (Comment Banner), `cta` (Comment CTA: a glass card, an orange "Comment KEYWORD" pill and the handle, R18's ending), `lens` (Glass Lens: a round glass magnifier that glides to a spot in the footage, `?x=&y=`, `?to=`, `?label=`; give the overlay `"glass_lens": 0.35`) | Over the speaker with `--transparent` (real glass in the timeline), or full screen. Lower band by default, `?slot=top` for the top band. |
+  | Overlays | `toggle` (Toggle List), `prompt` (Prompt Box), `progress` (Progress Pill), `panels` (Spatial Panels), `tracking` (Tracking Reveal), `banner` (Comment Banner), `cta` (Comment CTA: a glass card, an red "Comment KEYWORD" pill and the handle, R18's ending), `lens` (Glass Lens: a round glass magnifier that glides to a spot in the footage, `?x=&y=`, `?to=`, `?label=`; give the overlay `"glass_lens": 0.35`) | Over the speaker with `--transparent` (real glass in the timeline), or full screen. Lower band by default, `?slot=top` for the top band. |
 
   - 16:9 for a TV or laptop: `--size 1920x1080`; every scene lays itself out for landscape.
   - Honesty: `count` needs a real number and `?source=`; photos are real (`?img=`, `?imgs=`); the copy in the
@@ -377,7 +380,7 @@ All of these are implemented in `assets/brand.css`.
   lift around 3 kHz, a little air, a de-esser and 2.5:1 compression. `--report` shows the plan; `--ab 0-10` writes a
   level-matched before-and-after. Loudness is finished later (sfx.py, −14 LUFS). On the owner's take: presence
   (2–4 kHz) up 4.4 dB, noise still 23 dB under the voice.
-- **Check badge:** orange gradient circle with a white tick (`.nh-check`) for fact lists.
+- **Check badge:** red gradient circle with a white tick (`.nh-check`) for fact lists.
 
 ## 5. Motion: physical, calm and intentional
 
@@ -407,7 +410,7 @@ All of these are implemented in `assets/brand.css`.
     a talking head changes the picture every 4–6 s. `timeline.py check` warns after 6 s with nothing new.
   - Moves are short (**0.2–0.4 s** median), then the frame **holds 0.5–0.9 s**, rarely a fully still frame over
     1.5 s. Keep something alive in a hold (the float, a drift). `qa.py` warns on frozen stretches.
-  - **Carry one element across every change** (the orange dot, a word, the shape), the way R8 carries "CREATE"
+  - **Carry one element across every change** (the red dot, a word, the shape), the way R8 carries "CREATE"
     across a match cut and R16 morphs one shape through every state. No empty frame between beats.
   - Text that swaps inside a moving container gets its own exit and entrance timing, so letters never overlap.
   - A sound lands on about **half to two-thirds of the cuts** (R9, R10, R12, R13), not on every one. The references
@@ -459,11 +462,11 @@ All of these are implemented in `assets/brand.css`.
   - **Key word colour:** the video's own dominant colour, even a small accent (lime on a navy edit,
     green or mustard on a minimal white edit). It is re-coloured to a readable shade: bright on
     white words, deep on ink words (3:1 or better for large text).
-  - **Fallback:** signal orange (#F0782B, or #E66D2A on ink words) when the video has no clear
-    colour or its colour is already warm or orange.
-  - **Per caption:** a caption switches to orange when the video's colour sits right behind it at
+  - **Fallback:** logo red (#D30204, or #C40205 on ink words) when the video has no clear
+    colour or its colour is already warm or red.
+  - **Per caption:** a caption switches to red when the video's colour sits right behind it at
     that moment (a blue key word on a blue shirt would vanish). Tested on R6, where the blue shirt
-    sends every caption to orange.
+    sends every caption to red.
   - Caption words only. The logo, glass cards, callouts, kickers, data metrics and the serif
     accent keep the §2 palette.
 - One key word per caption (a number, a unit or a claim word) goes in that key-word colour.
@@ -499,7 +502,7 @@ All of these are implemented in `assets/brand.css`.
   captions that follow every rule above, using the `reference/captions.ass` style. It never
   splits a number from its unit, highlights the number first and a `--keywords` claim word
   second, and leaves a caption one colour when it has neither. `--match` picks the colours
-  from the video. Without it, captions are white with an orange key word; `--style` and
+  from the video. Without it, captions are white with an red key word; `--style` and
   `--accent #RRGGBB` override by hand. Burn in with
   `ffmpeg -vf "ass=captions.ass:fontsdir=<skill>/assets/fonts"`. That folder holds the serif; Inter comes
   from the system fonts, so Inter must be installed.
@@ -641,7 +644,7 @@ inputs in the last column.
 | Licensed music (and SFX beyond the kit) | Epidemic Sound connector, only with a commercial plan for the business | Music calm and clean, 18–22 dB under the voice; SFX by §5 rules |
 | Fit a size cap (WhatsApp 16 MB, Gmail, Outlook) | `halfsize` skill (`--for whatsapp`), or the tested ffmpeg fallback in `reference/footage-editing.md` §9 | — |
 | Hooks, scripts, captions for the post | `social-media-skills` (hook-writer, reels-script, caption-writer) | §8 content rules |
-| A launch film, feature film or promo rendered from code, held to measured gates (words in the middle, one element carried, hidden cuts, copy check, forensics) | `cinetic` skill (vendored, MIT; `.claude/skills/cinetic`) | This skill's tokens as the supplied brand kit: its "no orange accent", "no serif" and "no glassmorphism" bans don't apply to Nutrition Hub (its own rule: a supplied brand wins) |
+| A launch film, feature film or promo rendered from code, held to measured gates (words in the middle, one element carried, hidden cuts, copy check, forensics) | `cinetic` skill (vendored, MIT; `.claude/skills/cinetic`) | This skill's tokens as the supplied brand kit: its "no red accent", "no serif" and "no glassmorphism" bans don't apply to Nutrition Hub (its own rule: a supplied brand wins) |
 | A product film built on the product's own design system, cut to music on measured beats | `product-film` skill (vendored, MIT) | Liquid Glass as the design system; honest claims (§8) |
 | Captions in 3D around a talking head: depth groups, a hero word behind the head, a ring of words in front | `camera-3d-captions` skill (vendored, Apache-2.0, HyperFrames) | §6 type and colours; **no whip-ins, push-ins or camera zooms** (§5): depth, rings and words behind the head only |
 | Ideas: 240 Claude motion videos with the prompt or skill behind each | prompt-motion.com (allowed in this repo's cloud environment; `reference/learned-tools.md`) | Borrow the technique, rebuild it in Liquid Glass |
@@ -668,7 +671,7 @@ tooling from companions, never their look:
 
 In any app (ManyMotions, Clipzi, OpusClip, Picsart, CapCut, HyperFrames and so on): upload
 `assets/logo/nutrition-hub-logo.png` as the logo, set Inter and the §2 colours, pick the
-caption preset closest to "plain bold words with a soft shadow and one orange word, no box, no animation",
+caption preset closest to "plain bold words with a soft shadow and one red word, no box, no animation",
 set transitions to cut, fade or dip-to-white, and run `scripts/qa.py` on the export.
 
 ## Files
@@ -684,7 +687,7 @@ templates/chat-takeover.html   chat sequence overlay (R4): ?layout=top (above th
 templates/headline-wall.html   R7: real headlines on porcelain cards pop in around the speaker
 templates/phone-mockup.html    R7: a porcelain phone swings in beside the head with a real screenshot or photo
 templates/ui-world.html        R7: glass UI cards act out a task (prompt, progress, filmstrip, preview)
-templates/motion-kit.html      R8–R18: 18 motion-kit beats and overlays by name (?scene=), springs, carried orange dot
+templates/motion-kit.html      R8–R18: 18 motion-kit beats and overlays by name (?scene=), springs, carried red dot
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)

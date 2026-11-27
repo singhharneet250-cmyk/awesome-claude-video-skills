@@ -48,7 +48,7 @@ import encode  # noqa: E402  (visually lossless output; encode.py deliver for th
 WHITE = np.array([1.0, 1.0, 1.0], np.float32)
 ICE = np.array([0xEA, 0xF0, 0xF6], np.float32) / 255
 INK = np.array([0x20, 0x2B, 0x38], np.float32) / 255
-ORANGE = np.array([0xF0, 0x78, 0x2B], np.float32) / 255
+ORANGE = np.array([0xD3, 0x02, 0x04], np.float32) / 255   # Logo Red (owner, 2026-11-27); the name stays for compatibility
 IN_S, OUT_S = 0.6, 0.45
 
 
@@ -216,7 +216,7 @@ def find_font():
 
 
 INK_GRAD = ((0.0, (70, 102, 140)), (0.62, (32, 43, 56)), (1.0, (18, 25, 34)))      # = assets/gradients.js, top to bottom
-ORANGE_GRAD = ((0.0, (253, 166, 92)), (0.55, (240, 120, 43)), (1.0, (218, 90, 26)))
+ORANGE_GRAD = ((0.0, (242, 58, 36)), (0.55, (211, 2, 4)), (1.0, (154, 1, 3)))
 
 
 def text_grad(im, xy, text, font, anchor="mm", stops=INK_GRAD):
@@ -241,8 +241,8 @@ def fill_grad_stops(rgb):
     """The diagonal fill gradient of a solid colour, as assets/gradients.js makes it: brand orange and ink use their
     ramps, white goes to ice, any other colour runs from 26% lighter to 8% deeper."""
     r, g, b = rgb
-    if (r, g, b) == (240, 120, 43):
-        return ((0.0, (253, 170, 98)), (0.58, (240, 120, 43)), (1.0, (226, 97, 31)))
+    if (r, g, b) == (211, 2, 4):
+        return ((0.0, (252, 43, 22)), (0.58, (211, 2, 4)), (1.0, (148, 1, 2)))
     if (r, g, b) == (32, 43, 56):
         return INK_GRAD
     if min(r, g, b) > 245:
@@ -271,7 +271,7 @@ def warm_cool(W, H):
     """The glass tint ramp as a colour field, warm peach (top left) → white → cool ice (bottom right), float RGB."""
     X, Y = np.meshgrid(np.linspace(-1, 1, W, dtype=np.float32), np.linspace(-1, 1, H, dtype=np.float32))
     p = np.clip(-(X * 0.6 + Y * 0.8), -1, 1)[..., None]                     # +1 top left
-    warm, cool = np.array([255, 214, 182], np.float32) / 255, np.array([196, 216, 242], np.float32) / 255
+    warm, cool = np.array([255, 212, 206], np.float32) / 255, np.array([196, 216, 242], np.float32) / 255
     return np.where(p > 0, 1 + (warm - 1) * p, 1 + (cool - 1) * -p)
 
 

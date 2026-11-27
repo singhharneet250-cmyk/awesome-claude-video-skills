@@ -69,7 +69,7 @@ def sticker(text, height, badge=None):
     d.rounded_rectangle((pad, pad, pad + w, pad + hp), int(hp * 0.28), outline=(32, 43, 56, 22), width=ss)
     x = pad + int(hp * 0.32)
     if badge:
-        im = fx.grad_shape(im, "rounded_rectangle", (x, pad + hp * 0.2, x + bw, pad + hp * 0.8), (240, 120, 43), radius=int(hp * 0.16))
+        im = fx.grad_shape(im, "rounded_rectangle", (x, pad + hp * 0.2, x + bw, pad + hp * 0.8), (211, 2, 4), radius=int(hp * 0.16))
         d = ImageDraw.Draw(im)
         d.text((x + bw / 2, pad + hp / 2), str(badge), font=bfont, fill=(255, 255, 255, 255), anchor="mm")
         x += bw + int(hp * 0.18)
@@ -243,18 +243,18 @@ class Pullback:
         f = lambda s, b=False: ImageFont.truetype(fx.find_font(), int(s * W / 1080))
         u = W / 1080
         d.rounded_rectangle((40 * u, 60 * u, W - 40 * u, 150 * u), int(26 * u), fill=(255, 255, 255, 235), outline=(32, 43, 56, 20))
-        for i, c in enumerate(((240, 120, 43), (201, 213, 226), (201, 213, 226))):
+        for i, c in enumerate(((211, 2, 4), (201, 213, 226), (201, 213, 226))):
             im = fx.grad_shape(im, "ellipse", (72 * u + i * 30 * u, 95 * u, 90 * u + i * 30 * u, 113 * u), c)
             d = ImageDraw.Draw(im)
         d.text((W / 2, 105 * u), "Nutrition Hub · reel edit", font=f(30), fill=(32, 43, 56, 255), anchor="mm")
         x0, y0, x1, y1 = self.rect
         px0 = x1 + 34 * u
         d.rounded_rectangle((px0, y0, W - 40 * u, y0 + 520 * u), int(26 * u), fill=(255, 255, 255, 240), outline=(32, 43, 56, 20))
-        d.text((px0 + 28 * u, y0 + 30 * u), "CHECKLIST", font=f(22), fill=(230, 109, 42, 255))
+        d.text((px0 + 28 * u, y0 + 30 * u), "CHECKLIST", font=f(22), fill=(196, 2, 5, 255))
         for i, item in enumerate(("Grade", "Captions", "B-roll", "Sound", "Export")):
             yy = y0 + (92 + i * 80) * u
             done = i < 4
-            im = fx.grad_shape(im, "ellipse", (px0 + 28 * u, yy, px0 + 62 * u, yy + 34 * u), (240, 120, 43) if done else (234, 240, 246))
+            im = fx.grad_shape(im, "ellipse", (px0 + 28 * u, yy, px0 + 62 * u, yy + 34 * u), (211, 2, 4) if done else (234, 240, 246))
             d = ImageDraw.Draw(im)
             if done:
                 d.line((px0 + 37 * u, yy + 17 * u, px0 + 44 * u, yy + 25 * u, px0 + 55 * u, yy + 10 * u), fill=(255, 255, 255, 255), width=int(4 * u))
@@ -262,7 +262,7 @@ class Pullback:
         ty0, ty1 = 0.71 * H, 0.93 * H
         d.rounded_rectangle((40 * u, ty0, W - 40 * u, ty1), int(26 * u), fill=(255, 255, 255, 240), outline=(32, 43, 56, 20))
         lanes = [(ty0 + 40 * u, [(0.0, 0.22, (234, 240, 246)), (0.24, 0.52, (201, 213, 226)), (0.54, 0.80, (234, 240, 246)), (0.82, 1.0, (201, 213, 226))]),
-                 (ty0 + 110 * u, [(0.10, 0.30, (240, 120, 43)), (0.58, 0.74, (240, 120, 43))])]
+                 (ty0 + 110 * u, [(0.10, 0.30, (211, 2, 4)), (0.58, 0.74, (211, 2, 4))])]
         lx0, lx1 = 72 * u, W - 72 * u
         for y, clips in lanes:
             for a_, b_, c in clips:

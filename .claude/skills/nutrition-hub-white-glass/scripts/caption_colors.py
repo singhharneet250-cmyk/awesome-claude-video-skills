@@ -15,7 +15,7 @@ How it decides:
   accent  The video's dominant saturated hue, ignoring skin tones and greys, even when it covers
           only a small area (a minimal white video with one green accent counts). It is
           re-coloured in two readable shades: a bright one for white words and a deeper one for
-          ink words. It uses signal orange (#F0782B bright, #E66D2A deep) instead when the video
+          ink words. It uses Logo Red (#FC2B16 bright, #C40205 deep) instead when the video
           has no clear colour, or when its colour is already close to orange. Per caption, it also
           switches to orange when the same colour sits right behind that caption at that moment
           (a blue key word on a blue shirt would vanish).
@@ -30,7 +30,7 @@ import sys
 
 import numpy as np
 
-BRAND_BRIGHT, BRAND_DEEP = "#F0782B", "#E66D2A"
+BRAND_BRIGHT, BRAND_DEEP = "#FC2B16", "#C40205"   # Logo Red (owner, 2026-11-27): bright on footage, deep on light
 INK, WHITE, SHADOW = "#202B38", "#FFFFFF", "#0B1118"
 W, H = 180, 320                     # analysis size (9:16)
 ZONES = {"bottom": (0.655, 0.735), "mic": (0.54, 0.62), "chest": (0.47, 0.55)}  # where caption text sits, share of frame height

@@ -16,7 +16,7 @@ All six are 9:16 Instagram exports: 720×1280, 30 fps, mastered at about −14 L
 | R6 | `AI is replacing video editing... Or is it.mp4` | 61.6 s | 0 (one take) | Talking head at a desk mic, blue studio grade; running white word captions + script-accent lockups + app tiles and glass cards |
 
 R2, R3 and R4 are already close to Liquid Glass: a white or light stage, near-black type, **one**
-accent colour, frosted white cards. Swap their accent for signal orange #F0782B and they fit.
+accent colour, frosted white cards. Swap their accent for signal orange #D30204 and they fit.
 
 ## What each one does
 
@@ -145,7 +145,7 @@ confirmed.
 
 | Element | Spec on 1080×1920 |
 |---|---|
-| Key word | Inter Display 800, −0.035em tracking, 110–150 px, graphite ink #202B38. When the key word is the claim or number, it goes orange (#E66D2A as text), one word only. A non-number key word may use the orange Instrument Serif accent instead (SKILL.md §3). |
+| Key word | Inter Display 800, −0.035em tracking, 110–150 px, graphite ink #202B38. When the key word is the claim or number, it goes orange (#C40205 as text), one word only. A non-number key word may use the orange Instrument Serif accent instead (SKILL.md §3). |
 | Connector words | Inter Italic 400–500, slate #596879, at 0.3× the key word (about 34–44 px), lowercase, tucked above-left or below-right. |
 | Slot A: beside the head | Left edge x 72–120 px. Vertical centre 35–42%. Must clear the face by at least 40 px; mirror to the right side if the speaker sits left of centre. |
 | Slot B: top band | Vertical centre 15–22%, kept below the top 250 px platform zone. For sentence ends and when slot A is busy. |
@@ -329,9 +329,10 @@ are visual matches, not confirmed files.
 | R16 | warm grey canvas `#C6C8C1`, black UI | black, white | Claude orange `#C5401A` | Geist (named in the prompt); Inter |
 | R18 | silk red/blue, pool blue, violet ribbons (backdrops for the glass) | white | none; colour comes from the backdrop through the glass | SF Pro semibold, mono for code |
 
-The Nutrition Hub palette does not change: porcelain `#FFFFFF`, ice `#EAF0F6`, ink `#202B38`, orange `#F0782B`
-(text `#E66D2A`), slate `#596879`, mist `#8290A0`; Inter, Bebas Neue for slams, Instrument Serif Italic for one
-accent word. R15's warm off-white with an orange highlight and R14's white canvas are the closest to it.
+The Nutrition Hub palette: porcelain `#FFFFFF`, ice `#EAF0F6`, ink `#202B38`, **Logo Red `#D30204`** (text `#C40205`,
+gradient `#FC2B16 → #D30204 → #940102`, measured from the red "H" of the original logo; it replaced the old signal
+orange `#F0782B` on 2026-11-27 at the owner's request), slate `#596879`, mist `#8290A0`; the logo's gold (`#F2AE35`) stays
+inside the logo. Inter, Bebas Neue for slams, Instrument Serif Italic for one accent word.
 
 **Glass (owner, 2026-11-26, every future edit):** clear Liquid Glass (strength 0.9) for cards, chips and handles;
 a thick rounded edge that bends the picture (liquid) and polished highlights (glossy); ink text on the glass
@@ -341,8 +342,8 @@ words on them.
 **Background (owner, 2026-11-26):** keep the real background; remove it only when the owner asks for that video.
 
 **Gradients (owner, 2026-11-26, every future edit):** type in brand gradients, top to bottom, repeated per line:
-ink `#46668C → #202B38 → #121922`, orange `#FDA65C → #F0782B → #DA5A1A`, slate `#7C90A6 → #596879`; glass
-tinted warm peach `#FFD6B6` at the lit corner → white → cool ice `#C4D8F2`. Then "gradient colour scheme for overall
+ink `#46668C → #202B38 → #121922`, orange `#F23A24 → #D30204 → #9A0103`, slate `#7C90A6 → #596879`; glass
+tinted warm peach `#FFD4CE` at the lit corner → white → cool ice `#C4D8F2`. Then "gradient colour scheme for overall
 things": every solid fill and icon as a soft diagonal gradient of itself (white → ice), the orbit ring and wipe divider
 in the glass tint ramp, and captions top to bottom on every line (white → ice `#D6E3F2` on footage, the ink ramp on
 light walls, the key word in its accent ramp).
