@@ -24,6 +24,31 @@ their §6 legibility shadow).
 `reference/playbook.png` is the source playbook. Look at it when in doubt. Everything
 marked *(derived)* below adapts the playbook to video. Unmarked values come straight from it.
 
+## Owner's standing decisions (read before every edit)
+
+Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over every default below.
+
+1. **Logo**: the original file only (`assets/logo/`), never redrawn, regenerated or restyled; the name is not repeated beside it.
+2. **Background**: keep the real background; remove it (§4 N) only when the owner asks for that video.
+3. **Glass**: clear Liquid Glass (strength 0.9), liquid edge, glossy highlights, every card a lens (about 1.14×),
+   tinted warm peach to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
+4. **Gradients on everything** in the brand colours: type top to bottom on every line, fills, icons, glass and
+   captions; never on the logo, photos or video (§2).
+5. **Captions**: in Roman script for Punjabi or Hindi speech (Roman Punjabi for the owner's talks), word-timed from a
+   local transcription, short (3 words) and placed beside the head, never over a card; the key word highlighted;
+   caption words keep their legibility shadow (§6).
+6. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
+7. **Quality**: full HD, high quality (`encode.py`: lossless steps, CRF 14 delivery), -14 LUFS; ask for the original
+   camera file, not a WhatsApp copy (§7).
+8. **Process**: show the plan, stills or a 5-10 s sample before any long render; never re-render or render a full
+   film unless the owner asks for it; tell the owner how long a render will take.
+9. **Sound**: original music (`score.py`) and the SFX kit by default; a licensed track, an AI voice, AI b-roll or any
+   tool that spends credits only with the owner's OK.
+10. **Claims**: every number has a unit and a source; authorised-claim wording, no cure claims; supplements carry
+    a varied-diet line (§8).
+11. **Repository**: never remove the installed skills or plugins; merge to `main` only on the owner's yes; keep the
+    owner's personal details private.
+
 ## 1. Logo: always the original file
 
 - **File:** `assets/logo/nutrition-hub-logo.png`. This is the original Nutrition Hub logo
@@ -160,8 +185,8 @@ All of these are implemented in `assets/brand.css`.
   (brightest top-left, a fainter line bottom-right), a lens edge and lower-edge thickness, no drop shadow and an
   18–28 px radius
   (`.nh-glass`, `.nh-glass--sm`). Inner corners are concentric (an element inside a panel takes the panel's radius
-  minus its padding), and glass never sits on glass. Over footage they go near-opaque
-  automatically (`.is-transparent`). **Every word over footage sits on a panel**, except caption
+  minus its padding), and glass never sits on glass. Over footage they are real clear
+  glass (`glass.py`, below); only the `"glass": "flat"` fallback goes near-opaque (`.is-transparent`). **Every word over footage sits on a panel**, except caption
   words: those are bare, with no glass (§6).
   - **Real glass over footage** *(owner reference "liquid glass", 2026-11-26)*: CSS blur only smears, and an
     overlay rendered on its own can't see the footage. `scripts/glass.py` does the glass at composite time:
