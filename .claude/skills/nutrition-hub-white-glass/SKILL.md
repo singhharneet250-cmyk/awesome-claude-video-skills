@@ -41,7 +41,8 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
    local transcription, short (3 words) and placed beside the head, never over a card; the key word highlighted;
    caption words keep their legibility shadow (§6).
 7. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
-8. **Quality**: full HD, high quality (`encode.py`: lossless steps, CRF 14 delivery), -14 LUFS; ask for the original
+8. **Quality**: full HD at maximum quality, the biggest clean file the platforms accept (`encode.py`: CRF 4 steps,
+   CRF 2 delivery, AAC 320k; owner 2026-11-27 "export size as maximum as possible"), -14 LUFS; ask for the original
    camera file, not a WhatsApp copy (§7).
 9. **Process**: show the plan, stills or a 5-10 s sample before any long render; never re-render or render a full
    film unless the owner asks for it; tell the owner how long a render will take.
@@ -337,14 +338,15 @@ All of these are implemented in `assets/brand.css`.
     paper cut and doodle boil (paper and doodle looks, not Liquid Glass). Adding them needs the owner to change
     those rules first.
   - Every pack effect runs through `timeline.py` like the others and writes its own SFX cue.
-- **L · The motion kit (owner references R8–R16, 2026-11-26).** `templates/motion-kit.html?scene=NAME`: 18 short
-  beats learned from the owner's motion-design references, rebuilt in Liquid Glass (porcelain, ink, one red
+- **L · The motion kit (owner references R8–R16, 2026-11-26).** `templates/motion-kit.html?scene=NAME`: 21 short
+  beats learned from the owner's motion-design references (two more, 2026-11-27, from the 16 tested films in the
+  owner's awesome-claude-video-skills README: `reference/learned-tools.md`), rebuilt in Liquid Glass (porcelain, ink, one red
   dot carried through each beat, critically damped springs that never overshoot). Names and parameters:
   `reference/effect-names.md`; what each came from: `reference/style-references.md` (R8–R16).
 
   | Kind | Scenes | Use |
   |---|---|---|
-  | Full-screen beats | `wheel` (Word Wheel), `menu` (Menu Switch), `count` (Count-up Bars), `split` (Word Split), `highlight` (Highlighter Sweep), `morph` (Shape Morph), `scroll` (Big Scroll), `ring` (Text Ring), `strip` (Photo Strip), `echo` (Echo Stack), `photos` (Photo Scatter) | Render as MP4 and cut in like b-roll: `"template"` in an `edit.json` b-roll entry, or `broll.py`. 3–4.5 s each. `--transparent` is refused (ink type never sits bare on footage). |
+  | Full-screen beats | `wheel` (Word Wheel), `menu` (Menu Switch), `count` (Count-up Bars), `split` (Word Split), `highlight` (Highlighter Sweep), `morph` (Shape Morph), `scroll` (Big Scroll), `ring` (Text Ring), `strip` (Photo Strip), `echo` (Echo Stack), `photos` (Photo Scatter), `dots` (Dot Grid: a sourced share as 100 dots, `?value=7&of=10` or `?pct=70`, `?text=`, `?source=` required), `panels3` (Three Panels: three choices as full bands, one turns red, `?items=Word\|line;…`, `?pick=`) | Render as MP4 and cut in like b-roll: `"template"` in an `edit.json` b-roll entry, or `broll.py`. 3–4.5 s each. `--transparent` is refused (ink type never sits bare on footage). |
   | Overlays | `toggle` (Toggle List), `prompt` (Prompt Box), `progress` (Progress Pill), `panels` (Spatial Panels), `tracking` (Tracking Reveal), `banner` (Comment Banner), `cta` (Comment CTA: a glass card, an red "Comment KEYWORD" pill and the handle, R18's ending), `lens` (Glass Lens: a round glass magnifier that glides to a spot in the footage, `?x=&y=`, `?to=`, `?label=`; give the overlay `"glass_lens": 0.35`) | Over the speaker with `--transparent` (real glass in the timeline), or full screen. Lower band by default, `?slot=top` for the top band. |
 
   - 16:9 for a TV or laptop: `--size 1920x1080`; every scene lays itself out for landscape.
@@ -522,9 +524,12 @@ All of these are implemented in `assets/brand.css`.
 - **4:5 feed:** 1080×1350 with 72 px margins.
 - **High-quality, full-HD output** *(owner, 2026-11-26, every future edit)*: deliver 1080×1920 (or the format's full
   HD size) as a clean master the platforms re-encode from. `scripts/encode.py` holds every setting:
-  - **between steps:** x264 CRF 10, preset fast (visually lossless), so eight passes don't add up;
-  - **delivery:** H.264 High 4.2, yuv420p, **CRF 14, preset slow**, BT.709 tags, ≤ 30 Mbit/s (about 10–15 Mbit/s
-    for a talking head), AAC **256 kb/s** at 48 kHz, `+faststart`; loudness −14 LUFS, true peak ≤ −1.5 dBTP.
+  - **between steps:** x264 CRF 4, preset fast, so eight passes still end above the old delivery quality;
+  - **delivery** *(maximum size, owner 2026-11-27)*: H.264 High 5.1, 8-bit yuv420p, **CRF 2, preset slower**, BT.709
+    tags, capped at 100 Mbit/s, AAC **320 kb/s** at 48 kHz, `+faststart`; loudness −14 LUFS, true peak ≤ −1.5 dBTP.
+    Measured on 8 s samples: a talking head about 27 Mbit/s (about 200 MB a minute; was 9.9 Mbit/s at CRF 14), a
+    graphics reel about 9 Mbit/s; PSNR 58.7 dB against the source (was 50.9). Not CRF 0: true lossless switches to a
+    profile phones, Instagram and WhatsApp can't play. `qa.py` reads the CRF x264 wrote into the file.
     `timeline.py render` ends with it; for any other output run `python3 scripts/encode.py deliver in.mp4 out.mp4`;
   - **enlarging:** Lanczos plus a light unsharp, never the default bicubic;
   - **source:** `qa.py --source take.mp4` (automatic in `timeline.py render`) warns when the take is below full HD.
@@ -579,7 +584,7 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
    - `headline-wall.html`, `phone-mockup.html`, `ui-world.html`: the R7 overlays (§4 K).
    - `chat-takeover.html`: a chat sequence (list → pick → typed message → send → reply), above the head or
      taking over the frame (§4 I).
-   - `motion-kit.html?scene=NAME`: the 18 motion-kit beats and overlays (§4 L).
+   - `motion-kit.html?scene=NAME`: the 21 motion-kit beats and overlays (§4 L).
 5. **Render** (from this skill's folder):
    - Full video: `node scripts/render.cjs templates/reel-9x16.html --out out.mp4`
    - Overlay for footage: `node scripts/render.cjs templates/overlay-callout.html --transparent --out callout.mov`
@@ -638,8 +643,8 @@ inputs in the last column.
 | Where a Nutrition Hub handle is taken or free, and look-alike accounts copying the brand | Sherlock (MIT, sherlock-project 0.16.2) through `scripts/handle_check.sh` (installs it on first use) | Only the brand's own handles and look-alikes, never a private person; a hit means a name exists, check it by eye; here most platforms are blocked by the network, so run it on the owner's computer |
 | Photoreal B-roll with no product in it (powder pouring, a shaker, a gym, an athlete) | Only with the owner's OK: Runway, ManyMotions or Veo / Kling (`social-media-skills` ai-video router). They spend the owner's credits. | §4 B prompt base with high-key white light. Never for packaging, labels, logos, results or real people's bodies. Say it is AI-generated where the platform asks. |
 | One-off ffmpeg operations | `reference/footage-editing.md` recipes first (tested), then the `ffmpeg-llm` plugin | — |
-| Captions from a transcript | `scripts/captions.py` | Word timings from Whisper, IT Reelsmaker's transcription or the WhisperAI connector |
-| Long video → short clips | Clipzi or OpusClip connectors | Logo, Inter, palette, a plain caption preset (no box, no pop) |
+| Captions from a transcript | `scripts/captions.py` | Word timings from faster-whisper (runs here, as in the `shorts` skill's `scripts/transcribe.py`; PyAV below 16), IT Reelsmaker's transcription or the WhisperAI connector. For the owner's Punjabi talks set `language="hi"`: auto-detect picks Punjabi and returns junk, Hindi gives good word timings and rough Devanagari words (tested 2026-11-27, `small` model, about 1.7× real time on this CPU). Rewrite the words in clean Roman Punjabi on those timings and show them to the owner before burning |
+| Long video → short clips | `shorts` skill (claude-shorts, vendored MIT: local faster-whisper transcript, Claude picks the moments with you, ffmpeg cuts, no credits), or the Clipzi / OpusClip connectors | Our §6 captions (`scripts/captions.py`) instead of its Bold/Bounce/Clean styles; real background; `encode.py` delivery. Connectors: logo, Inter, palette, a plain caption preset (no box, no pop) |
 | Sound effects | `scripts/sfx.py` (original kit, §5): cue sheets from `render.cjs` and `broll.py` | — |
 | Licensed music (and SFX beyond the kit) | Epidemic Sound connector, only with a commercial plan for the business | Music calm and clean, 18–22 dB under the voice; SFX by §5 rules |
 | Fit a size cap (WhatsApp 16 MB, Gmail, Outlook) | `halfsize` skill (`--for whatsapp`), or the tested ffmpeg fallback in `reference/footage-editing.md` §9 | — |
@@ -647,6 +652,9 @@ inputs in the last column.
 | A launch film, feature film or promo rendered from code, held to measured gates (words in the middle, one element carried, hidden cuts, copy check, forensics) | `cinetic` skill (vendored, MIT; `.claude/skills/cinetic`) | This skill's tokens as the supplied brand kit: its "no red accent", "no serif" and "no glassmorphism" bans don't apply to Nutrition Hub (its own rule: a supplied brand wins) |
 | A product film built on the product's own design system, cut to music on measured beats | `product-film` skill (vendored, MIT) | Liquid Glass as the design system; honest claims (§8) |
 | Captions in 3D around a talking head: depth groups, a hero word behind the head, a ring of words in front | `camera-3d-captions` skill (vendored, Apache-2.0, HyperFrames) | §6 type and colours; **no whip-ins, push-ins or camera zooms** (§5): depth, rings and words behind the head only |
+| An animated science or maths diagram (absorption, a dose curve, a ratio, a graph that draws itself) | `manim-composer` to plan, then `manimce-best-practices` to build (vendored, MIT; `pip install manim`) | White or ice background, ink type in Inter, Logo Red #D30204 as the one accent, no shadows beside words, unit and source on every number; render a clip and place it with `timeline.py` |
+| A small vector animation as a Lottie file (icon, check mark, loader, stat counter, lower third) for the app, the website, Remotion or HyperFrames | `text-to-lottie` skill (vendored, MIT; Skottie player in its `player/` folder) | §2 palette, §5 critically damped motion (no bounce), no shadows beside words; never the logo (use the original file as a layer) |
+| A whole film made in OpenMotion Cloud (templates, recreating a reference, AI media) | `openmotion` skills (vendored, Apache-2.0), only with the owner's OK: the footage goes to their cloud and generation spends credits; connect from the owner's own app (this cloud session can't reach it) | All the owner's standing decisions; nothing it generates replaces the real logo, products or the owner's voice |
 | Ideas: 240 Claude motion videos with the prompt or skill behind each | prompt-motion.com (allowed in this repo's cloud environment; `reference/learned-tools.md`) | Borrow the technique, rebuild it in Liquid Glass |
 | Finish or re-cut the edit on a desktop editor | DaVinci Resolve via `timeline.py export` (.otio) | Effects are markers; render them with `timeline.py render` |
 | Royalty-free music | Mixkit (free licence covers social and ads, no attribution; check each track's licence page) or Epidemic Sound with a commercial plan | 18–22 dB under the voice |
@@ -687,7 +695,7 @@ templates/chat-takeover.html   chat sequence overlay (R4): ?layout=top (above th
 templates/headline-wall.html   R7: real headlines on porcelain cards pop in around the speaker
 templates/phone-mockup.html    R7: a porcelain phone swings in beside the head with a real screenshot or photo
 templates/ui-world.html        R7: glass UI cards act out a task (prompt, progress, filmstrip, preview)
-templates/motion-kit.html      R8–R18: 18 motion-kit beats and overlays by name (?scene=), springs, carried red dot
+templates/motion-kit.html      R8–R18 + tested films: 21 motion-kit beats and overlays by name (?scene=), springs, carried red dot
 assets/fonts/                  Instrument Serif Italic + Bebas Neue (SIL OFL 1.1), with licences and SOURCE.md
 templates/molecule-3d.html     realistic 3D molecule (ceramic + frosted glass, studio light, real-camera blur)
 templates/product-hero-3d.html real product photo in a 3D studio (shadow, reflection, parallax)
@@ -717,7 +725,7 @@ scripts/glass.py               real glass over footage: refraction, dispersion, 
 scripts/screen_insert.py       put a beat on a real screen in footage (auto-detect, --corners, --track, glare and glow)
 scripts/person_cutout.py       remove the background: MODNet every frame + BiRefNet-lite keyframe guide; stage, blur, picture or clip
 scripts/voice.py               clear, natural voice: measured mud cut, presence and air lifts, light denoise, de-esser, compression
-scripts/encode.py              high-quality output: visually lossless steps, the CRF 14 delivery encode, Lanczos enlarging, source check
+scripts/encode.py              maximum-quality output: CRF 4 steps, the CRF 2 delivery encode, Lanczos enlarging, source check
 scripts/handle_check.sh        Sherlock: where @nutritionhubkhanna and its look-alikes exist on Instagram, YouTube, TikTok, Threads, X and more
 reference/playbook.png         the original brand playbook sheet
 reference/captions.ass         caption style for ffmpeg/libass

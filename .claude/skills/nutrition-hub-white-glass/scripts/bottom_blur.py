@@ -69,7 +69,7 @@ def main():
                     help="blur ONLY when needed: the band fades in for the time windows in this plan (written by captions.py --plan-out)")
     ap.add_argument("--when", metavar="A-B,C-D",
                     help="extra windows in seconds when the band is on, e.g. for animations in the bottom band: 3.0-5.5,12-14")
-    ap.add_argument("--crf", type=int, default=10)
+    ap.add_argument("--crf", type=int, default=4)  # encode.WORK_CRF
     a = ap.parse_args()
     if not (0 < a.start < a.full <= 1):
         sys.exit("--start must be below --full, both between 0 and 1 (shares of the frame height).")

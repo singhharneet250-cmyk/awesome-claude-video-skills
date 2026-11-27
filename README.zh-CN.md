@@ -2,7 +2,7 @@
 
 [English](README.md)
 
-让 **Claude Code、Codex 等编程 agent 做视频**的开源 skill 和工具包:HyperFrames、Remotion、动效、剪辑、讲解、数字人。共 526 个仓库,每个都由 [Agent Skills Hub (agentskillshub.top)](https://agentskillshub.top) 读过 README 并做了安全评级。
+让 **Claude Code、Codex 等编程 agent 做视频**的开源 skill 和工具包:HyperFrames、Remotion、动效、剪辑、讲解、数字人。共 525 个仓库,每个都由 [Agent Skills Hub (agentskillshub.top)](https://agentskillshub.top) 读过 README 并做了安全评级。
 
 带类型筛选的在线页面:**[https://agentskillshub.top/best/claude-video-skills/](https://agentskillshub.top/best/claude-video-skills/)** · 每 8 小时刷新
 
@@ -39,7 +39,7 @@
 </tr>
 <tr>
 <td align="center" valign="top" width="33%"><b>📖 故事与动画</b><br><sub>36 个仓库</sub><br><br><a href="https://github.com/edenfunf/reelmimic"><img src="assets/previews/edenfunf__reelmimic.gif" width="260" alt="edenfunf/reelmimic"></a><br><sub>动画故事、短剧和电影感场景。</sub><br><a href="#type-story"><b>查看列表 →</b></a></td>
-<td align="center" valign="top" width="33%"><b>🎞 动效与 Logo</b><br><sub>40 个仓库</sub><br><br><a href="https://github.com/pyang5166/gbro-collage-broll"><img src="assets/previews/pyang5166__gbro-collage-broll.jpg" width="260" alt="pyang5166/gbro-collage-broll"></a><br><sub>Logo 动画、标题、界面动效和 GIF。</sub><br><a href="#type-motion"><b>查看列表 →</b></a></td>
+<td align="center" valign="top" width="33%"><b>🎞 动效与 Logo</b><br><sub>39 个仓库</sub><br><br><a href="https://github.com/pyang5166/gbro-collage-broll"><img src="assets/previews/pyang5166__gbro-collage-broll.jpg" width="260" alt="pyang5166/gbro-collage-broll"></a><br><sub>Logo 动画、标题、界面动效和 GIF。</sub><br><a href="#type-motion"><b>查看列表 →</b></a></td>
 <td align="center" valign="top" width="33%"><b>📝 剧本与学习</b><br><sub>10 个仓库</sub><br><br><a href="https://github.com/sharon-laicc/viral-video-decomposer"><img src="assets/previews/sharon-laicc__viral-video-decomposer.jpg" width="260" alt="sharon-laicc/viral-video-decomposer"></a><br><sub>视频的前期:剧本、拉片和学习。</sub><br><a href="#type-craft"><b>查看列表 →</b></a></td>
 </tr>
 <tr>
@@ -58,7 +58,7 @@
 - [📱 短视频与口播](#type-shorts) (70)
 - [🧑‍💼 数字人](#type-avatar) (9)
 - [📖 故事与动画](#type-story) (36)
-- [🎞 动效与 Logo](#type-motion) (40)
+- [🎞 动效与 Logo](#type-motion) (39)
 - [📝 剧本与学习](#type-craft) (10)
 - [🎵 音乐视频](#type-music) (19)
 
@@ -715,7 +715,6 @@ README 写明用这个模型做的项目。
 | [YanKaFei/ascii-h3-director](https://github.com/YanKaFei/ascii-h3-director) | 6 | MiniMax H3 的 ASCII/动态排版导演，支持确定性预览和接缝检查续接。DSH 插件 + 可移植 Agent Skill。 | [SAFE](https://agentskillshub.top/skill/YanKaFei/ascii-h3-director/) |
 | [hacimertgokhan/geomotion](https://github.com/hacimertgokhan/geomotion) | 6 | 手绘形状变形线条动画。零依赖 JS 引擎，含工作室、CLI、MCP server、Claude skill；导出 SVG、Lottie、HTML 或分享链接。 | [SAFE](https://agentskillshub.top/skill/hacimertgokhan/geomotion/) |
 | [iart-ai/youtube-video-skills](https://github.com/iart-ai/youtube-video-skills) | 6 | Claude Code 的 Audiogram 和 YouTube 片头片尾 skill，为频道建立品牌并将每期内容转为动态图形。 | [SAFE](https://agentskillshub.top/skill/iart-ai/youtube-video-skills/) |
-| [luminexlabs-io/antigravity-remotion-skill](https://github.com/luminexlabs-io/antigravity-remotion-skill) | 5 | 面向 antigravity 的 Remotion，确保达到 Claude 级别 | [SAFE](https://agentskillshub.top/skill/luminexlabs-io/antigravity-remotion-skill/) |
 | [antropos17/chatgpt-gif-cinema](https://github.com/antropos17/chatgpt-gif-cinema) | 4 | 将 GPT 生成的 GIF 制作成短片。用于审片、重拍场景和导出 MP4 的 Codex 与 Claude Code skill，含无需密钥演示。 | [SAFE](https://agentskillshub.top/skill/antropos17/chatgpt-gif-cinema/) |
 
 <a id="type-craft"></a>

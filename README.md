@@ -2,7 +2,7 @@
 
 [中文](README.zh-CN.md)
 
-Open-source skills and toolkits that let **Claude Code, Codex and other coding agents make video**: HyperFrames, Remotion, motion graphics, editing, explainers, avatars. 526 repos, each one read and security-graded by [Agent Skills Hub (agentskillshub.top)](https://agentskillshub.top).
+Open-source skills and toolkits that let **Claude Code, Codex and other coding agents make video**: HyperFrames, Remotion, motion graphics, editing, explainers, avatars. 525 repos, each one read and security-graded by [Agent Skills Hub (agentskillshub.top)](https://agentskillshub.top).
 
 Live page with filters: **[https://agentskillshub.top/best/claude-video-skills/](https://agentskillshub.top/best/claude-video-skills/)** · refreshed every 8 hours
 
@@ -39,7 +39,7 @@ Whichever you pick: you may not need one for a simple promo. Claude Code with no
 </tr>
 <tr>
 <td align="center" valign="top" width="33%"><b>📖 Stories & animation</b><br><sub>36 repos</sub><br><br><a href="https://github.com/edenfunf/reelmimic"><img src="assets/previews/edenfunf__reelmimic.gif" width="260" alt="edenfunf/reelmimic"></a><br><sub>Animated tales, short dramas and cinematic scenes.</sub><br><a href="#type-story"><b>View the list →</b></a></td>
-<td align="center" valign="top" width="33%"><b>🎞 Motion graphics</b><br><sub>40 repos</sub><br><br><a href="https://github.com/pyang5166/gbro-collage-broll"><img src="assets/previews/pyang5166__gbro-collage-broll.jpg" width="260" alt="pyang5166/gbro-collage-broll"></a><br><sub>Animated logos, titles, UI motion and GIFs.</sub><br><a href="#type-motion"><b>View the list →</b></a></td>
+<td align="center" valign="top" width="33%"><b>🎞 Motion graphics</b><br><sub>39 repos</sub><br><br><a href="https://github.com/pyang5166/gbro-collage-broll"><img src="assets/previews/pyang5166__gbro-collage-broll.jpg" width="260" alt="pyang5166/gbro-collage-broll"></a><br><sub>Animated logos, titles, UI motion and GIFs.</sub><br><a href="#type-motion"><b>View the list →</b></a></td>
 <td align="center" valign="top" width="33%"><b>📝 Scripts & learning</b><br><sub>10 repos</sub><br><br><a href="https://github.com/sharon-laicc/viral-video-decomposer"><img src="assets/previews/sharon-laicc__viral-video-decomposer.jpg" width="260" alt="sharon-laicc/viral-video-decomposer"></a><br><sub>What comes before the video: scripts, shot analysis, learning.</sub><br><a href="#type-craft"><b>View the list →</b></a></td>
 </tr>
 <tr>
@@ -58,7 +58,7 @@ Whichever you pick: you may not need one for a simple promo. Claude Code with no
 - [📱 Shorts & social](#type-shorts) (70)
 - [🧑‍💼 Avatars](#type-avatar) (9)
 - [📖 Stories & animation](#type-story) (36)
-- [🎞 Motion graphics](#type-motion) (40)
+- [🎞 Motion graphics](#type-motion) (39)
 - [📝 Scripts & learning](#type-craft) (10)
 - [🎵 Music videos](#type-music) (19)
 
@@ -715,7 +715,6 @@ Projects whose README says they were built with the model.
 | [YanKaFei/ascii-h3-director](https://github.com/YanKaFei/ascii-h3-director) | 6 | An ASCII / kinetic-typography director for MiniMax H3, with deterministic preview and seam-checked continuation. DSH plugin + portable Agent Skill. | [SAFE](https://agentskillshub.top/skill/YanKaFei/ascii-h3-director/) |
 | [hacimertgokhan/geomotion](https://github.com/hacimertgokhan/geomotion) | 6 | Hand-drawn morphing line animations from simple shapes. Zero-dependency JS engine + live studio, CLI, MCP server & Claude skill. Export animated SVG,… | [SAFE](https://agentskillshub.top/skill/hacimertgokhan/geomotion/) |
 | [iart-ai/youtube-video-skills](https://github.com/iart-ai/youtube-video-skills) | 6 | Audiogram and YouTube intro/outro skills for Claude Code — brand your channel and repurpose every episode into motion graphics. | [SAFE](https://agentskillshub.top/skill/iart-ai/youtube-video-skills/) |
-| [luminexlabs-io/antigravity-remotion-skill](https://github.com/luminexlabs-io/antigravity-remotion-skill) | 5 | Its remotion for antigravity and ensure claude level remotion here. | [SAFE](https://agentskillshub.top/skill/luminexlabs-io/antigravity-remotion-skill/) |
 | [antropos17/chatgpt-gif-cinema](https://github.com/antropos17/chatgpt-gif-cinema) | 4 | Turn GPT-generated GIFs into short films. A Codex and Claude Code skill for reviewing cuts, reshooting scenes, and exporting MP4. Includes a no-key d… | [SAFE](https://agentskillshub.top/skill/antropos17/chatgpt-gif-cinema/) |
 
 <a id="type-craft"></a>

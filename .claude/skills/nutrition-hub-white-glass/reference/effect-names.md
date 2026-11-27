@@ -96,6 +96,8 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Comment CTA | `cta` | A glass card, an red "Comment KEYWORD" pill and your handle (R18's ending; overlay) | `title`, `sub`, `keyword`, `handle`, `dur` |
 | Glass Lens | `lens` | A round glass magnifier glides to a spot in your footage and magnifies it (overlay; give it `"glass_lens": 0.35`) | `x`, `y`, `to`, `size`, `label`, `from`, `dur` |
 | Photo Scatter | `photos` | A headline in the middle; real photos pop in around it and drift outward | `imgs`, `text` |
+| Dot Grid | `dots` | A sourced share made visible: 100 dots pop in, the share fills in Logo Red while the number counts up ("7 in 10" or "70%") | `value` + `of`, or `pct`; `label`, `text`, `source` (required for a real figure) |
+| Three Panels | `panels3` | Three choices fill the screen as full bands (stacked on 9:16, side by side on 16:9); the one you pick turns Logo Red | `items` (`Word\|line;…`), `pick` (1–3, 0 = none) |
 
 For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 
@@ -119,7 +121,7 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 | Clear Voice | Clearer, natural voice: less mud, more presence, light denoise | `voice.py take.mp4 clean.mp4` (`--ab 0-10` to compare) |
 | Word Bridge | A word stays on screen across a cut (R8's match cut) | a Tracking Reveal or a caption that spans the b-roll cut |
 | Frost Wipe | A soft white band sweeps across a cut with a snow gust (the winter film's transition) | `templates/winter-wellness.html` |
-| High Quality | Full HD, visually lossless steps, CRF 14 delivery, -14 LUFS (the default) | `encode.py deliver` (automatic in `timeline.py render`) |
+| High Quality | Full HD at maximum quality: CRF 4 steps, CRF 2 delivery (the biggest file platforms accept), AAC 320k, -14 LUFS (the default) | `encode.py deliver` (automatic in `timeline.py render`) |
 | Handle Check | Where @nutritionhubkhanna and look-alikes exist (Sherlock) | `bash scripts/handle_check.sh` |
 
 ## Sound
@@ -153,7 +155,9 @@ The colours of R8–R16 (warm off-white, peach and mint, lavender, forest green,
 
 - **In the repo:** nutrition-hub-white-glass (the Liquid Glass system), **video-shotcraft** (124 shot recipes, the
   Ink Press promo, Freesound SFX; Apache-2.0), **Cinetic**, **Product Film**, **3D Camera Captions**, molecular-film,
-  use-3d-software, halfsize; plugins **Remotion** and **HyperFrames** (`.claude/settings.json`); Blender MCP and
+  use-3d-software, halfsize, **Shorts** (claude-shorts: long video to clips, local and free), **Manim** (animated
+  science diagrams), **Lottie** (small vector animations), **OpenMotion** (its cloud studio: only with your OK, credits);
+  plugins **Remotion** and **HyperFrames** (`.claude/settings.json`); Blender MCP and
   OpenChatCut MCP; Sherlock (`Handle Check`).
 - **Ideas library:** prompt-motion.com (240 Claude motion videos with their prompts; `reference/learned-tools.md`).
 - **On the owner's computer, if wanted:** DaVinci Resolve (opens `timeline.py export`), pen.dev, Rive, ghost-editor

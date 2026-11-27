@@ -9,6 +9,14 @@ Vendored on 2026-11-27 at the owner's request ("Install this skill for me: https
   `assets/scripts/sfx-source.py` talks only to freesound.org / cdn.freesound.org; `publish/upload_post.py` posts to
   api.upload-post.com only with the user's own `UPLOAD_POST_API_KEY`; `workbench/` is a local dev server.
 
+## The owner's fork
+
+https://github.com/singhharneet250-cmyk/video-shotcraft (sent by the owner on 2026-11-27). Checked the same day: a plain
+fork at `075b548` (2026-11-19), 8 commits behind upstream, with no commits of its own. The 8 commits change only the
+READMEs, the sponsor images and the WeChat group picture, none of which are vendored here, so the skill files in this
+copy (`1152363`) are the same as the fork's. To update later: sync the fork with upstream on GitHub, then copy the
+skill from it again and record the new commit here.
+
 ## Not included here (and why)
 
 | Left out | Why |

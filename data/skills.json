@@ -5015,16 +5015,6 @@
    "license": "MIT"
   },
   {
-   "repo_full_name": "luminexlabs-io/antigravity-remotion-skill",
-   "path": null,
-   "stars": 5,
-   "description": "Its remotion for antigravity and ensure claude level remotion here.",
-   "kind": "motion",
-   "security_grade": "safe",
-   "language": "TypeScript",
-   "license": "MIT"
-  },
-  {
    "repo_full_name": "antropos17/chatgpt-gif-cinema",
    "path": null,
    "stars": 4,
