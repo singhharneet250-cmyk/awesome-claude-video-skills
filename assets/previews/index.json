@@ -169,6 +169,16 @@
   "file": "AmazingAng__ccvideo.gif",
   "still": "AmazingAng__ccvideo.jpg"
  },
+ "AmirMakir/papertalk": {
+  "repo": "AmirMakir/papertalk",
+  "url": "https://raw.githubusercontent.com/AmirMakir/papertalk/HEAD/docs/media/vp-vnp.gif",
+  "alt": "A maths paper explained with pictures drawn from numbers: a three by three grid ",
+  "score": 3.0,
+  "type": "image/gif",
+  "bytes": 242311,
+  "file": "AmirMakir__papertalk.gif",
+  "still": "AmirMakir__papertalk.jpg"
+ },
  "AmirSbss/spotlight": {
   "repo": "AmirSbss/spotlight",
   "url": "https://raw.githubusercontent.com/AmirSbss/spotlight/HEAD/examples/demo/preview.gif",
@@ -499,6 +509,16 @@
   "file": "MakeMyClip__editor.jpg",
   "still": "MakeMyClip__editor.jpg"
  },
+ "Marwanenoudouar10/motion-explainer": {
+  "repo": "Marwanenoudouar10/motion-explainer",
+  "url": "https://raw.githubusercontent.com/Marwanenoudouar10/motion-explainer/HEAD/docs/example-frames.jpg",
+  "alt": "Frames from One Cell to Birth, a vertical motion-graphics explainer made with th",
+  "score": 2.0,
+  "type": "image/jpeg",
+  "bytes": 141078,
+  "file": "Marwanenoudouar10__motion-explainer.jpg",
+  "still": "Marwanenoudouar10__motion-explainer.jpg"
+ },
  "Matteoikarieth96/cartoon-shorts-skill": {
   "repo": "Matteoikarieth96/cartoon-shorts-skill",
   "url": "https://raw.githubusercontent.com/Matteoikarieth96/cartoon-shorts-skill/HEAD/references/styles/comic.jpg",
@@ -579,6 +599,26 @@
   "file": "Neelshah1810__Claude-Video-Skills.gif",
   "still": "Neelshah1810__Claude-Video-Skills.jpg"
  },
+ "OrenFang/orencut": {
+  "repo": "OrenFang/orencut",
+  "url": "https://raw.githubusercontent.com/OrenFang/orencut/HEAD/docs/orencut-showcase.gif",
+  "alt": "OrenCut 动效演示",
+  "score": 5.0,
+  "type": "image/gif",
+  "bytes": 1938057,
+  "file": "OrenFang__orencut.gif",
+  "still": "OrenFang__orencut.jpg"
+ },
+ "OrrrGE/autoRecording": {
+  "repo": "OrrrGE/autoRecording",
+  "url": "https://raw.githubusercontent.com/OrrrGE/autoRecording/HEAD/docs/media/demo-poster.png",
+  "alt": "1-minute demo — click to watch",
+  "score": 2.0,
+  "type": "image/png",
+  "bytes": 65086,
+  "file": "OrrrGE__autoRecording.jpg",
+  "still": "OrrrGE__autoRecording.jpg"
+ },
  "PHANTOMTONYT/motion-design-skills": {
   "repo": "PHANTOMTONYT/motion-design-skills",
   "url": "https://raw.githubusercontent.com/PHANTOMTONYT/motion-design-skills/HEAD/examples/3d-toy-character.gif",
@@ -608,6 +648,16 @@
   "bytes": 4077694,
   "file": "RoverEva__eva-video-style.gif",
   "still": "RoverEva__eva-video-style.jpg"
+ },
+ "Rudywizz/rudywizz-motion": {
+  "repo": "Rudywizz/rudywizz-motion",
+  "url": "https://raw.githubusercontent.com/Rudywizz/rudywizz-motion/HEAD/gallery/word-stack.webp",
+  "alt": "",
+  "score": -0.35,
+  "type": "image/webp",
+  "bytes": 385030,
+  "file": "Rudywizz__rudywizz-motion.jpg",
+  "still": "Rudywizz__rudywizz-motion.jpg"
  },
  "STARDUSTLC666/dsh-remotion": {
   "repo": "STARDUSTLC666/dsh-remotion",
@@ -899,6 +949,16 @@
   "file": "alisadiq-ai__favstash-ai-video-editing-skills.jpg",
   "still": "alisadiq-ai__favstash-ai-video-editing-skills.jpg"
  },
+ "artemiimillier/cartoon-skill": {
+  "repo": "artemiimillier/cartoon-skill",
+  "url": "https://raw.githubusercontent.com/artemiimillier/cartoon-skill/HEAD/docs/strip.jpg",
+  "alt": "English demo frames",
+  "score": 2.0,
+  "type": "image/jpeg",
+  "bytes": 284135,
+  "file": "artemiimillier__cartoon-skill.jpg",
+  "still": "artemiimillier__cartoon-skill.jpg"
+ },
  "artemiimillier/skill-multik": {
   "repo": "artemiimillier/skill-multik",
   "url": "https://raw.githubusercontent.com/artemiimillier/skill-multik/HEAD/docs/strip.jpg",
@@ -1089,6 +1149,16 @@
   "file": "cymcymcymcym__notes-to-video.gif",
   "still": "cymcymcymcym__notes-to-video.jpg"
  },
+ "daiyixiang666/hat9-motion": {
+  "repo": "daiyixiang666/hat9-motion",
+  "url": "https://raw.githubusercontent.com/daiyixiang666/hat9-motion/HEAD/assets/previews/wall.webp",
+  "alt": "16 种风格的示例成片同时在播：上面两排横屏 16:9，下面一排竖屏 9:16",
+  "score": 1.75,
+  "type": "image/webp",
+  "bytes": 2109704,
+  "file": "daiyixiang666__hat9-motion.jpg",
+  "still": "daiyixiang666__hat9-motion.jpg"
+ },
  "dan2756/ReelForge": {
   "repo": "dan2756/ReelForge",
   "url": "https://raw.githubusercontent.com/dan2756/ReelForge/HEAD/docs/demos/rubber-duck.webp",
@@ -1219,6 +1289,16 @@
   "file": "edotheDev__claude-video-kit.jpg",
   "still": "edotheDev__claude-video-kit.jpg"
  },
+ "ekanshvcpkg/VBASE": {
+  "repo": "ekanshvcpkg/VBASE",
+  "url": "https://raw.githubusercontent.com/ekanshvcpkg/VBASE/HEAD/docs/images/vbase-review-room.gif",
+  "alt": "Pinning a note on a frame, leaving a whole-film note, resolving a note and sendi",
+  "score": 4.7,
+  "type": "image/gif",
+  "bytes": 1034427,
+  "file": "ekanshvcpkg__VBASE.gif",
+  "still": "ekanshvcpkg__VBASE.jpg"
+ },
  "ekomen77/erko-ai-video-engine": {
   "repo": "ekomen77/erko-ai-video-engine",
   "url": "https://raw.githubusercontent.com/ekomen77/erko-ai-video-engine/HEAD/assets/demo_tr.gif",
@@ -1269,6 +1349,16 @@
   "file": "eternityspring__reelbench-skills.jpg",
   "still": "eternityspring__reelbench-skills.jpg"
  },
+ "famfamfam/code-cartoon": {
+  "repo": "famfamfam/code-cartoon",
+  "url": "https://raw.githubusercontent.com/famfamfam/code-cartoon/HEAD/docs/media/lubok-sun-ship.webp",
+  "alt": "A pencil sketch of a boat opens into a lubok print",
+  "score": 0.0,
+  "type": "image/webp",
+  "bytes": 745546,
+  "file": "famfamfam__code-cartoon.jpg",
+  "still": "famfamfam__code-cartoon.jpg"
+ },
  "fantuan-lab/animated-sticker-studio": {
   "repo": "fantuan-lab/animated-sticker-studio",
   "url": "https://raw.githubusercontent.com/fantuan-lab/animated-sticker-studio/HEAD/examples/onigiri-cat/gif/001-%E6%94%B6%E5%88%B0.gif",
@@ -1288,6 +1378,16 @@
   "bytes": 109269,
   "file": "fendouai__ViralForge.jpg",
   "still": "fendouai__ViralForge.jpg"
+ },
+ "ffroliva/gflow-cli": {
+  "repo": "ffroliva/gflow-cli",
+  "url": "https://raw.githubusercontent.com/ffroliva/gflow-cli/main/docs/assets/example-run.gif",
+  "alt": "gflow image t2i runs a single 9:16 prompt, streams structlog output, and writes ",
+  "score": 2.0,
+  "type": "image/gif",
+  "bytes": 1187030,
+  "file": "ffroliva__gflow-cli.gif",
+  "still": "ffroliva__gflow-cli.jpg"
  },
  "fltman/infofilm": {
   "repo": "fltman/infofilm",
@@ -1338,6 +1438,16 @@
   "bytes": 2024894,
   "file": "gnipbao__story-to-handdrawn-video.jpg",
   "still": "gnipbao__story-to-handdrawn-video.jpg"
+ },
+ "gnipbao/vibe-zhishi": {
+  "repo": "gnipbao/vibe-zhishi",
+  "url": "https://raw.githubusercontent.com/gnipbao/vibe-zhishi/HEAD/docs/showcase.jpg",
+  "alt": "九期成片的封面：道·十层宇宙、落款、傅里叶变换、联想、叹气、意义、五音、冬冬鼓、你是哪一型",
+  "score": 2.0,
+  "type": "image/jpeg",
+  "bytes": 235175,
+  "file": "gnipbao__vibe-zhishi.jpg",
+  "still": "gnipbao__vibe-zhishi.jpg"
  },
  "gquthier/autonomous-sop-video": {
   "repo": "gquthier/autonomous-sop-video",
@@ -1699,6 +1809,16 @@
   "file": "jjietay__clayducation.jpg",
   "still": "jjietay__clayducation.jpg"
  },
+ "jpooksy/remotion-claude-template": {
+  "repo": "jpooksy/remotion-claude-template",
+  "url": "https://img.youtube.com/vi/gEtm-MJKJoA/maxresdefault.jpg",
+  "alt": "How I Make SaaS Product Demos in Code",
+  "score": 2.0,
+  "type": "image/jpeg",
+  "bytes": 131661,
+  "file": "jpooksy__remotion-claude-template.jpg",
+  "still": "jpooksy__remotion-claude-template.jpg"
+ },
  "kajisho5/remotion-ffmpeg-skill": {
   "repo": "kajisho5/remotion-ffmpeg-skill",
   "url": "https://raw.githubusercontent.com/kajisho5/remotion-ffmpeg-skill/media/assets/demo-jumpcut.gif",
@@ -1708,6 +1828,16 @@
   "bytes": 2943591,
   "file": "kajisho5__remotion-ffmpeg-skill.gif",
   "still": "kajisho5__remotion-ffmpeg-skill.jpg"
+ },
+ "kaomei/stickman-video-director": {
+  "repo": "kaomei/stickman-video-director",
+  "url": "https://cdn.jsdelivr.net/gh/kaomei/stickman-video-director@2697fac5e0466f44098148a52c9648697521b3d6/assets/readme/previews/dark-theme-demo.gif",
+  "alt": "Classic black-and-white stickman animation: white lines on black for dynamic exp",
+  "score": 4.9,
+  "type": "image/gif",
+  "bytes": 2008500,
+  "file": "kaomei__stickman-video-director.gif",
+  "still": "kaomei__stickman-video-director.jpg"
  },
  "klsoen/opus-js-animations": {
   "repo": "klsoen/opus-js-animations",
@@ -1729,15 +1859,15 @@
   "file": "krisyangdev__motionboard.gif",
   "still": "krisyangdev__motionboard.jpg"
  },
- "kvrancic/oneshot-video": {
-  "repo": "kvrancic/oneshot-video",
-  "url": "https://raw.githubusercontent.com/kvrancic/oneshot-video/HEAD/docs/media/clips.gif",
-  "alt": "Vertical clips: a full-screen takeover line, PLUGIN behind a speaker opening a b",
-  "score": 2.75,
+ "kvrancic/cutroom": {
+  "repo": "kvrancic/cutroom",
+  "url": "https://raw.githubusercontent.com/kvrancic/cutroom/HEAD/docs/media/demo.gif",
+  "alt": "Left: a 34-minute GTA VI stream with the player",
+  "score": 4.75,
   "type": "image/gif",
-  "bytes": 5743552,
-  "file": "kvrancic__oneshot-video.jpg",
-  "still": "kvrancic__oneshot-video.jpg"
+  "bytes": 4325109,
+  "file": "kvrancic__cutroom.gif",
+  "still": "kvrancic__cutroom.jpg"
  },
  "latent-variable/deep-learning-birthday": {
   "repo": "latent-variable/deep-learning-birthday",
@@ -1859,6 +1989,16 @@
   "file": "mikelix__gstack-tutorial-5-agi-race-v2.jpg",
   "still": "mikelix__gstack-tutorial-5-agi-race-v2.jpg"
  },
+ "mografy/mografy": {
+  "repo": "mografy/mografy",
+  "url": "https://raw.githubusercontent.com/mografy/mografy/main/docs/media/mografy-intro.gif",
+  "alt": "Watch the twelve-second Mografy intro",
+  "score": 2.95,
+  "type": "image/gif",
+  "bytes": 861289,
+  "file": "mografy__mografy.gif",
+  "still": "mografy__mografy.jpg"
+ },
  "motalim-ai/motion-starter-kit": {
   "repo": "motalim-ai/motion-starter-kit",
   "url": "https://raw.githubusercontent.com/motalim-ai/motion-starter-kit/HEAD/styles/plotter/thumbnail.png",
@@ -1928,26 +2068,6 @@
   "bytes": 71856,
   "file": "noamdorr__saas-product-demo-video.jpg",
   "still": "noamdorr__saas-product-demo-video.jpg"
- },
- "nocodehack/make-short": {
-  "repo": "nocodehack/make-short",
-  "url": "https://raw.githubusercontent.com/nocodehack/make-short/HEAD/assets/before-first-render.png",
-  "alt": "First render: magenta night, red ground",
-  "score": -0.05,
-  "type": "image/png",
-  "bytes": 266274,
-  "file": "nocodehack__make-short.jpg",
-  "still": "nocodehack__make-short.jpg"
- },
- "nocodehack/nocodehack-roblox-engine": {
-  "repo": "nocodehack/nocodehack-roblox-engine",
-  "url": "https://raw.githubusercontent.com/nocodehack/nocodehack-roblox-engine/HEAD/docs/img/r1.gif",
-  "alt": "The Flush: a kid hides a bad grade from his mom",
-  "score": 2.95,
-  "type": "image/gif",
-  "bytes": 1191024,
-  "file": "nocodehack__nocodehack-roblox-engine.jpg",
-  "still": "nocodehack__nocodehack-roblox-engine.jpg"
  },
  "nolangz/pixel2motion": {
   "repo": "nolangz/pixel2motion",
@@ -2079,6 +2199,16 @@
   "file": "reedodev__explainer-studio.gif",
   "still": "reedodev__explainer-studio.jpg"
  },
+ "renthelautomations/app-launch-video": {
+  "repo": "renthelautomations/app-launch-video",
+  "url": "https://raw.githubusercontent.com/renthelautomations/app-launch-video/HEAD/docs/images/preview.gif",
+  "alt": "A logo outline draws itself, fills from the bottom, becomes an app icon, then mo",
+  "score": 4.7,
+  "type": "image/gif",
+  "bytes": 632086,
+  "file": "renthelautomations__app-launch-video.gif",
+  "still": "renthelautomations__app-launch-video.jpg"
+ },
  "revfactory/showreel": {
   "repo": "revfactory/showreel",
   "url": "https://raw.githubusercontent.com/revfactory/showreel/HEAD/docs/media/showreel-preview.gif",
@@ -2208,6 +2338,16 @@
   "bytes": 968720,
   "file": "social-media-skills__remotion-shorts-skill.jpg",
   "still": "social-media-skills__remotion-shorts-skill.jpg"
+ },
+ "soundza/soundkit": {
+  "repo": "soundza/soundkit",
+  "url": "https://raw.githubusercontent.com/soundza/soundkit/HEAD/assets/banner.png",
+  "alt": "SoundKit: CC0 sound effects and music beds for Remotion and React, each with its",
+  "score": -0.5,
+  "type": "image/png",
+  "bytes": 340208,
+  "file": "soundza__soundkit.jpg",
+  "still": "soundza__soundkit.jpg"
  },
  "staryone/motlab": {
   "repo": "staryone/motlab",
@@ -2349,6 +2489,16 @@
   "file": "vincentsch__explainroo.jpg",
   "still": "vincentsch__explainroo.jpg"
  },
+ "whystrohm/shotkit": {
+  "repo": "whystrohm/shotkit",
+  "url": "https://raw.githubusercontent.com/whystrohm/shotkit/HEAD/docs/images/demo.webp",
+  "alt": "Shotkit demo: a brief typed in Claude Code, every shot planned and every frame c",
+  "score": -0.5,
+  "type": "image/webp",
+  "bytes": 4304930,
+  "file": "whystrohm__shotkit.jpg",
+  "still": "whystrohm__shotkit.jpg"
+ },
  "wocha-xiaoli/video-shot-analysis-feishu": {
   "repo": "wocha-xiaoli/video-shot-analysis-feishu",
   "url": "https://raw.githubusercontent.com/wocha-xiaoli/video-shot-analysis-feishu/HEAD/assets/video-shot-analysis-feishu-infographic.png",
@@ -2399,6 +2549,26 @@
   "file": "ymybxx__SoloMCN.jpg",
   "still": "ymybxx__SoloMCN.jpg"
  },
+ "yoruuuchan/create-blender-story-video": {
+  "repo": "yoruuuchan/create-blender-story-video",
+  "url": "https://raw.githubusercontent.com/yoruuuchan/create-blender-story-video/HEAD/docs/media/poolcore.gif",
+  "alt": "Poolcore：空无一人的泳池，4 秒 1080p 真实渲染",
+  "score": 3.0,
+  "type": "image/gif",
+  "bytes": 6961766,
+  "file": "yoruuuchan__create-blender-story-video.gif",
+  "still": "yoruuuchan__create-blender-story-video.jpg"
+ },
+ "yubraaj11/ffmpeg-mcp": {
+  "repo": "yubraaj11/ffmpeg-mcp",
+  "url": "https://raw.githubusercontent.com/yubraaj11/ffmpeg-mcp/main/statics/ffmpeg-mcp.png",
+  "alt": "ffmpeg-mcp: AI video editor MCP server powered by FFmpeg",
+  "score": -2.5,
+  "type": "image/png",
+  "bytes": 760459,
+  "file": "yubraaj11__ffmpeg-mcp.jpg",
+  "still": "yubraaj11__ffmpeg-mcp.jpg"
+ },
  "zakariaf/cinecode": {
   "repo": "zakariaf/cinecode",
   "url": "https://raw.githubusercontent.com/zakariaf/cinecode/HEAD/docs/images/solar-saturn.jpg",
@@ -2448,15 +2618,5 @@
   "bytes": 947318,
   "file": "znyupup__knowledge-explainer-skill.gif",
   "still": "znyupup__knowledge-explainer-skill.jpg"
- },
- "zz41354899/mografy": {
-  "repo": "zz41354899/mografy",
-  "url": "https://raw.githubusercontent.com/zz41354899/mografy/main/docs/media/mografy-intro.gif",
-  "alt": "Watch the twelve-second Mografy intro",
-  "score": 2.95,
-  "type": "image/gif",
-  "bytes": 861289,
-  "file": "zz41354899__mografy.gif",
-  "still": "zz41354899__mografy.jpg"
  }
 }

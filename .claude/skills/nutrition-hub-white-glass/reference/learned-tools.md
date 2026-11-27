@@ -41,7 +41,9 @@ Claude Code with no skill, each made the same 15-second promo. The films, prompt
 github.com/zhuyansen/agent-skills-hub (`ops/video-runs/`, films in `frontend/public/best-runs/video/`); all 18 were
 watched frame by frame on 2026-11-27. Links checked the same day: 529 of 530 linked repos answer; the one that is gone
 (`luminexlabs-io/antigravity-remotion-skill`) was taken out of both READMEs and `data/skills.json`. The README's
-preview images and in-page links all resolve. (`results.json` there also has a 17th run, OpenMotion, 12.9 min, not yet
+preview images and in-page links all resolve. Later the same day (owner: "both things") the list was refreshed from
+upstream zhuyansen/awesome-claude-video-skills (its 2026-11-26 update: 561 repos, 40 new); upstream had dropped that
+repo too, and all 565 linked repos, the preview images and the in-page links were checked again. (`results.json` there also has a 17th run, OpenMotion, 12.9 min, not yet
 on the published page.)
 
 What separates the films is not whether they work (all passed the same four checks) but one strong idea each:
