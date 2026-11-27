@@ -622,6 +622,7 @@ inputs in the last column.
 | Branded title cards, data callouts, lower thirds, end cards | This skill's `templates/` + `scripts/render.cjs` (first choice: tested and on-brand) | — |
 | An editable HyperFrames project or the HyperFrames desktop app | `hyperframes` plugin (project plugin, `.claude/settings.json`) | `assets/brand.css` tokens; grade footage with §2 numbers via its `media-treatment`. Its skill sends a usage note to HeyGen once per run and asks first; say no to skip. |
 | A project that is already in Remotion | `remotion` plugin | `Easing.bezier(.22,1,.36,1)`; springs `{damping: 200, overshootClamping: true}` |
+| A cinematic promo built from a web page or app (shot cards, the Ink Press template), or finding and aligning SFX for a finished film | `video-shotcraft` (vendored, Apache-2.0, Remotion; 124 shot recipes with demo source) | Brand decisions win: no shadows beside words, brand gradients, original music (`score.py`) by default; its Freesound SFX search is fine (CC0 by default); its uploader posts only with the owner's own key and OK |
 | Product film or showreel rendered from code (no footage) | `motion-reel` plugin | Real product photos only (§4 D); palette, logo, §5 motion |
 | A realistic 3D molecule (small molecule) | `templates/molecule-3d.html` (§4 B) | A molecule id; new ones via `scripts/make_molecule.py` |
 | A realistic protein or enzyme film from a PDB / AlphaFold structure | `molecular-film` skill (Blender, GPU machine) | Its Liquid Glass look constants; labels from our callouts |
