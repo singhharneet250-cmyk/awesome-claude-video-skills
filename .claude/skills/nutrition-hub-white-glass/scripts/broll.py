@@ -243,7 +243,7 @@ def main():
     ap.add_argument("--len", type=float, default=2.2); ap.add_argument("--lead", type=float, default=0.1)
     ap.add_argument("--transition", choices=["cut", "white", "flash", "soft"], default="cut")
     ap.add_argument("--hold-start", type=float, default=1.5)
-    ap.add_argument("--crf", type=int, default=10, help="10 = visually lossless (encode.py deliver makes the final)")
+    ap.add_argument("--crf", type=int, default=4, help="4 = the WORK quality (encode.py deliver makes the final)")
     ap.add_argument("--plan-out"); ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     transition = "white" if a.transition == "flash" else a.transition

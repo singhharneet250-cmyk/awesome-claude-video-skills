@@ -31,6 +31,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import encode  # noqa: E402  (the owner's maximum-quality settings)
+
 SKILL = Path(__file__).resolve().parent.parent
 LOGO = SKILL / "assets" / "logo" / "nutrition-hub-logo.png"
 LOGO_SHA256 = "1ceaeb7a9ca284fa859de4009237dc52d1827656518150a81f4de6922c20e28d"
@@ -60,7 +63,7 @@ def fps_of(stream):
     return float(num) / float(den or 1) if float(den or 1) else 0.0
 
 
-def check_streams(info, expect):
+def check_streams(info, expect, path=None):
     v = next((s for s in info["streams"] if s["codec_type"] == "video"), None)
     a = next((s for s in info["streams"] if s["codec_type"] == "audio"), None)
     if v is None:
@@ -88,15 +91,23 @@ def check_streams(info, expect):
         kbps = int(a.get("bit_rate", 0)) // 1000
         report("PASS", "audio", f"AAC 48 kHz, {a.get('channels')} ch" + (f", {kbps} kb/s" if kbps else ""))
     else:
-        report("FAIL", "audio", f"{a.get('codec_name')} {a.get('sample_rate')} Hz; export AAC 256 kb/s at 48 kHz")
+        report("FAIL", "audio", f"{a.get('codec_name')} {a.get('sample_rate')} Hz; export AAC 320 kb/s at 48 kHz")
 
-    # high quality (owner, 2026-11-26): a clean master the platforms re-encode from, not a thin file
+    # maximum quality (owner, 2026-11-26 and 2026-11-27): the biggest clean master the platforms accept
     vbr = int(v.get("bit_rate") or info["format"].get("bit_rate") or 0) / 1e6
-    need = 8.0 * (w * h) / (1080 * 1920)
-    if vbr >= need:
-        report("PASS", "quality", f"{vbr:.1f} Mbit/s video (high quality: {need:.0f}+ at this size)")
+    crf = encode.x264_crf(path) if path else None
+    if crf is not None:
+        if crf <= encode.FINAL_CRF:
+            report("PASS", "quality", f"maximum-quality encode (x264 CRF {crf:g}), {vbr:.1f} Mbit/s video")
+        else:
+            report("WARN", "quality", f"x264 CRF {crf:g} at {vbr:.1f} Mbit/s: deliver with encode.py deliver "
+                                      f"(CRF {encode.FINAL_CRF}, the owner's maximum-quality default)")
     else:
-        report("WARN", "quality", f"{vbr:.1f} Mbit/s video, below {need:.0f}: deliver with encode.py deliver (CRF 14, slow)")
+        need = 20.0 * (w * h) / (1080 * 1920)
+        if vbr >= need:
+            report("PASS", "quality", f"{vbr:.1f} Mbit/s video (maximum quality: {need:.0f}+ at this size)")
+        else:
+            report("WARN", "quality", f"{vbr:.1f} Mbit/s video, below {need:.0f}: deliver with encode.py deliver (CRF {encode.FINAL_CRF})")
 
     dur = float(info["format"].get("duration", 0))
     if expect is not None:
@@ -199,7 +210,7 @@ def check_pixels(path, meta, graphics):
         report("PASS", "hues", f"no stray green/blue/purple above {limit:g}% of a frame (worst {worst:.1f}%)")
     else:
         status = "FAIL" if graphics else "WARN"
-        why = "graphics must stay white, ice, ink and orange" if graphics else "check whether it is footage (fine) or a graphic (fix)"
+        why = "graphics must stay white, ice, ink and Logo Red" if graphics else "check whether it is footage (fine) or a graphic (fix)"
         report(status, "hues", f"stray hues at {', '.join(flagged[:6])}{' …' if len(flagged) > 6 else ''}; {why}")
     if dark:
         report("WARN", "black", f"near-black frames at {', '.join(dark[:6])}; the system has no black backgrounds or dips to black")
@@ -262,11 +273,9 @@ def main():
         sys.exit(f"{args.video} not found")
 
     print(f"White Glass QA · {args.video}")
-    meta = check_streams(probe(args.video), args.expect)
+    meta = check_streams(probe(args.video), args.expect, args.video)
     check_faststart(args.video)
     if args.source and args.source.exists():
-        sys.path.insert(0, str(Path(__file__).resolve().parent))
-        import encode
         note = encode.source_note(args.source, meta["w"], meta["h"]) if meta else None
         report("WARN" if note else "PASS", "source", note or "source is full HD or larger: no enlarging")
     if meta and meta["audio"]:
@@ -279,7 +288,7 @@ def main():
 
     fails, warns = results.count("FAIL"), results.count("WARN")
     print(f"\n{'FAIL' if fails else 'PASS'}: {fails} failed, {warns} to look at. "
-          "Then run through the by-eye checks in SKILL.md §9.7 (logo clear space, one orange focal point, "
+          "Then run through the by-eye checks in SKILL.md §9.7 (logo clear space, one Logo Red focal point, "
           "text inside safe zones, no overshoot, every number has a unit and a source).")
     sys.exit(1 if fails else 0)
 

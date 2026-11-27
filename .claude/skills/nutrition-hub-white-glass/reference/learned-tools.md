@@ -34,6 +34,30 @@ What the best prompts share, now in SKILL.md §5 and the motion kit:
   brand's own colours, 2026-11-26: SKILL.md §2. The rest still applies.)
 - Music for those films: royalty-free tracks around 120 BPM, often Mixkit.
 
+## The 16 tested films in the owner's list (owner, 2026-11-27: "double check the links and its reference video")
+
+The owner's repo README (`awesome-claude-video-skills`) links 525 skill repos and a test in which 16 of them, and
+Claude Code with no skill, each made the same 15-second promo. The films, prompts and scripts are public in
+github.com/zhuyansen/agent-skills-hub (`ops/video-runs/`, films in `frontend/public/best-runs/video/`); all 18 were
+watched frame by frame on 2026-11-27. Links checked the same day: 529 of 530 linked repos answer; the one that is gone
+(`luminexlabs-io/antigravity-remotion-skill`) was taken out of both READMEs and `data/skills.json`. The README's
+preview images and in-page links all resolve. (`results.json` there also has a 17th run, OpenMotion, 12.9 min, not yet
+on the published page.)
+
+What separates the films is not whether they work (all passed the same four checks) but one strong idea each:
+
+| Film | What it does well | What we took |
+|---|---|---|
+| explainroo (fastest, 2 min) | Words write on one at a time; the key word or number in the accent colour; "2,400 beaches" becomes a field of 2,400 pins | **Dot Grid** (`dots`): a sourced share as 100 dots filling in Logo Red; the key word in red was already our rule |
+| OpenMontage | "Good · Fair · Stay out" as three full-height colour panels; the number underlined | **Three Panels** (`panels3`): three choices as full bands, the picked one turns Logo Red (brand colours, not traffic-light colours) |
+| onetake | One drop of water carries the whole film: ripple, wave line, status dot, the full stop of the logo | Already ours: one red dot carried through a beat (motion kit, Big Scroll) and Cinetic's "one element carried" |
+| motion-video-kit | Big, bold, left-aligned type and big icons: the most readable at phone size | Already ours: headline sizes in §3; keep body lines at 48 px or more on 9:16 |
+| the 6 "default" films (remotion skills, lottie, hypit, …) | Deep teal gradient, small white centred type, sine waves: what Claude makes unprompted | A warning sign: if a frame could belong to any brand, it is the default. Ours is white glass, ink and Logo Red |
+
+The test also measured "held frames" (pairs of frames sampled twice a second that barely change): 0–10 % for the
+lively films, 34–48 % for the static ones. `qa.py`'s rhythm check (no frozen stretch over 1.6 s for graphics) keeps
+ours lively; look at the 2 fps contact sheet as the test did.
+
 ## Skills installed in this repo (read in full and checked first)
 
 | Skill | From | Licence | Use for Nutrition Hub |
