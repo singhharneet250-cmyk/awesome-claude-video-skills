@@ -609,7 +609,7 @@ def render(e):
              *encode.AUDIO, mixed], "loudness")
     else:
         shutil.copy(cur, mixed)
-    print("→ high-quality delivery encode (x264 High, CRF 14, slow)", flush=True)
+    print("→ maximum-quality delivery encode (x264 High, CRF 2, slower)", flush=True)
     encode.deliver(mixed, out)
     qa = subprocess.run([PY, HERE / "qa.py", out, "--source", e["_src"]], capture_output=True, text=True)
     print(qa.stdout.strip())

@@ -80,7 +80,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Word Wheel | `wheel` | A list rolls like a slot reel and lands on one word, with the red dot | `words`, `pick`, `kicker`, `note` |
 | Menu Switch | `menu` | A word list steps down; the dot travels; a glass card swaps per item | `items=Title\|line;…`, `imgs`, `step` |
 | Count-up Bars | `count` | A big number counts up while bars rise (last bar red) | `value`, `unit`, `decimals`, `label`, `source` (required: a real source) |
-| Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `slot=top` |
+| Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `times` (when each flips, e.g. `0.4,0.7`, to land on the spoken words), `slot=top` |
 | Word Split | `split` | A line opens and a check, chip or photo springs into the gap | `text=Read the\|label`, `chip`, `img`, `under` |
 | Highlighter Sweep | `highlight` | Words rise, then an red bar sweeps behind *the phrase* | `text=line\|*marked phrase*` |
 | Prompt Box | `prompt` | A question types into a pill, a cursor clicks send, an answer card rises (overlay) | `q`, `a` |
@@ -94,6 +94,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Tracking Reveal | `tracking` | Small capitals slowly open their spacing; never still (overlay: in a chip) | `text`, `dur` |
 | Comment Banner | `banner` | Two labels at the top: a topic tag and "Comment KEYWORD for the full guide" (overlay) | `top`, `line=Comment *WORD* …`, `dur` |
 | Comment CTA | `cta` | A glass card, an red "Comment KEYWORD" pill and your handle (R18's ending; overlay) | `title`, `sub`, `keyword`, `handle`, `dur` |
+| Follow Tap | `cta` + `pill=Follow&tap=1.1` | The same card with a Follow button that gets tapped and turns to "✓ Following" (owner's IMG_0428 edit, 2026-11-27) | `pill`, `tap` (seconds into the overlay), `after` (default "Following") |
 | Glass Lens | `lens` | A round glass magnifier glides to a spot in your footage and magnifies it (overlay; give it `"glass_lens": 0.35`) | `x`, `y`, `to`, `size`, `label`, `from`, `dur` |
 | Photo Scatter | `photos` | A headline in the middle; real photos pop in around it and drift outward | `imgs`, `text` |
 | Dot Grid | `dots` | A sourced share made visible: 100 dots pop in, the share fills in Logo Red while the number counts up ("7 in 10" or "70%") | `value` + `of`, or `pct`; `label`, `text`, `source` (required for a real figure) |

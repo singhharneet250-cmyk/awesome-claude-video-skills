@@ -203,7 +203,8 @@ const SCENES = {
       const on = el(tr, "", { position: "absolute", inset: 0, borderRadius: px(TH / 2), background: "var(--nh-orange-grad)", opacity: 0 });
       const k = el(tr, "", { position: "absolute", top: px(M), height: px(KN), borderRadius: px(KN / 2), background: "#FFFFFF", boxShadow: "0 4px 10px rgba(32,43,56,.25)" });
       return { r, on, k }; });
-    const T = items.map((_, i) => 0.85 + i * 0.5);
+    // ?times=0.4,0.7 sets when each switch flips (seconds into the overlay), to land them on the spoken words
+    const TT = list("times", "").map(parseFloat), T = items.map((_, i) => (Number.isFinite(TT[i]) ? TT[i] : 0.85 + i * 0.5));
     return { dur: T[n - 1] + 1.0, sfx: T.map((x, i) => ({ t: x + 0.03, sfx: "tick", what: "toggle: " + items[i] })),
       seek(t) {
         const c = easeOut(prog(t, 0.1, 0.6)), out = 0; card.style.opacity = c; card.style.transform = `translateY(${(1 - c) * 24}px) scale(${0.96 + 0.04 * c})`;
@@ -527,13 +528,32 @@ const SCENES = {
       font: `700 ${40 * S}px/1 var(--nh-font)`, boxShadow: "inset 0 1.5px 0 rgba(255,255,255,.45)" },
       P.has("pill") ? esc(P.get("pill")) : `Comment <b style="font-weight:800;letter-spacing:.04em;margin-left:.25em">${esc(key)}</b>`);   // ?pill= for any other ask
     const chip = el(stage, "mk nh-chip", { fontSize: px(24 * S) }, esc(handle));
+    // ?tap=1.1 presses the pill at that time (a light press and a porcelain ring) and swaps it to its done state:
+    // a porcelain pill with ink words and a red check (?after=, default "Following"). For a "Follow" ask: ?pill=Follow
+    const TAP = P.has("tap") ? parseFloat(P.get("tap")) : null;
+    let done = null, ring = null;
+    if (TAP !== null) {
+      done = el(pill, "", { position: "absolute", inset: 0, borderRadius: "inherit", background: "linear-gradient(150deg, #FFFFFF, " + ICE + ")", color: INK,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: px(14 * S), opacity: 0 },
+        `<span style="width:${34 * S}px;height:${34 * S}px;display:inline-block">${checkSvg(ORANGE, 3.4)}</span>${esc(str("after", "Following"))}`);
+      pill.style.position = "absolute"; pill.style.overflow = "visible"; pill.style.textAlign = "center"; pill.style.boxSizing = "border-box";
+      // one width for both states, so the done label never spills past the pill
+      const [aw] = measure(esc(str("after", "Following")), `700 ${40 * S}px/1 var(--nh-font)`), [bw] = measure(pill.innerHTML.split("<div")[0], `700 ${40 * S}px/1 var(--nh-font)`);
+      pill.style.width = px(Math.max(aw + 48 * S, bw) + 2 * 54 * S);
+      ring = el(pill, "", { position: "absolute", inset: 0, borderRadius: "inherit", border: `${4 * S}px solid rgba(255,255,255,.9)`, opacity: 0, pointerEvents: "none" }); }
     const ch = card.offsetHeight;
-    return { dur: parseFloat(str("dur", "3.6")), sfx: [{ t: 0.12, sfx: "pop", what: "cta card" }, { t: 0.62, sfx: "tick", what: "comment pill" }],
+    return { dur: parseFloat(str("dur", "3.6")), sfx: [{ t: 0.12, sfx: "pop", what: "cta card" }, { t: 0.62, sfx: "tick", what: "cta pill" }].concat(TAP !== null ? [{ t: TAP, sfx: "tick", what: "pill tapped" }] : []),
       seek(t) {
         const c = easeOut(prog(t, 0.08, 0.6)); card.style.opacity = c; card.style.top = px(cy - ch / 2 - 80 * S);
         const fl = Math.sin(t * 2 * Math.PI / 2.6) * 5 * S * c;          // the brand float: never a frozen hold
         card.style.transform = `translateY(${(1 - c) * 24 + fl}px) scale(${0.96 + 0.04 * c})`;
-        const p = spring(t, 0.55, 15); pill.style.opacity = clamp(p * 2); setXY(pill, CX, cy + ch / 2 - 10 * S, 0.5, 0.5, `scale(${0.85 + 0.15 * p})`);
+        const p = spring(t, 0.55, 15);
+        let press = 1;
+        if (TAP !== null) { const d = prog(t, TAP - 0.06, 0.12), u = spring(t, TAP + 0.06, 18); press = 1 - 0.06 * easeOut(d) + 0.06 * u * (d >= 1 ? 1 : 0);
+          const sw = spring(t, TAP + 0.04, 16); done.style.opacity = sw; done.querySelector("path").setAttribute("stroke-dasharray", "1");
+          done.querySelector("path").setAttribute("stroke-dashoffset", String(1 - easeOut(prog(t, TAP + 0.12, 0.35))));
+          const r = prog(t, TAP, 0.55); ring.style.opacity = r > 0 && r < 1 ? (1 - r) * 0.9 : 0; ring.style.transform = `scale(${1 + 0.35 * easeOut(r)})`; }
+        pill.style.opacity = clamp(p * 2); setXY(pill, CX, cy + ch / 2 - 10 * S, 0.5, 0.5, `scale(${(0.85 + 0.15 * p) * press})`);
         const q = easeOut(prog(t, 0.85, 0.5)); chip.style.opacity = q; setXY(chip, CX, cy + ch / 2 + 100 * S + (1 - q) * 12 * S, 0.5, 0.5);
       } }; } },
 

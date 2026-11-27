@@ -29,6 +29,8 @@ marked *(derived)* below adapts the playbook to video. Unmarked values come stra
 Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over every default below.
 
 1. **Logo**: the original file only (`assets/logo/`), never redrawn, regenerated or restyled; the name is not repeated beside it.
+   **Ask before adding an end card or the logo to an edit** *(owner, 2026-11-27: "Remove end card and logo", "Ask
+   before add this for future use")*: plan edits without them, and offer them as a question.
 2. **Background**: keep the real background; remove it (§4 N) only when the owner asks for that video.
 3. **Glass**: clear Liquid Glass (strength 0.9), liquid edge, glossy highlights, every card a lens (about 1.14×),
    tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
@@ -572,7 +574,8 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
    `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`,
    and `python3 scripts/encode.py check in.mp4`: below full HD (a WhatsApp copy), ask for the original file first.
 2. **Check that the logo exists and matches its sha256.** If not, ask for it.
-3. **Plan beats:** hook (0–3 s), evidence or value, end card. Choose components from §4.
+3. **Plan beats:** hook (0–3 s), evidence or value, and an end card or the logo only if the owner says yes when asked
+   (standing decision 1). Choose components from §4.
 4. **Build graphics** by copying a template from `templates/` and editing only its `SCENE` object
    and copy. Keep `assets/brand.css` as the single source of truth.
    - `reel-9x16.html`: a full-frame branded reel (hook → data callout → logo end card).

@@ -13,7 +13,8 @@ Input (any of):
   - Whisper / faster-whisper JSON with word timestamps: {"segments": [{"words": [{"word", "start", "end"}]}]}
   - a flat list of words: [{"word" or "text", "start", "end"}] in seconds
   - Remotion captions: [{"text", "startMs", "endMs"}]
-  - an .srt file (sentence-level; words are spread over each cue by length, so check the sync)
+  - an .srt file (sentence-level; words are spread over each cue by length, so check the sync; a cue is never
+    merged with the next, so hand-written cues keep their phrases)
 
 Rules applied (SKILL.md section 6):
   - at most 2 lines, about 28 characters per line
@@ -147,6 +148,7 @@ def words_from_srt(text: str):
             d = (end - start) * (len(tok) + 1) / total
             words.append({"text": tok, "start": t0, "end": t0 + d})
             t0 += d
+        words[-1]["cue_end"] = True          # an .srt cue is a caption the author chose: never merged with the next
     return words
 
 
@@ -158,7 +160,7 @@ def phrases(words):
     """Split at sentence ends and at pauses: a caption never spans either."""
     runs, cur = [], []
     for w in words:
-        if cur and (w["start"] - cur[-1]["end"] >= PAUSE_BREAK or ends_sentence(cur[-1]["text"])):
+        if cur and (w["start"] - cur[-1]["end"] >= PAUSE_BREAK or ends_sentence(cur[-1]["text"]) or cur[-1].get("cue_end")):
             runs.append(cur)
             cur = []
         cur.append(w)

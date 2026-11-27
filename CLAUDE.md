@@ -5,6 +5,7 @@ This repo holds the owner's video-editing skills. For every video, graphic, capt
 other skill, plugin or default. In short:
 
 1. Logo: the original file only (`.claude/skills/nutrition-hub-white-glass/assets/logo/`), never redrawn or restyled.
+   Ask before adding an end card or the logo to an edit (owner, 2026-11-27).
 2. Keep the real background; remove it only when the owner asks for that video.
 3. Glass: clear, liquid, glossy, a lens; warm-to-cool tint; ink text; no drop shadows, no glow beside words.
    Accent colour: Logo Red #D30204, taken from the H of the logo (it replaced the old orange, 2026-11-27).
