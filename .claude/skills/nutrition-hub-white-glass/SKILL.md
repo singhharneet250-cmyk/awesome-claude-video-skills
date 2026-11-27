@@ -46,8 +46,10 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
 8. **Quality**: full HD at maximum quality, the biggest clean file the platforms accept (`encode.py`: CRF 4 steps,
    CRF 2 delivery, AAC 320k; owner 2026-11-27 "export size as maximum as possible"), -14 LUFS; ask for the original
    camera file, not a WhatsApp copy (§7).
-9. **Process**: show the plan, stills or a 5-10 s sample before any long render; never re-render or render a full
-   film unless the owner asks for it; tell the owner how long a render will take.
+9. **Process**: **always show the plan first (timeline drawing and preview stills) and render the final video only
+   after the owner's OK** *(owner, 2026-11-27: "Always show me your plan then after my permission render the final
+   video")*, for every edit, however short; never re-render or render a full film unless the owner asks for it; tell
+   the owner how long a render will take.
 10. **Sound**: original music (`score.py`) and the SFX kit by default; a licensed track, an AI voice, AI b-roll or any
    tool that spends credits only with the owner's OK.
 11. **Claims**: every number has a unit and a source; authorised-claim wording, no cure claims; supplements carry

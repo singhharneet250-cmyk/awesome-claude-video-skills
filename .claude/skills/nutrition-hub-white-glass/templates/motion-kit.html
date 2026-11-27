@@ -246,7 +246,7 @@ const SCENES = {
   /* Highlighter Sweep (R15, R3): words rise, then an orange bar sweeps behind *the phrase* and turns it white. */
   highlight: { overlay: false, build() {
     const lines = str("text", "Most people never read|*the back of the tub.*").split("|");
-    let FS = 86 * S;
+    let FS = parseFloat(str("size", "86")) * S;            // ?size=150 for a short phrase: big, bold type reads best on a phone
     const font = () => `800 ${FS}px/1.12 var(--nh-font)`;
     const plain = (l) => l.replace(/\*/g, "");
     const widest = () => Math.max(...lines.map((l) => measure(esc(plain(l)), font(), { letterSpacing: "-.03em" })[0]));

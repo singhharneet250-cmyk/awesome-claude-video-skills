@@ -82,7 +82,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Count-up Bars | `count` | A big number counts up while bars rise (last bar red) | `value`, `unit`, `decimals`, `label`, `source` (required: a real source) |
 | Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `times` (when each flips, e.g. `0.4,0.7`, to land on the spoken words), `slot=top` |
 | Word Split | `split` | A line opens and a check, chip or photo springs into the gap | `text=Read the\|label`, `chip`, `img`, `under` |
-| Highlighter Sweep | `highlight` | Words rise, then an red bar sweeps behind *the phrase* | `text=line\|*marked phrase*` |
+| Highlighter Sweep | `highlight` | Words rise, then a red bar sweeps behind *the phrase* | `text=line\|*marked phrase*`, `size` (default 86; 150 for a short phrase) |
 | Prompt Box | `prompt` | A question types into a pill, a cursor clicks send, an answer card rises (overlay) | `q`, `a` |
 | Shape Morph | `morph` | One ink shape becomes check → button → slider → toggle (→ chart), never cut | `states`, `label`, `hold` |
 | Big Scroll | `scroll` | One huge line slides across; its full stop is the red dot | `text`, `kicker`, `size` |
