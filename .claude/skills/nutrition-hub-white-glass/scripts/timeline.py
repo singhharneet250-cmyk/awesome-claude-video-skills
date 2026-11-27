@@ -234,7 +234,7 @@ def draw(e, D, br, ov, moments, out):
         return ImageFont.load_default()
     f12, f14, f18, f24 = font(13), font(15), font(18, True), font(26, True)
     X = lambda t: left + (W - left - right) * t / total
-    ink, slate, mist, ice, orange = "#202B38", "#596879", "#8290A0", "#EAF0F6", "#F0782B"
+    ink, slate, mist, ice, orange = "#202B38", "#596879", "#8290A0", "#EAF0F6", "#D30204"
     d.text((24, 22), f"Edit timeline · {Path(e['source']).name} · {total:.1f} s", font=f24, fill=ink)
     for t in range(0, int(total) + 1):
         x = X(t)
@@ -402,10 +402,10 @@ def export(e, render_media=True):
     tl = otio.schema.Timeline(name=f"{Path(e['source']).stem} · Nutrition Hub edit")
     v1 = otio.schema.Track(name="V1 Speaker", kind=otio.schema.TrackKind.Video)
     speaker = otio.schema.Clip(name=Path(e["source"]).name, media_reference=ref(graded), source_range=TR(0, D))
-    speaker.markers.append(otio.schema.Marker(name="Hook: speaker only", marked_range=TR(0, HOOK), color=otio.schema.MarkerColor.ORANGE))
+    speaker.markers.append(otio.schema.Marker(name="Hook: speaker only", marked_range=TR(0, HOOK), color=otio.schema.MarkerColor.RED))
     for f in e.get("effects", []):
         speaker.markers.append(otio.schema.Marker(name=f"Effect: {f['effect']}" + (f" ({f['words']})" if f.get("words") else ""),
-                                                  marked_range=TR(f["start"], f["end"] - f["start"]), color=otio.schema.MarkerColor.ORANGE,
+                                                  marked_range=TR(f["start"], f["end"] - f["start"]), color=otio.schema.MarkerColor.RED,
                                                   metadata={"nutrition_hub": {k: v for k, v in f.items() if not k.startswith("_")}}))
     v1.append(speaker)
     ec = e.get("endcard")

@@ -19,7 +19,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 export { THREE };
 
-export const COLORS = { porcelain: "#FFFFFF", ice: "#EAF0F6", ink: "#202B38", orange: "#F0782B", slate: "#596879" };
+export const COLORS = { porcelain: "#FFFFFF", ice: "#EAF0F6", ink: "#202B38", orange: "#D30204", slate: "#596879" };
 
 /* ---------- time ---------- */
 

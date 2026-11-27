@@ -271,7 +271,7 @@ def main():
         c0 = content_img if still_content else next(reader(a.content, ci["w"], ci["h"]))
         prev = composite(first, c0, quad, a.glare, a.glow, a.fit)
         dbg = first.copy()
-        cv2.polylines(dbg, [quad.astype(np.int32)], True, (240, 120, 43), max(2, W // 400))
+        cv2.polylines(dbg, [quad.astype(np.int32)], True, (211, 2, 4), max(2, W // 400))
         both = np.concatenate([dbg, prev], axis=1)
         cv2.imwrite(a.preview, cv2.cvtColor(both, cv2.COLOR_RGB2BGR))
         print(f"preview → {a.preview} (left: the corners found, right: the first composited frame)")

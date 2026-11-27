@@ -107,7 +107,7 @@ class Glass:
 
     # gradient glass (owner, 2026-11-26): the tint runs from a warm peach at the lit corner, through white, to a cool
     # ice blue at the far corner, both light tints of the brand's orange and ice, so ink text still reads everywhere
-    WARM, COOL = np.array([255, 214, 182], np.float32), np.array([196, 216, 242], np.float32)
+    WARM, COOL = np.array([255, 212, 206], np.float32), np.array([196, 216, 242], np.float32)
 
     def tint_field(self, inside, L, w, h):
         if self.grad <= 0 or not inside.any():

@@ -66,7 +66,7 @@ const list = (k, d, sep = ",") => str(k, d).split(sep).map((x) => x.trim()).filt
 const fileUrl = (p) => (p.startsWith("/") ? "file://" + p : p);
 const mix = (a, b, p) => { const h = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
   const A = h(a), B = h(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], p))).join(",")})`; };
-const INK = "#202B38", ORANGE = "#F0782B", ICE = "#EAF0F6", MIST = "#8290A0", SLATE = "#596879";
+const INK = "#202B38", ORANGE = "#D30204", ICE = "#EAF0F6", MIST = "#8290A0", SLATE = "#596879";
 function el(parent, cls, css = {}, html = "") {
   const e = document.createElement("div"); if (cls) e.className = cls; Object.assign(e.style, css); e.innerHTML = html;
   parent.appendChild(e); return e; }
@@ -381,7 +381,7 @@ const SCENES = {
     const mid = el(stage, "mk", { width: px(400 * S), height: px(400 * S), display: "grid", placeItems: "center" });
     if (pic) mid.appendChild(img(pic, { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", filter: "drop-shadow(0 30px 40px rgba(32,43,56,.25))" }));
     else { const disc = el(mid, "nh-glass", { width: px(380 * S), height: px(380 * S), borderRadius: "50%", display: "grid", placeItems: "center" });
-      el(disc, "", { width: px(72 * S), height: px(72 * S), borderRadius: "50%", background: "var(--nh-orange-grad)", boxShadow: "0 14px 30px -12px rgba(240,120,43,.7)" }); }
+      el(disc, "", { width: px(72 * S), height: px(72 * S), borderRadius: "50%", background: "var(--nh-orange-grad)", boxShadow: "0 14px 30px -12px rgba(211,2,4,.7)" }); }
     const cap = str("caption", "") ? words(stage, str("caption", ""), { font: `700 ${46 * S}px/1.2 var(--nh-font)`, letterSpacing: "-.02em" }) : null;
     return { dur: 3.6, sfx: [{ t: 0.3, sfx: "pop", what: "ring centre" }],
       seek(t) {

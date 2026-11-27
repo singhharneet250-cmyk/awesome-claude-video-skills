@@ -33,7 +33,7 @@ SKILL = Path(__file__).resolve().parent.parent
 STYLE_FILE = SKILL / "reference" / "captions.ass"
 
 BLUR = r"{\blur6}"              # softens the shadow border; the words themselves stay sharp
-ORANGE = r"{\c&H2B78F0&}"
+ORANGE = r"{\c&H0402D3&}"
 RESET = r"{\r\blur6}"          # back to the style colour; {\r} also clears blur, so re-apply it
 STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink", "strong": "NH-Caption-Strong"}
 # vertical position: event MarginV (distance from the frame bottom to the caption bottom, on 1920)
@@ -404,7 +404,7 @@ def main():
     ap.add_argument("--style", choices=sorted(STYLES), default=None,
                     help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
     ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
-    ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default signal orange #F0782B")
+    ap.add_argument("--accent", metavar="#RRGGBB", help="key-word colour (overrides --match); default Logo Red: #FC2B16 over footage, #C40205 on light walls")
     ap.add_argument("--position", choices=sorted(POSITIONS) + ["auto"], default="bottom",
                     help="bottom (default, y about 73%%), mic (about 58%%, R6), chest (about 50%%, R5), or auto: the vacant space around the person in the --match video (left, right, above, chest or the bottom band; scripts/layout_plan.py)")
     ap.add_argument("--avoid", default="", metavar="T0-T1:X0,Y0,X1,Y1;...",
@@ -423,7 +423,7 @@ def main():
     SERIF_WORDS = {w.strip().lower() for w in args.serif_words.split(",") if w.strip()}
     for flag, val in (("--accent", args.accent),):
         if val and not re.fullmatch(r"#[0-9A-Fa-f]{6}", val):
-            sys.exit(f"{flag} must look like #F0782B, not {val!r}")
+            sys.exit(f"{flag} must look like #D30204, not {val!r}")
     scheme, person = None, None
     if args.position == "auto" and not args.match:
         sys.exit("--position auto needs --match VIDEO (the video the captions go on).")
@@ -461,11 +461,11 @@ def main():
         if args.accent:
             acc = args.accent
         elif scheme and clashes_at(scheme, start, end):
-            acc = "#E66D2A" if style == "ink" else "#F0782B"     # its own colour is right behind it: use orange
+            acc = "#C40205" if style == "ink" else "#FC2B16"     # its own colour is right behind it: use Logo Red
         elif scheme:
             acc = scheme["accent_deep"] if style == "ink" else scheme["accent_bright"]
         else:
-            acc = "#E66D2A" if style == "ink" else "#F0782B"
+            acc = "#C40205" if style == "ink" else "#FC2B16"
         return style, acc.upper()
 
     keywords = {" ".join(k.replace("\xa0", " ").split()).lower() for k in args.keywords.split(",") if k.strip()}
@@ -489,7 +489,7 @@ def main():
             style = "ink" if slot["light"] else "strong" if slot["busy"] else "footage"
             if not args.accent:
                 if scheme and clashes_at(scheme, s, e):
-                    acc = "#E66D2A" if style == "ink" else "#F0782B"
+                    acc = "#C40205" if style == "ink" else "#FC2B16"
                 elif scheme:
                     acc = scheme["accent_deep"] if style == "ink" else scheme["accent_bright"]
                 acc = acc.upper()

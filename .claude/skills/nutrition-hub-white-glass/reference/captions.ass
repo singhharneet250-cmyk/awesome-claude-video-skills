@@ -5,10 +5,10 @@
 ;   NH-Caption      white words for footage (the default)
 ;   NH-Caption-Strong  white words with a stronger shadow, for busy light-and-dark backgrounds
 ;   NH-Caption-Ink  graphite ink words for light walls and the white stage
-; The key word goes signal orange: {\c&H2B78F0&}word{\r\blur6}. {\r} returns to the style's own
+; The key word goes signal orange: {\c&H0402D3&}word{\r\blur6}. {\r} returns to the style's own
 ; colour, and \blur6 must follow it because {\r} also clears the blur.
 ; Colours are &HAABBGGRR (AA 00 = opaque, FF = clear): white = &H00FFFFFF, ink #202B38 = &H00382B20,
-; orange #F0782B = &H002B78F0, shadow #0B1118 at about 40% = &H9918110B.
+; orange #D30204 = &H000402D3, shadow #0B1118 at about 40% = &H9918110B.
 ScriptType: v4.00+
 PlayResX: 1080
 PlayResY: 1920
@@ -17,11 +17,11 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: NH-Caption,Inter,62,&H00FFFFFF,&H002B78F0,&H9918110B,&HB018110B,-1,0,0,0,100,100,0,0,1,4,2,2,110,110,520,1
-Style: NH-Caption-Strong,Inter,62,&H00FFFFFF,&H002B78F0,&H5518110B,&H8018110B,-1,0,0,0,100,100,0,0,1,6,3,2,110,110,520,1
-Style: NH-Caption-Ink,Inter,62,&H00382B20,&H002B78F0,&H55FFFFFF,&HFFFFFFFF,-1,0,0,0,100,100,0,0,1,5,0,2,110,110,520,1
+Style: NH-Caption,Inter,62,&H00FFFFFF,&H000402D3,&H9918110B,&HB018110B,-1,0,0,0,100,100,0,0,1,4,2,2,110,110,520,1
+Style: NH-Caption-Strong,Inter,62,&H00FFFFFF,&H000402D3,&H5518110B,&H8018110B,-1,0,0,0,100,100,0,0,1,6,3,2,110,110,520,1
+Style: NH-Caption-Ink,Inter,62,&H00382B20,&H000402D3,&H55FFFFFF,&HFFFFFFFF,-1,0,0,0,100,100,0,0,1,5,0,2,110,110,520,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:01.20,NH-Caption,,0,0,0,,{\blur6}One of the most {\c&H2B78F0&}researched{\r\blur6} supplements
-Dialogue: 0,0:00:01.20,0:00:02.60,NH-Caption,,0,0,0,,{\blur6}Take {\c&H2B78F0&}3–5 g{\r\blur6} a day
+Dialogue: 0,0:00:00.00,0:00:01.20,NH-Caption,,0,0,0,,{\blur6}One of the most {\c&H0402D3&}researched{\r\blur6} supplements
+Dialogue: 0,0:00:01.20,0:00:02.60,NH-Caption,,0,0,0,,{\blur6}Take {\c&H0402D3&}3–5 g{\r\blur6} a day
