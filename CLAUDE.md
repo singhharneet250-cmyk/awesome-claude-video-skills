@@ -12,7 +12,8 @@ other skill, plugin or default. In short:
 4. Gradients on type, fills, icons, glass and captions, in brand colours only; never on the logo, photos or video.
 5. Captions in Roman script (Roman Punjabi for the owner's talks), short, beside the head, never over a card. Use them
    wisely: never repeat a word that is big on screen (hand over to it), place each line where the frame is clean
-   ({top}/{low} per .srt cue), read top to bottom, and check every position on preview stills (owner, 2026-11-27).
+   ({top}/{low} per .srt cue), read top to bottom, and check every position on preview stills; caption font stays
+   Inter Bold, no serif words (owner, 2026-11-27).
 6. Voice clear and natural. Output full HD at maximum quality, the biggest clean file platforms accept
    (`encode.py`: CRF 2, AAC 320k), -14 LUFS; ask for the original camera file.
 7. Always show the plan (timeline drawing and preview stills) first, and render the final video only after the owner's
