@@ -23,14 +23,14 @@
 </head>
 <body>
 <!--
-  Motion kit (R8–R16, SKILL.md §4 L): 21 short White Glass beats learned from the owner's motion-design references,
+  Motion kit (R8–R16, SKILL.md §4 L): 23 short White Glass beats learned from the owner's motion-design references,
   picked by name with ?scene=. Every frame is a pure function of time (window.__seek), springs are critically damped
   (they never overshoot), and one orange dot is the element carried through a scene.
 
   FULL-SCREEN BEATS (render as MP4 and cut them in like b-roll: broll.py, or "template" in edit.json "broll"):
     wheel  menu  count  split  highlight  morph  scroll  ring  strip  echo  photos  dots  panels3
   OVERLAYS (render with --transparent and lay over the speaker; they also work full screen):
-    toggle  prompt  progress  panels  tracking  banner  cta
+    toggle  prompt  progress  panels  tracking  banner  cta  lens  meter  steps
 
     node ../scripts/render.cjs "motion-kit.html?scene=wheel&words=Whey,Creatine,Oats&pick=Creatine" --out wheel.mp4
     node ../scripts/render.cjs "motion-kit.html?scene=toggle&items=Seal intact,Batch code scanned" --transparent --out t.mov
@@ -113,8 +113,12 @@ const SCENES = {
     const kick = el(stage, "mk nh-kicker", {}, esc(str("kicker", "Today we check")));
     const note = str("note", "Read the label first");
     const chip = note ? el(stage, "mk nh-chip", {}, `<i class="nh-dot"></i>${esc(note)}`) : null;
-    const F = 2 * N + pick, F0 = F - (N + 3), T0 = 0.15, ROLL = 1.7, LANDT = T0 + ROLL * 0.82;
-    return { dur: T0 + ROLL + 1.35, sfx: [{ t: T0, sfx: "whoosh", gain: -4, what: "wheel rolls" }, { t: LANDT, sfx: "tick", what: "lands on " + W8[pick] }],
+    // ?roll=1.0 for a fast chapter marker (lands sooner), ?hold= how long it rests after the roll (default 1.35)
+    const F = 2 * N + pick, F0 = F - (N + 3), T0 = 0.15, ROLL = parseFloat(str("roll", "1.7")), LANDT = T0 + ROLL * 0.82;
+    // ?num=1: a big Logo Red Bebas chapter number on the right that slams in as the wheel lands (04 Slam, no overshoot)
+    const NUM = str("num", "") ? el(stage, "mk", { font: `400 ${380 * S}px/1 "Bebas Neue"`, color: ORANGE, letterSpacing: ".01em" }, esc(str("num", ""))) : null;
+    return { dur: T0 + ROLL + parseFloat(str("rest", "1.35")), sfx: [{ t: T0, sfx: "whoosh", gain: -4, what: "wheel rolls" }, { t: LANDT, sfx: "tick", what: "lands on " + W8[pick] }]
+        .concat(NUM ? [{ t: LANDT + 0.06, sfx: "thud", gain: -3, what: "chapter number" }] : []),
       seek(t) {
         const pin = easeOut(prog(t, 0, 0.35));
         const r = prog(t, T0, ROLL), pos = lerp(F0, F, 1 - Math.pow(1 - r, 4));
@@ -125,6 +129,9 @@ const SCENES = {
           setXY(e, X, CY + d * GAP, 0, 0.5); });
         const dp = spring(t, LANDT - 0.05, 18);
         dot.style.opacity = dp; setXY(dot, X - 48 * S, CY, 0.5, 0.5, `scale(${dp})`);
+        if (NUM) { const q = clamp((t - (LANDT - 0.12)) / 0.32), e5 = 1 - Math.pow(1 - q, 5);
+          NUM.style.opacity = clamp(q / 0.55); NUM.style.filter = e5 < 1 ? `blur(${14 * (1 - e5)}px)` : "none";
+          setXY(NUM, LAND ? W * 0.8 : W - 130 * S, CY + 10 * S, 0.5, 0.5, `scale(${2.5 - 1.5 * e5})`); }
         kick.style.opacity = pin; setXY(kick, X, CY - 540 * S, 0, 0.5);
         if (chip) { const c = easeOut(prog(t, LANDT + 0.25, 0.5)); chip.style.opacity = c; setXY(chip, CX, CY + 470 * S + (1 - c) * 20 * S, 0.5, 0.5); }
       } }; } },
@@ -416,6 +423,68 @@ const SCENES = {
         fin.style.opacity = d; const ck = fin.querySelector("path"); ck.setAttribute("stroke-dasharray", "1"); ck.setAttribute("stroke-dashoffset", String(1 - easeOut(prog(t, TD + 0.05, 0.35))));
       } }; } },
 
+  /* Sunlight Meter (owner's supplements reel, 2026-11-27: "indoors, less sunlight"): a glass card with a sun icon and a
+     "Sunlight" bar that drains when the line lands, then an "Indoors" tag. No numbers: it shows a direction, not a
+     measurement. ?label= ?low= (the tag), ?drain= (seconds in, when it drains), ?dur= */
+  meter: { overlay: true, build() {
+    const label = str("label", "Sunlight"), low = str("low", "Indoors"), DR = parseFloat(str("drain", "0.9")), D = parseFloat(str("dur", "3.2"));
+    const CW = 840 * S, CH = 250 * S, cy = TRANSPARENT ? SLOT_Y : CY;
+    const card = el(stage, "mk-card nh-glass", { width: px(CW), height: px(CH), left: px(CX - CW / 2), top: px(cy - CH / 2) });
+    const R = 46 * S, sx = 50 * S + R, sy = CH / 2;
+    const rays = Array.from({ length: 8 }, (_, k) => { const a = k * Math.PI / 4;
+      return `<line x1="${Math.cos(a) * R * 1.35}" y1="${Math.sin(a) * R * 1.35}" x2="${Math.cos(a) * R * 1.8}" y2="${Math.sin(a) * R * 1.8}" stroke="${ORANGE}" stroke-width="${7 * S}" stroke-linecap="round"/>`; }).join("");
+    const sun = el(card, "", { position: "absolute", left: px(sx - R * 2), top: px(sy - R * 2), width: px(R * 4), height: px(R * 4) },
+      `<svg viewBox="${-R * 2} ${-R * 2} ${R * 4} ${R * 4}" style="width:100%;height:100%;overflow:visible"><g class="rays">${rays}</g><circle r="${R}" fill="${ORANGE}"/></svg>`);
+    el(card, "", { position: "absolute", left: px(sx + R * 2.2), top: px(46 * S), font: `700 ${40 * S}px/1 var(--nh-font)`, color: INK, letterSpacing: "-.02em" }, esc(label));
+    const TW = CW - (sx + R * 2.2) - 50 * S, TH = 54 * S;
+    const track = el(card, "", { position: "absolute", left: px(sx + R * 2.2), top: px(120 * S), width: px(TW), height: px(TH), borderRadius: px(TH / 2), background: "#DCE5EE", overflow: "hidden" });
+    const fill = el(track, "", { position: "absolute", left: 0, top: 0, bottom: 0, borderRadius: px(TH / 2), background: "var(--nh-orange-grad)" });
+    const tag = el(card, "mk nh-chip", { fontSize: px(24 * S) }, esc(low));
+    return { dur: D, sfx: [{ t: 0.12, sfx: "pop", what: "meter in" }, { t: DR + 0.05, sfx: "whoosh", gain: -8, what: "sunlight drains" }],
+      seek(t) {
+        const c = easeOut(prog(t, 0.08, 0.6)); card.style.opacity = c; card.style.transform = `translateY(${(1 - c) * 24}px) scale(${0.96 + 0.04 * c})`;
+        const full = easeOut(prog(t, 0.2, 0.5)), d = easeInOut(prog(t, DR, 0.9));
+        fill.style.width = px(TH + (TW - TH) * full * (1 - 0.8 * d));
+        sun.style.opacity = 1 - 0.65 * d; sun.querySelector(".rays").style.opacity = 1 - d;
+        const g = easeOut(prog(t, DR + 0.7, 0.45)); tag.style.opacity = g;
+        setXY(tag, sx + R * 2.2 + TW - 10 * S, 74 * S + (1 - g) * 8 * S, 1, 0.5); tag.style.position = "absolute";
+      } }; } },
+
+  /* Steps (owner's supplements reel, 2026-11-27: "first exercise and diet, then supplements"): a numbered ladder in a glass
+     card; each step lights up (number in Logo Red, a check) on its word, and the line between them fills.
+     ?items=Exercise|first;Diet|first;Supplements|only for a deficiency  ?times=0.3,0.9,1.8  ?title= */
+  steps: { overlay: true, build() {
+    const items = list("items", "Exercise|First;Diet|Then;Supplements|Only if you need them", ";").map((x) => x.split("|").map((y) => y.trim()));
+    const n = items.length, TT = list("times", "").map(parseFloat), T = items.map((_, i) => (Number.isFinite(TT[i]) ? TT[i] : 0.5 + i * 0.6));
+    const title = str("title", "In this order"), RH = 118 * S, CW = 860 * S, pad = 44 * S;
+    const CH = pad * 2 + (title ? 56 * S : 0) + n * RH, cy = TRANSPARENT ? SLOT_Y : CY;
+    const card = el(stage, "mk-card nh-glass", { width: px(CW), height: px(CH), left: px(CX - CW / 2), top: px(cy - CH / 2) });
+    if (title) el(card, "nh-kicker", { position: "absolute", left: px(pad), top: px(pad), fontSize: px(24 * S) }, esc(title));
+    const D0 = 64 * S, x0 = pad + D0 / 2, top0 = pad + (title ? 56 * S : 0) + RH / 2;
+    const line = el(card, "", { position: "absolute", left: px(x0 - 3 * S), top: px(top0), width: px(6 * S), height: px((n - 1) * RH), borderRadius: px(3 * S), background: "#DCE5EE" });
+    const lfill = el(line, "", { position: "absolute", left: 0, right: 0, top: 0, borderRadius: px(3 * S), background: "var(--nh-orange-grad)" });
+    const rows = items.map(([w, sub], i) => {
+      const y = top0 + i * RH;
+      const dot = el(card, "", { position: "absolute", left: px(x0 - D0 / 2), top: px(y - D0 / 2), width: px(D0), height: px(D0), borderRadius: "50%", background: "#DCE5EE",
+        display: "grid", placeItems: "center", font: `800 ${30 * S}px/1 var(--nh-font)`, color: INK }, String(i + 1));
+      const on = el(dot, "", { position: "absolute", inset: 0, borderRadius: "50%", background: "var(--nh-orange-grad)", opacity: 0, display: "grid", placeItems: "center" },
+        `<span style="width:${30 * S}px;height:${30 * S}px;display:inline-block">${checkSvg("#FFFFFF", 3.6)}</span>`);
+      const txt = el(card, "", { position: "absolute", left: px(x0 + D0 / 2 + 30 * S), top: px(y - 36 * S), whiteSpace: "nowrap" },
+        `<div style="font:800 ${58 * S}px/1 var(--nh-font);letter-spacing:-.025em;color:${INK}">${esc(w)}</div>` +
+        (sub ? `<div style="margin-top:${8 * S}px;font:600 ${26 * S}px/1.1 var(--nh-font);color:${SLATE}">${esc(sub)}</div>` : ""));
+      return { dot, on, txt }; });
+    return { dur: T[n - 1] + 1.1, sfx: T.map((x, i) => ({ t: x + 0.03, sfx: "tick", what: "step " + (i + 1) })),
+      seek(t) {
+        const c = easeOut(prog(t, 0.08, 0.6)); card.style.opacity = c; card.style.transform = `translateY(${(1 - c) * 24}px) scale(${0.96 + 0.04 * c})`;
+        rows.forEach((r, i) => { const a = spring(t, T[i], 18);
+          r.on.style.opacity = a; r.on.style.transform = `scale(${0.7 + 0.3 * a})`;
+          const ck = r.on.querySelector("path"); ck.setAttribute("stroke-dasharray", "1"); ck.setAttribute("stroke-dashoffset", String(1 - easeOut(prog(t, T[i] + 0.08, 0.3))));
+          const base = easeOut(prog(t, 0.25 + i * 0.08, 0.45));
+          r.txt.style.opacity = base * lerp(0.45, 1, a); r.txt.style.transform = `translateX(${(1 - base) * 18 * S}px)`; r.dot.style.opacity = base; });
+        let k = 0; for (let i = 1; i < n; i++) k += easeInOut(prog(t, T[i] - 0.25, 0.25));
+        lfill.style.height = px(k * RH);
+      } }; } },
+
   /* Spatial Panels (R8): glass cards float at the sides in 3D, turned toward the speaker. Overlay or full screen. */
   panels: { overlay: true, build() {
     const items = list("items", "Whey|Protein per serving;Creatine|Look for monohydrate;Electrolytes|Check the sodium;Multivitamin|Compare the daily value", ";").map((x) => x.split("|"));
@@ -427,13 +496,15 @@ const SCENES = {
     if (n === 2) slots.splice(0, 4, ...(TRANSPARENT ? [[0.15, 0.43, 1], [0.85, 0.47, -1]] : [[0.22, 0.29, 1], [0.78, 0.31, -1]]));   // two cards: one each side, beside the cheek, clear of the head
     const PT = list("times", "").map(parseFloat);         // ?times=0.1,1.2: when each card swings in, on its spoken word
     const world = el(stage, "", { position: "absolute", inset: 0, perspective: px(1700 * S) });
+    const lineSize = (l) => { if (l.length > 10) return 44 * S; let fs = 92 * S;      // one short word: as big as the card allows
+      while (fs > 44 * S && measure(esc(l), `800 ${fs}px/1 var(--nh-font)`, { letterSpacing: "-.03em" })[0] > PWd - 72 * S) fs -= 2 * S; return fs; };
     const cards = Array.from({ length: n }, (_, i) => {
       const c = el(world, "mk-card nh-glass", { width: px(PWd), height: px(PHt), left: 0, top: 0, overflow: "hidden", whiteSpace: "normal" });
       if (imgs[i]) { const b = el(c, "", { position: "absolute", inset: px(10 * S), borderRadius: px(20 * S), overflow: "hidden" }); b.appendChild(img(imgs[i], { width: "100%", height: "100%", objectFit: "cover" })); }
       else { const [w, l] = items[i] || ["", ""];
         c.innerHTML = `<div style="position:absolute;inset:${34 * S}px;display:flex;flex-direction:column;justify-content:space-between">
           <i style="width:${30 * S}px;height:${30 * S}px;border-radius:50%;background:var(--nh-orange-grad)"></i>
-          <div><div class="nh-kicker" style="font-size:${22 * S}px">${esc(w)}</div><div style="margin-top:${12 * S}px;font:800 ${(l || "").length <= 6 ? 92 * S : 44 * S}px/1.02 var(--nh-font);letter-spacing:-.03em;color:${INK}">${esc(l || "")}</div></div></div>`; }   // a short value (9 AM) reads big
+          <div><div class="nh-kicker" style="font-size:${22 * S}px">${esc(w)}</div><div style="margin-top:${12 * S}px;font:800 ${lineSize(l || "")}px/1.02 var(--nh-font);letter-spacing:-.03em;color:${INK}">${esc(l || "")}</div></div></div>`; }   // short values read big, and always fit the card
       return c; });
     const head = !TRANSPARENT && str("text", "Read before you buy") ? words(stage, str("text", "Read before you buy"), { font: `800 ${84 * S}px/1.1 var(--nh-font)`, letterSpacing: "-.035em" }) : null;
     const D = parseFloat(str("dur", "4.6"));

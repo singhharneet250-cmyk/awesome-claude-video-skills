@@ -57,6 +57,7 @@ python3 $SK/scripts/timeline.py render edit.json           # the finished reel, 
     It renders, keeps its colours ungraded, and its sounds join the mix.
   - Overlays get real liquid glass (§3b); `"glass": "flat"` on an overlay keeps the near-opaque panel.
   - `"motion_blur": 4` renders every graphic with motion blur.
+  - `"continues": true` marks a middle part of a longer reel (no hook of its own), so a beat may start at 0 s.
 - **`export`:** `edit.otio` + `edit.srt` for DaVinci Resolve (File > Import > Timeline), Premiere or Kdenlive:
   V1 the graded take then the end card, V2 b-roll and beats, V3 overlays (ProRes 4444), A1 voice, A2 each SFX as a
   clip at its cue, effects as markers on V1. Tested on a 10 s take with a beat and an overlay: 2 s once rendered.

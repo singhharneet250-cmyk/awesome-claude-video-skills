@@ -34,10 +34,10 @@ footage, is kept out of this public repo).
 
 | Name | What it is | Where |
 |---|---|---|
-| Headline Wall | Real headlines on cards around the speaker | `templates/headline-wall.html` |
+| Headline Wall | Real headlines on cards around the speaker | `templates/headline-wall.html` (`?cards=Headline with *mark*\|Outlet · 29 Oct 2025\|x\|y\|rot;…`: real headlines only, quoted as published; `?w=420&size=34` for a close shot; `?start=`, `?stagger=`, `?hold=`) |
 | Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line) |
 | UI World | Glass app cards act out a task | `templates/ui-world.html` |
-| Chat Takeover | A chat: pick a contact, type, send, reply (above the head or full screen) | `templates/chat-takeover.html` |
+| Chat Takeover | A chat: pick a contact, type, send, reply (above the head or full screen) | `templates/chat-takeover.html` (`?message=`, `?reply=`, `?kicker=`, `?label=` (keep "Example chat" unless the chat is real and shared with consent), `?hold=`, `?cps=34` to fit the typing to the spoken line) |
 | Comment Bubble | A comment types the keyword, then a reply with "Open link" | `chat-takeover.html?layout=comment` |
 | Data Callout | A number with its unit and source on a glass card | `templates/overlay-callout.html` |
 | Slam Hook | A big condensed word slams in, then a line ending on a serif accent | `templates/hook-slam.html` (`?slam1=Follow&line1=Nutrition Hub for&accent1=more.&support1=`, `?dur=2.2` for a short hook before a talking head; beat 2: `slam2`, `line2`, `accent2`, `chips=A\|B`) |
@@ -51,7 +51,7 @@ footage, is kept out of this public repo).
 | Soft Dissolve | A 0.25 s dissolve | `broll.py --transition soft` |
 | Before + After | A light bar wipes from before to after (edits and products only) | `fx.py wipe` |
 | Watch the Line | Before + After in R18's attention style: the line keeps swinging with a glass handle, labels and a headline pill on top | `fx.py wipe --mode line --words "Before,After" --text "Same reel. Watch the line."` |
-| Pull-back Reveal | The picture pulls back into an editing screen | `fx.py pullback` |
+| Pull-back Reveal | The picture pulls back into an editing screen | `fx.py pullback` (`--text "Remember: not every supplement"` puts the spoken line in the editor's title bar) |
 
 ## Captions and type
 
@@ -78,7 +78,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 
 | Name | Scene | What it is | Main parameters |
 |---|---|---|---|
-| Word Wheel | `wheel` | A list rolls like a slot reel and lands on one word, with the red dot | `words`, `pick`, `kicker`, `note` |
+| Word Wheel | `wheel` | A list rolls like a slot reel and lands on one word, with the red dot | `words`, `pick`, `kicker`, `note`; `roll=0.9&rest=0.9` for a fast chapter marker; `num=3` adds a big Logo Red chapter number that slams in as the wheel lands |
 | Menu Switch | `menu` | A word list steps down; the dot travels; a glass card swaps per item | `items=Title\|line;…`, `imgs`, `step`, `times` (when each item lights up) |
 | Count-up Bars | `count` | A big number counts up while bars rise (last bar red) | `value`, `unit`, `decimals`, `label`, `source` (required: a real source) |
 | Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `times` (when each flips, e.g. `0.4,0.7`, to land on the spoken words), `slot=top` |
@@ -89,7 +89,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Big Scroll | `scroll` | One huge line slides across; its full stop is the red dot | `text`, `kicker`, `size` |
 | Text Ring | `ring` | Words run round a slowly turning circle around a product photo | `text`, `img`, `caption` |
 | Progress Pill | `progress` | A pill fills in steps (18% … 92% … 100%) then becomes a check (overlay) | `label`, `done` |
-| Spatial Panels | `panels` | Glass cards float at the sides in 3D, turned toward the speaker (overlay) | `items`, `imgs`, `text`, `dur`, `times` (when each card swings in; two cards sit one on each side) |
+| Spatial Panels | `panels` | Glass cards float at the sides in 3D, turned toward the speaker (overlay; the replacement for orbit, which the owner dropped) | `items`, `imgs`, `text`, `dur`, `times` (when each card swings in; two cards sit one on each side; a short value like "Bones" reads big and always fits the card) |
 | Photo Strip | `strip` | A column of photos scrolls up between two words | `imgs`, `left`, `right` |
 | Echo Stack | `echo` | The line lands, faint copies spread above and below (photo optional, washed white) | `text=LINE\|LINE`, `img` |
 | Tracking Reveal | `tracking` | Small capitals slowly open their spacing; never still (overlay: in a chip) | `text`, `dur` |
@@ -99,6 +99,8 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Glass Lens | `lens` | A round glass magnifier glides to a spot in your footage and magnifies it (overlay; give it `"glass_lens": 0.35`) | `x`, `y`, `to`, `size`, `label`, `from`, `dur` |
 | Photo Scatter | `photos` | A headline in the middle; real photos pop in around it and drift outward | `imgs`, `text` |
 | Dot Grid | `dots` | A sourced share made visible: 100 dots pop in, the share fills in Logo Red while the number counts up ("7 in 10" or "70%") | `value` + `of`, or `pct`; `label`, `text`, `source` (required for a real figure) |
+| Sunlight Meter | `meter` | A glass card with a sun and a "Sunlight" bar that drains, then an "Indoors" tag; shows a direction, no numbers (overlay) | `label`, `low` (the tag, default "Indoors"), `drain` (seconds in), `dur` |
+| Steps | `steps` | A numbered ladder in a glass card; each step lights up (Logo Red number, a check) on its word (overlay) | `items=Exercise\|First;Diet\|Then;…`, `times`, `title` |
 | Three Panels | `panels3` | Three choices fill the screen as full bands (stacked on 9:16, side by side on 16:9); the one you pick turns Logo Red | `items` (`Word\|line;…`), `pick` (1–3, 0 = none), `times` (when each band comes in, e.g. `0,0.2,1.3`) |
 
 For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.

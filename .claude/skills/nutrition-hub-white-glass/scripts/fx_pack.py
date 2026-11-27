@@ -246,7 +246,8 @@ class Pullback:
         for i, c in enumerate(((211, 2, 4), (201, 213, 226), (201, 213, 226))):
             im = fx.grad_shape(im, "ellipse", (72 * u + i * 30 * u, 95 * u, 90 * u + i * 30 * u, 113 * u), c)
             d = ImageDraw.Draw(im)
-        d.text((W / 2, 105 * u), "Nutrition Hub · reel edit", font=f(30), fill=(32, 43, 56, 255), anchor="mm")
+        title = getattr(self.a, "text", None) or "Nutrition Hub · reel edit"   # --text: the line the step back is for
+        d.text((W / 2, 105 * u), title, font=f(44 if getattr(self.a, "text", None) else 30), fill=(32, 43, 56, 255), anchor="mm")
         x0, y0, x1, y1 = self.rect
         px0 = x1 + 34 * u
         d.rounded_rectangle((px0, y0, W - 40 * u, y0 + 520 * u), int(26 * u), fill=(255, 255, 255, 240), outline=(32, 43, 56, 20))
@@ -321,6 +322,8 @@ class Scatter:
         for li, (word, px, color) in enumerate(((words[0], 1.7 * fh_px, fx.WHITE), (words[1], 1.25 * fh_px, fx.ORANGE))):
             from PIL import ImageFont
             font = ImageFont.truetype(str(BEBAS), int(px))
+            while px > 40 and sum(font.getlength(ch) * 1.04 for ch in word.upper()) > 0.9 * W:   # a close shot: never wider than the frame
+                px *= 0.94; font = ImageFont.truetype(str(BEBAS), int(px))
             letters = [text_sprite(ch, px, color, BEBAS, shadow=0.3) for ch in word.upper()]
             widths = [font.getlength(ch) * 1.04 for ch in word.upper()]      # the font's own advance, slightly open
             self.layers.append({"letters": letters, "widths": widths,

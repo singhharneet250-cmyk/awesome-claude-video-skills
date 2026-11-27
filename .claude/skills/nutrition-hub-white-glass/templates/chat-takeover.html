@@ -94,6 +94,10 @@ const P = new URLSearchParams(location.search);
 if (P.get("layout")) SCENE.layout = P.get("layout");
 if (P.get("top")) SCENE.top = parseFloat(P.get("top"));
 if (P.get("bottom")) SCENE.bottom = parseFloat(P.get("bottom"));
+// per-video copy: ?message= ?reply= ?kicker= ?label= (keep "Example chat" unless the chat is real and shared with consent)
+["message", "reply", "kicker", "label"].forEach((k) => { if (P.has(k)) SCENE[k] = P.get(k); });
+if (P.has("hold")) SCENE.hold = parseFloat(P.get("hold"));
+if (P.has("cps")) SCENE.cps = parseFloat(P.get("cps"));       // typing speed, to fit the chat to its spoken line
 const full = SCENE.layout === "full";
 const comment = SCENE.layout === "comment";
 if (comment) { SCENE.message = SCENE.comment; SCENE.reply = SCENE.commentReply; if (!SCENE.bottom) SCENE.bottom = 1500; }
