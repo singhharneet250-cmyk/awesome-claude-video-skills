@@ -242,8 +242,9 @@ def draw(e, D, br, ov, moments, out):
         d.line((x, top - 10, x, H - 50), fill="#EEF2F6" if t % 5 else "#DCE3EA", width=1)
         if t % (1 if total <= 20 else 5) == 0:
             d.text((x - 6, H - 44), f"{t}s", font=f12, fill=mist)
-    d.rectangle((X(0), top - 14, X(HOOK), top - 8), fill=orange)
-    d.text((X(0) + 4, top - 34), "hook: speaker only", font=f12, fill=orange)
+    if not e.get("continues"):                                   # a middle part of a longer reel has no hook
+        d.rectangle((X(0), top - 14, X(HOOK), top - 8), fill=orange)
+        d.text((X(0) + 4, top - 34), "hook: speaker only", font=f12, fill=orange)
 
     def block(r, a, b, label, fill, fg=ink, outline=None):
         y = top + r * row
@@ -504,7 +505,8 @@ def render(e):
         spec.write_text(json.dumps([{k: v for k, v in b.items() if not k.startswith("_") and k != "template"} | {"file": b["_file"]}
                                     | ({"grade": False} if b.get("template") else {}) for b in e["broll"]]))
         nxt = work / "02_broll.mp4"
-        run([PY, HERE / "broll.py", cur, nxt, "--spec", spec, "--plan-out", work / "broll_plan.json"], "b-roll cutaways")
+        run([PY, HERE / "broll.py", cur, nxt, "--spec", spec, "--plan-out", work / "broll_plan.json",
+             *(["--hold-start", "0"] if e.get("continues") else [])], "b-roll cutaways")   # a middle part has no hook
         cur = nxt
     for i, f in enumerate(sorted(e.get("effects", []), key=lambda f: f["start"])):
         nxt = work / f"03_fx{i}_{f['effect']}.mp4"

@@ -262,8 +262,10 @@ def main():
     mask = frames(a.mask, W, H, "rgba", bi["rate"])
     flat = frames(a.compare, W, H, "rgba", bi["rate"]) if a.compare else None
     OW = W * 2 if flat else W
+    # every frame of the base is written and its audio copied whole (no -shortest: with copied AAC it cut a few frames
+    # off the end on every pass, 10 frames after six overlays, which clipped the last word)
     enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{OW}x{H}", "-r", bi["rate"], "-i", "-",
-                            "-i", str(a.base), "-map", "0:v", "-map", "1:a?", *encode.WORK, "-c:a", "copy", "-movflags", "+faststart", "-shortest", a.out], stdin=subprocess.PIPE)
+                            "-i", str(a.base), "-map", "0:v", "-map", "1:a?", *encode.WORK, "-c:a", "copy", "-movflags", "+faststart", a.out], stdin=subprocess.PIPE)
     n = 0
     for i, f in enumerate(frames(a.base, W, H, "rgb24", bi["rate"])):
         out, left = f, f
