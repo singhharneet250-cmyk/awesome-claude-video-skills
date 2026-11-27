@@ -33,7 +33,7 @@ import numpy as np
 BRAND_BRIGHT, BRAND_DEEP = "#FC2B16", "#C40205"   # Logo Red (owner, 2026-11-27): bright on footage, deep on light
 INK, WHITE, SHADOW = "#202B38", "#FFFFFF", "#0B1118"
 W, H = 180, 320                     # analysis size (9:16)
-ZONES = {"bottom": (0.655, 0.735), "mic": (0.54, 0.62), "chest": (0.47, 0.55)}  # where caption text sits, share of frame height
+ZONES = {"bottom": (0.655, 0.735), "mic": (0.54, 0.62), "chest": (0.47, 0.55), "top": (0.135, 0.175), "low": (0.735, 0.78)}  # where caption text sits, share of frame height
 MAX_SAMPLES = 240
 
 

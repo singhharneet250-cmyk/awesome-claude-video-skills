@@ -85,6 +85,14 @@ const SCHEMES = {
 
 /* ===== Runtime ===== */
 const params = new URLSearchParams(location.search);
+// per-video copy without editing the file (owner's IMG_0428 edit, 2026-11-27):
+//   ?slam1=Follow&line1=Nutrition Hub for&accent1=more.&support1=   (beat 1; an empty value hides it)
+//   ?slam2=&line2=&accent2=&chips=A|B|C                             (beat 2)
+//   ?dur=2.2  cut the hook short: with dur under 4.3 only beat 1 plays, which suits a hook before a talking head
+[["beat1", "1"], ["beat2", "2"]].forEach(([b, n]) => ["slam", "line", "accent", "support"].forEach((k) => {
+  if (params.has(k + n)) SCENE[b][k] = params.get(k + n); }));
+if (params.has("chips")) SCENE.beat2.chips = params.get("chips").split("|").map((c) => c.trim()).filter(Boolean);
+if (params.has("dur")) SCENE.duration = parseFloat(params.get("dur"));
 const stage = document.getElementById("stage");
 const schemeName = params.get("scheme") || SCENE.scheme;
 if (!SCHEMES[schemeName]) { window.__error = `unknown scheme "${schemeName}" (use ${Object.keys(SCHEMES).join(", ")})`; }
@@ -111,7 +119,7 @@ function splitWords(el) {            // kinetic type: one mask per word; the acc
   line.innerHTML = esc(b.line) + ' <span class="nh-accent">' + esc(b.accent) + "</span>";
   splitWords(line);
 });
-document.getElementById("support1").textContent = SCENE.beat1.support;
+document.getElementById("support1").textContent = SCENE.beat1.support || "";
 document.getElementById("chips").innerHTML = SCENE.beat2.chips.map((c, k) =>
   `<span class="nh-chip nh-reveal" style="--at:${6.5 + k * .22}s"><span class="nh-dot"></span>${esc(c)}</span>`).join("");
 document.getElementById("b1").style.setProperty("--out", SCENE.beat1.out + "s");

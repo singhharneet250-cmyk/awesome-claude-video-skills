@@ -24,7 +24,8 @@ footage, is kept out of this public repo).
 |---|---|---|
 | Orbit | White spheres (one red) circle the head | `fx.py orbit` |
 | Word Orbit | Word chips circle at chin level, passing behind the head | `fx.py orbit --words … --tilt 65` |
-| Frame Escape (Frame Break) | The picture shrinks into a frame while the head and hands stay outside | `fx.py escape` |
+| Frame Escape (Frame Break) | The picture shrinks into a frame; the head breaks out over its top edge, hands out of its sides | `fx.py escape --top -0.6` (edge at eye level: the real break; the old default 0.35 sits below the chin), `--stage blur` keeps your room, `--word HEALTH --word-at 4.3` a big red word behind the head |
+| Word Behind | One huge word slams in behind your head on the real background (a hook) | `fx.py behind --word SALARY` (white; `--color red`), needs a matte |
 | Depth Scatter | One big word behind the head, one in front | `fx.py scatter` |
 | Sticky Text | A sticker that follows the speaker | `fx.py sticky` |
 | Green Screen | The room behind becomes the stage, a blur or a clip | `fx.py bgswap` |
@@ -34,12 +35,12 @@ footage, is kept out of this public repo).
 | Name | What it is | Where |
 |---|---|---|
 | Headline Wall | Real headlines on cards around the speaker | `templates/headline-wall.html` |
-| Phone Mockup | A phone beside the head with a screenshot or photo | `templates/phone-mockup.html` |
+| Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line) |
 | UI World | Glass app cards act out a task | `templates/ui-world.html` |
 | Chat Takeover | A chat: pick a contact, type, send, reply (above the head or full screen) | `templates/chat-takeover.html` |
 | Comment Bubble | A comment types the keyword, then a reply with "Open link" | `chat-takeover.html?layout=comment` |
 | Data Callout | A number with its unit and source on a glass card | `templates/overlay-callout.html` |
-| Slam Hook | A big condensed word slams in, then a line ending on a serif accent | `templates/hook-slam.html` |
+| Slam Hook | A big condensed word slams in, then a line ending on a serif accent | `templates/hook-slam.html` (`?slam1=Follow&line1=Nutrition Hub for&accent1=more.&support1=`, `?dur=2.2` for a short hook before a talking head; beat 2: `slam2`, `line2`, `accent2`, `chips=A\|B`) |
 
 ## Cuts and transitions
 
@@ -80,9 +81,9 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Word Wheel | `wheel` | A list rolls like a slot reel and lands on one word, with the red dot | `words`, `pick`, `kicker`, `note` |
 | Menu Switch | `menu` | A word list steps down; the dot travels; a glass card swaps per item | `items=Title\|line;…`, `imgs`, `step` |
 | Count-up Bars | `count` | A big number counts up while bars rise (last bar red) | `value`, `unit`, `decimals`, `label`, `source` (required: a real source) |
-| Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `slot=top` |
+| Toggle List | `toggle` | Switches flip on one by one in a glass card (overlay) | `items`, `title`, `times` (when each flips, e.g. `0.4,0.7`, to land on the spoken words), `slot=top` |
 | Word Split | `split` | A line opens and a check, chip or photo springs into the gap | `text=Read the\|label`, `chip`, `img`, `under` |
-| Highlighter Sweep | `highlight` | Words rise, then an red bar sweeps behind *the phrase* | `text=line\|*marked phrase*` |
+| Highlighter Sweep | `highlight` | Words rise, then a red bar sweeps behind *the phrase* | `text=line\|*marked phrase*`, `size` (default 86; 150 for a short phrase) |
 | Prompt Box | `prompt` | A question types into a pill, a cursor clicks send, an answer card rises (overlay) | `q`, `a` |
 | Shape Morph | `morph` | One ink shape becomes check → button → slider → toggle (→ chart), never cut | `states`, `label`, `hold` |
 | Big Scroll | `scroll` | One huge line slides across; its full stop is the red dot | `text`, `kicker`, `size` |
@@ -94,6 +95,7 @@ b-roll (`"template"` in `edit.json`); overlays sit over the speaker in real liqu
 | Tracking Reveal | `tracking` | Small capitals slowly open their spacing; never still (overlay: in a chip) | `text`, `dur` |
 | Comment Banner | `banner` | Two labels at the top: a topic tag and "Comment KEYWORD for the full guide" (overlay) | `top`, `line=Comment *WORD* …`, `dur` |
 | Comment CTA | `cta` | A glass card, an red "Comment KEYWORD" pill and your handle (R18's ending; overlay) | `title`, `sub`, `keyword`, `handle`, `dur` |
+| Follow Tap | `cta` + `pill=Follow&tap=1.1` | The same card with a Follow button that gets tapped and turns to "✓ Following" (owner's IMG_0428 edit, 2026-11-27) | `pill`, `tap` (seconds into the overlay), `after` (default "Following") |
 | Glass Lens | `lens` | A round glass magnifier glides to a spot in your footage and magnifies it (overlay; give it `"glass_lens": 0.35`) | `x`, `y`, `to`, `size`, `label`, `from`, `dur` |
 | Photo Scatter | `photos` | A headline in the middle; real photos pop in around it and drift outward | `imgs`, `text` |
 | Dot Grid | `dots` | A sourced share made visible: 100 dots pop in, the share fills in Logo Red while the number counts up ("7 in 10" or "70%") | `value` + `of`, or `pct`; `label`, `text`, `source` (required for a real figure) |

@@ -29,6 +29,8 @@ marked *(derived)* below adapts the playbook to video. Unmarked values come stra
 Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over every default below.
 
 1. **Logo**: the original file only (`assets/logo/`), never redrawn, regenerated or restyled; the name is not repeated beside it.
+   **Ask before adding an end card or the logo to an edit** *(owner, 2026-11-27: "Remove end card and logo", "Ask
+   before add this for future use")*: plan edits without them, and offer them as a question.
 2. **Background**: keep the real background; remove it (§4 N) only when the owner asks for that video.
 3. **Glass**: clear Liquid Glass (strength 0.9), liquid edge, glossy highlights, every card a lens (about 1.14×),
    tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
@@ -40,12 +42,20 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
 6. **Captions**: in Roman script for Punjabi or Hindi speech (Roman Punjabi for the owner's talks), word-timed from a
    local transcription, short (3 words) and placed beside the head, never over a card; the key word highlighted;
    caption words keep their legibility shadow (§6).
+   **Use captions wisely** *(owner, 2026-11-27: "Use caption wisely. Double check their position", "Use this trick in
+   future work too")*: a caption never repeats a word that is already big on screen (a slam word, a word behind the
+   head, a Highlighter Sweep, a beat); it hands over to it instead ("But for your" above, then HEALTH lands under it)
+   or stays off while the graphic says the line. Each caption line goes where the frame is clean at that moment
+   (`{top}` / `{low}` per .srt cue, §6), the screen reads top to bottom, and every position is checked on preview
+   stills against the face, hands, big words, cards and prints on clothes before the render.
 7. **Voice**: clear and natural (`voice.py`), never processed until it sounds robotic.
 8. **Quality**: full HD at maximum quality, the biggest clean file the platforms accept (`encode.py`: CRF 4 steps,
    CRF 2 delivery, AAC 320k; owner 2026-11-27 "export size as maximum as possible"), -14 LUFS; ask for the original
    camera file, not a WhatsApp copy (§7).
-9. **Process**: show the plan, stills or a 5-10 s sample before any long render; never re-render or render a full
-   film unless the owner asks for it; tell the owner how long a render will take.
+9. **Process**: **always show the plan first (timeline drawing and preview stills) and render the final video only
+   after the owner's OK** *(owner, 2026-11-27: "Always show me your plan then after my permission render the final
+   video")*, for every edit, however short; never re-render or render a full film unless the owner asks for it; tell
+   the owner how long a render will take.
 10. **Sound**: original music (`score.py`) and the SFX kit by default; a licensed track, an AI voice, AI b-roll or any
    tool that spends credits only with the owner's OK.
 11. **Claims**: every number has a unit and a source; authorised-claim wording, no cure claims; supplements carry
@@ -299,6 +309,12 @@ All of these are implemented in `assets/brand.css`.
   - A busy room needs one of those files. The AI segmenter (MediaPipe) wasn't allowed to install in the
     cloud session.
   - Use it for a hook or a reveal, 2.5–4 s, at most once per reel.
+  - **Make it break** *(owner, 2026-11-27: "Frame breaks didn't work")*: `--top -0.6` puts the frame's top edge at eye
+    level, so the turban and head break out over it; with the old default (below the chin) the head only sits above a
+    small box and nothing breaks. The frame and its word hold still (the median face in the window).
+    `--word HEALTH --word-at T` adds a big Logo Red Bebas word on the stage behind the head; `--stage blur` keeps the room.
+  - **Word Behind** (`fx.py behind --word SALARY`): the hook version without a frame, a huge white word slams in behind
+    the head on the real background (04 Slam, thud). Captions then go in the top band (`captions.py --position top`).
 - **I · Chat takeover (R4, owner request 2026-11-25).** `templates/chat-takeover.html`, rendered `--transparent`.
   - The sequence: a contact list → one contact picked (the rest blur away) → a message types out with an
     red caret → the red send button → typing dots → a reply.
@@ -471,6 +487,12 @@ All of these are implemented in `assets/brand.css`.
     sends every caption to red.
   - Caption words only. The logo, glass cards, callouts, kickers, data metrics and the serif
     accent keep the §2 palette.
+- **Captions hand over to big words, never repeat them** (standing decision 6): drop a caption, or cut it to the words
+  the graphic doesn't show, while a slam word, a word behind the head, a Highlighter Sweep or a beat says the line.
+  When positions must differ inside one video, start the cue's text in the .srt with `{top}` (text bottom y 330, just
+  under the top safe line), `{low}` (text bottom y 1492, e.g. under a chest print inside a frame break), `{bottom}`,
+  `{mic}` or `{chest}`; colours are read from that band. Check every caption on preview stills: clear of the face,
+  hands, big words, cards and any print on the clothes, inside y 250–1500, reading top to bottom.
 - One key word per caption (a number, a unit or a claim word) goes in that key-word colour.
   Don't use scale pops or bounces.
 - Keep each caption to 2 lines at most, about 28 characters per line, on screen for 1–3 s.
@@ -572,7 +594,8 @@ every track (b-roll, effects, overlays, captions, SFX, end card).
    `ffprobe -v error -show_entries stream=codec_type,width,height,r_frame_rate:format=duration -of compact in.mp4`,
    and `python3 scripts/encode.py check in.mp4`: below full HD (a WhatsApp copy), ask for the original file first.
 2. **Check that the logo exists and matches its sha256.** If not, ask for it.
-3. **Plan beats:** hook (0–3 s), evidence or value, end card. Choose components from §4.
+3. **Plan beats:** hook (0–3 s), evidence or value, and an end card or the logo only if the owner says yes when asked
+   (standing decision 1). Choose components from §4.
 4. **Build graphics** by copying a template from `templates/` and editing only its `SCENE` object
    and copy. Keep `assets/brand.css` as the single source of truth.
    - `reel-9x16.html`: a full-frame branded reel (hook → data callout → logo end card).
