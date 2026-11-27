@@ -40,7 +40,9 @@ STYLES = {"footage": "NH-Caption", "ink": "NH-Caption-Ink", "strong": "NH-Captio
 # vertical position: event MarginV (distance from the frame bottom to the caption bottom, on 1920)
 POSITIONS = {"bottom": 520,   # §6 default: text bottom at y 1400 (73%)
              "mic": 731,      # R6 desk/mic shoots: caption centred about 58%, above a bottom blur band
-             "chest": 885}    # R5 chest line: caption centred about 50%
+             "chest": 885,    # R5 chest line: caption centred about 50%
+             "top": 1590}     # text bottom at y 330, just under the top safe line: for edits where big words behind
+                              # the head or a frame break fill the space around it (owner's IMG_0371 hook, 2026-11-27)
 # typeface accent (R6): one word per caption in Instrument Serif Italic, same colour as the caption
 SERIF = r"{\fnInstrument Serif\b0\i1\fs80}"
 SERIF_WORDS = set()

@@ -303,6 +303,12 @@ All of these are implemented in `assets/brand.css`.
   - A busy room needs one of those files. The AI segmenter (MediaPipe) wasn't allowed to install in the
     cloud session.
   - Use it for a hook or a reveal, 2.5–4 s, at most once per reel.
+  - **Make it break** *(owner, 2026-11-27: "Frame breaks didn't work")*: `--top -0.6` puts the frame's top edge at eye
+    level, so the turban and head break out over it; with the old default (below the chin) the head only sits above a
+    small box and nothing breaks. The frame and its word hold still (the median face in the window).
+    `--word HEALTH --word-at T` adds a big Logo Red Bebas word on the stage behind the head; `--stage blur` keeps the room.
+  - **Word Behind** (`fx.py behind --word SALARY`): the hook version without a frame, a huge white word slams in behind
+    the head on the real background (04 Slam, thud). Captions then go in the top band (`captions.py --position top`).
 - **I · Chat takeover (R4, owner request 2026-11-25).** `templates/chat-takeover.html`, rendered `--transparent`.
   - The sequence: a contact list → one contact picked (the rest blur away) → a message types out with an
     red caret → the red send button → typing dots → a reply.

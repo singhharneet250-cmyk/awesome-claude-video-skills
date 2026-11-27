@@ -371,6 +371,63 @@ def rounded_mask(W, H, x0, y0, x1, y1, rad):
     return m.astype(np.float32) / 255
 
 
+WHITE_GRAD = ((0.0, (255, 255, 255)), (0.55, (255, 255, 255)), (1.0, (214, 227, 242)))   # captions over footage: white → ice
+
+
+def behind_frame(frame_f, matte, face, t, a, W, H, cache):
+    """Word behind the head (owner, 2026-11-27: a hook that grabs attention): one huge Bebas word in white (or Logo
+    Red) on the real background, behind the speaker, landing with the 04 Slam (2.5x to 1x, motion blur clearing,
+    expo-out, no overshoot). The person stays in front through the matte; the background is never replaced."""
+    k = envelope(t, a.s, a.e)
+    if k <= 0:
+        return frame_f
+    if "sprite" not in cache:
+        layer, alpha = escape_word(a.word, face, W, H, 0.62 * H, WHITE_GRAD if a.color != "red" else ORANGE_GRAD, 0.92)
+        ys, xs = np.nonzero(alpha > 0.002)
+        y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
+        cache["sprite"] = (np.dstack([layer[y0:y1, x0:x1], alpha[y0:y1, x0:x1]]), (x0 + x1) / 2, (y0 + y1) / 2)
+    spr, cx, cy = cache["sprite"]
+    p = min(max((t - a.s) / 0.32, 0.0), 1.0)
+    p = 1 - (1 - p) ** 5                                      # expo-out: settles exactly at 1
+    sc = 2.5 - 1.5 * p
+    op = min(1.0, max((t - a.s) / (0.32 * 0.55), 0.0)) * (k if t > a.s + IN_S else 1.0)
+    h, w = spr.shape[:2]
+    sw, sh = max(1, int(w * sc)), max(1, int(h * sc))
+    big = cv2.resize(spr, (sw, sh), interpolation=cv2.INTER_LINEAR)
+    blur = 14 * (1 - p) * W / 1080
+    if blur > 0.6:
+        big = cv2.GaussianBlur(big, (0, 0), blur)
+    canvas = np.zeros((H, W, 4), np.float32)
+    X0, Y0 = int(cx - sw / 2), int(cy - sh / 2)
+    xa, ya, xb, yb = max(0, X0), max(0, Y0), min(W, X0 + sw), min(H, Y0 + sh)
+    if xb > xa and yb > ya:
+        canvas[ya:yb, xa:xb] = big[ya - Y0:yb - Y0, xa - X0:xb - X0]
+    al = canvas[..., 3:4] * op
+    out = frame_f * (1 - al) + canvas[..., :3] * al
+    m = matte[..., None]
+    return out * (1 - m) + frame_f * m                       # the speaker in front of the word
+
+
+def escape_word(word, face, W, H, top_t, stops=None, width=0.84):
+    """The frame break's word: Bebas Neue capitals in the Logo Red gradient, as wide as the stage allows, sitting
+    just above the frame so the head that breaks out of the frame covers its lower part (owner, 2026-11-27)."""
+    from PIL import Image, ImageFont
+    bebas = HERE.parent / "assets" / "fonts" / "BebasNeue-Regular.ttf"
+    word = word.upper()
+    size = int(0.36 * H)
+    font = ImageFont.truetype(str(bebas), size)
+    while size > 40 and font.getbbox(word)[2] - font.getbbox(word)[0] > width * W:
+        size = int(size * 0.94); font = ImageFont.truetype(str(bebas), size)
+    l, tp, r, b = font.getbbox(word)
+    head_top = (face["chin"] - 1.55 * face["fh"]) * H             # the top of the head (turban included), roughly
+    cy = max(0.13 * H + (b - tp) / 2, head_top + 0.18 * face["fh"] * H)   # the head covers the lower part of the word
+    cy = min(cy, top_t - (b - tp) / 2 - 0.02 * H)                   # and the word stays above the frame
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    im = text_grad(im, (W / 2, cy), word, font, anchor="mm", stops=stops or ORANGE_GRAD)
+    arr = np.asarray(im).astype(np.float32) / 255
+    return arr[..., :3], arr[..., 3]
+
+
 def escape_frame(frame_f, matte, face, t, a, W, H, stage_cache):
     k = envelope(t, a.s, a.e)
     if k <= 0:
@@ -390,6 +447,13 @@ def escape_frame(frame_f, matte, face, t, a, W, H, stage_cache):
             stage_cache["ice"] = WHITE * (1 - g) + ICE * g
         stage = stage_cache["ice"]
     out = stage.copy()
+    if getattr(a, "word", None):                       # a big word on the stage, behind the frame and the head
+        if "word" not in stage_cache:
+            stage_cache["word"] = escape_word(a.word, face, W, H, top_t)
+        layer, alpha = stage_cache["word"]
+        wk = ease_out(min(max((t - (a.word_at if a.word_at is not None else a.s + 0.6)) / 0.35, 0.0), 1.0)) * k
+        if wk > 0:
+            out = out * (1 - alpha[..., None] * wk) + layer * alpha[..., None] * wk
     sh = rounded_mask(W, H, x0, y0 + 22 * k, x1, y1 + 22 * k, rad + border)
     sh = cv2.GaussianBlur(sh, (0, 0), 28 * W / 1080)
     out = out * (1 - 0.22 * k * sh[..., None]) + INK * 0.22 * k * sh[..., None]
@@ -408,7 +472,7 @@ def escape_frame(frame_f, matte, face, t, a, W, H, stage_cache):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     import fx_pack
-    ap.add_argument("effect", choices=["orbit", "escape", *fx_pack.EFFECTS])
+    ap.add_argument("effect", choices=["orbit", "escape", "behind", *fx_pack.EFFECTS])
     ap.add_argument("video"); ap.add_argument("out")
     ap.add_argument("--at", required=True, metavar="START-END")
     ap.add_argument("--matte", default=None, help="head | wall | a matte video (white = person)")
@@ -417,7 +481,13 @@ def main():
     ap.add_argument("--radius", type=float, default=1.8); ap.add_argument("--speed", type=float, default=30)
     ap.add_argument("--tilt", type=float, default=0.0); ap.add_argument("--no-ring", action="store_true")
     ap.add_argument("--no-hands", action="store_true", help="orbit: don't let detected hands pass in front")
-    ap.add_argument("--stage", choices=["ice", "blur"], default="ice"); ap.add_argument("--top", type=float, default=0.35)
+    ap.add_argument("--stage", choices=["ice", "blur"], default="ice")
+    ap.add_argument("--top", type=float, default=0.35,
+                    help="escape: the frame's top edge, in face heights below the chin; -0.6 puts it at eye level, so the "
+                         "head breaks out over the edge (the frame break)")
+    ap.add_argument("--word", help="escape: one big word (Bebas, Logo Red) on the stage behind the head, e.g. HEALTH")
+    ap.add_argument("--word-at", type=float, default=None, help="escape: when the word appears (default: 0.6 s into the effect)")
+    ap.add_argument("--color", choices=["white", "red"], default="white", help="behind: the word's colour")
     ap.add_argument("--text", help="sticky: the sticker's words"); ap.add_argument("--badge", help="sticky: a short number or tag in an orange badge")
     ap.add_argument("--anchor", choices=["chest", "head", "hand"], default="chest", help="sticky: what it sticks to")
     ap.add_argument("--mode", choices=["sweep", "line"], default="sweep",
@@ -436,10 +506,12 @@ def main():
     if not 0 <= a.tilt <= 85:
         sys.exit("--tilt must be 0 to 85 degrees.")
     matte_src = a.matte or ("head" if a.effect in ("orbit", "scatter") else None)
-    if a.effect in ("escape", "bgswap") and matte_src in (None, "head"):
+    if a.effect == "behind" and not a.word:
+        sys.exit("behind needs --word (one short word, e.g. SALARY).")
+    if a.effect in ("escape", "bgswap", "behind") and matte_src in (None, "head"):
         sys.exit(f"The {a.effect} needs a real outline of the speaker: --matte wall (plain wall behind them) "
                  "or --matte FILE (a cut-out or matte video from ghost-editor, CapCut or Runway).")
-    needs_matte = a.effect in ("orbit", "escape", "scatter", "bgswap")
+    needs_matte = a.effect in ("orbit", "escape", "scatter", "bgswap", "behind")
 
     import person_matte as pm
     W, H = info["w"], info["h"]
@@ -471,6 +543,10 @@ def main():
         cls = fx_pack.EFFECTS[a.effect]
         pack = cls(a, W, H, fh_px, info) if a.effect in fx_pack.NEEDS_INFO else cls(a, W, H, fh_px)
     stage_cache, wall_q, tracked = {}, None, 0
+    steady = None
+    if a.effect in ("escape", "behind"):                    # the frame and the word hold still: the median face in the window
+        tt = np.asarray(faces.t, dtype=float); sel = (tt >= a.s) & (tt <= a.e)
+        steady = {kk: float(np.median(v[sel] if sel.any() else v)) for kk, v in faces.v.items()}
     with Writer(a.out, info, a.video) as wr:
         for k, t, frame in frames(a.video, info):
             head, hands, hand_mask = tracker.update(frame)
@@ -490,15 +566,17 @@ def main():
             elif a.effect == "orbit":
                 res = orbit_frame(f, matte, face, t, a, sprites, W, H)
             else:
-                res = escape_frame(f, matte, face, t, a, W, H, stage_cache)
+                res = (behind_frame if a.effect == "behind" else escape_frame)(f, matte, steady or face, t, a, W, H, stage_cache)
             wr.write(np.clip(res * 255 + 0.5, 0, 255).astype(np.uint8))
     if wall_q is not None and wall_q > 12:
         print(f"note: the wall isn't very plain (ΔE {wall_q:.0f}); check the outline, or use a matte file")
     n_win = max(1, int((a.e - a.s) * info["fps"]))
     if tracked < 0.8 * n_win:
         print(f"note: the head was tracked in {tracked / n_win:.0%} of the effect's frames; the rest use the slower face track")
-    sound = {"sticky": ("pop", 0.12, 0), "wipe": ("swish", 0.8, -2)}.get(a.effect, ("whoosh", 0.25, -3))
+    sound = {"sticky": ("pop", 0.12, 0), "wipe": ("swish", 0.8, -2), "behind": ("thud", 0.18, 0)}.get(a.effect, ("whoosh", 0.25, -3))
     cues = [{"t": round(a.s + sound[1], 3), "sfx": sound[0], "gain": sound[2], "what": f"{a.effect} in"}]
+    if a.effect == "escape" and a.word:                    # the word behind the head lands with a soft thud
+        cues.append({"t": round((a.word_at if a.word_at is not None else a.s + 0.6) + 0.12, 3), "sfx": "thud", "gain": -2, "what": f"word {a.word}"})
     Path(str(Path(a.out).with_suffix("")) + ".sfx.json").write_text(json.dumps(cues, indent=2))
     print(f"wrote {a.out} ({a.effect} {a.s:.2f}-{a.e:.2f} s, matte: {matte_src}); SFX cue → {Path(a.out).with_suffix('')}.sfx.json")
 

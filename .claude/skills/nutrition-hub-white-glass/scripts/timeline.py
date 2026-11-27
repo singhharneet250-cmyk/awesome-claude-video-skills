@@ -50,7 +50,7 @@ import encode  # noqa: E402  (high-quality encodes: WORK between steps, FINAL fo
 GRADE = "eq=brightness=0.02:contrast=0.96:saturation=0.92,colorbalance=rh=-0.01:bh=0.015"
 TONEMAP = "zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,"
 HOOK, MIN_SHOT, MAX_SHOT, MIN_GAP, FX_MIN = 1.5, 1.0, 4.0, 1.0, 1.55
-EFFECTS = ("orbit", "escape", "sticky", "wipe", "pullback", "scatter", "bgswap")   # fx.py (§4 G, H, K)
+EFFECTS = ("orbit", "escape", "behind", "sticky", "wipe", "pullback", "scatter", "bgswap")   # fx.py (§4 G, H, K)
 RHYTHM_GAP = 6.0     # measured: the references change the picture every 1-2.5 s (motion pieces), 4-6 s (talking heads)
 
 
@@ -168,7 +168,7 @@ def check(e, motion=False):
             bad("FAIL", f"{tag}: needs at least {FX_MIN} s inside the take")
         if any(b["start"] < f["end"] and f["start"] < b["end"] for b in br):
             bad("FAIL", f"{tag}: overlaps b-roll; effects follow the speaker, who isn't on screen then")
-        if f.get("effect") in ("escape", "bgswap") and f.get("matte") in (None, "head"):
+        if f.get("effect") in ("escape", "bgswap", "behind") and f.get("matte") in (None, "head"):
             bad("FAIL", f"{tag}: needs \"matte\": \"wall\" or a cut-out / matte video")
         if f.get("effect") == "sticky" and not f.get("text"):
             bad("FAIL", f"{tag}: a sticker needs \"text\"")
@@ -508,12 +508,12 @@ def render(e):
     for i, f in enumerate(sorted(e.get("effects", []), key=lambda f: f["start"])):
         nxt = work / f"03_fx{i}_{f['effect']}.mp4"
         cmd = [PY, HERE / "fx.py", f["effect"], cur, nxt, "--at", f"{f['start']}-{f['end']}"]
-        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before", "mode"):
+        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before", "mode", "top", "word", "word_at", "color"):
             if k in f:
                 v = f[k]
                 if k in ("matte", "bg", "before") and v not in ("wall", "head", "stage", "blur"):
                     v = str((base / v).resolve())
-                cmd += [f"--{k}", v]
+                cmd += [f"--{k.replace('_', '-')}", str(v)]
         if f["effect"] == "wipe" and "before" not in f:          # before = the same reframe without the grade
             raw = work / "00_ungraded.mp4"
             if not raw.is_file():
