@@ -153,7 +153,9 @@ The colours of R8–R16 (warm off-white, peach and mint, lavender, forest green,
 
 - **In the repo:** nutrition-hub-white-glass (the Liquid Glass system), **video-shotcraft** (124 shot recipes, the
   Ink Press promo, Freesound SFX; Apache-2.0), **Cinetic**, **Product Film**, **3D Camera Captions**, molecular-film,
-  use-3d-software, halfsize; plugins **Remotion** and **HyperFrames** (`.claude/settings.json`); Blender MCP and
+  use-3d-software, halfsize, **Shorts** (claude-shorts: long video to clips, local and free), **Manim** (animated
+  science diagrams), **Lottie** (small vector animations), **OpenMotion** (its cloud studio: only with your OK, credits);
+  plugins **Remotion** and **HyperFrames** (`.claude/settings.json`); Blender MCP and
   OpenChatCut MCP; Sherlock (`Handle Check`).
 - **Ideas library:** prompt-motion.com (240 Claude motion videos with their prompts; `reference/learned-tools.md`).
 - **On the owner's computer, if wanted:** DaVinci Resolve (opens `timeline.py export`), pen.dev, Rive, ghost-editor

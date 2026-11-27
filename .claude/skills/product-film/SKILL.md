@@ -1,6 +1,6 @@
 ---
 name: product-film
-description: Companion skill (vendored from github.com/Rieranthony/product-film-skill @ fe11efc, MIT). For any Nutrition Hub video, load nutrition-hub-white-glass first: its brand rules win wherever they disagree (the Liquid Glass palette, type and motion are the brand's design system). Make a showreel-grade product film (landing-page loop, launch video, promo, demo reel, social cut) in code with Remotion, built on the product's own design system, components and voice. Use when someone asks for a product video, landing video, promo, launch film, explainer or "motion design video" for their app, SaaS or codebase. It asks what to include, then covers design discovery, story, music sync, transitions, review loops and a verified final render.
+description: "Companion skill (vendored from github.com/Rieranthony/product-film-skill @ fe11efc, MIT). For any Nutrition Hub video, load nutrition-hub-white-glass first: its brand rules win wherever they disagree (the Liquid Glass palette, type and motion are the brand's design system). Make a showreel-grade product film (landing-page loop, launch video, promo, demo reel, social cut) in code with Remotion, built on the product's own design system, components and voice. Use when someone asks for a product video, landing video, promo, launch film, explainer or \"motion design video\" for their app, SaaS or codebase. It asks what to include, then covers design discovery, story, music sync, transitions, review loops and a verified final render."
 ---
 
 # Product film
