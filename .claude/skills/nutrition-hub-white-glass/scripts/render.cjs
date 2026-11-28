@@ -87,6 +87,10 @@ async function main() {
   // after every seek. --flat keeps solid colours (--flat-type is the old name).
   if (o.flat === undefined && o["flat-type"] === undefined && o["glass-mask"] === undefined)
     await page.addScriptTag({ content: fs.readFileSync(path.join(__dirname, "..", "assets", "gradients.js"), "utf8") });
+  // --css look.css: a look for one video, added after the brand's own styles (owner, 2026-11-28: a reference's colours
+  // on the glass cards). The mask pass still hides everything inside .nh-glass, so a colour layer on .nh-glass::after
+  // tints the real glass without changing its shape.
+  if (o.css) await page.addStyleTag({ content: fs.readFileSync(path.resolve(o.css), "utf8") });
 
   // Real-glass passes (SKILL.md §4 A): the content pass leaves glass panels clear; the mask pass draws only them
   if (o["real-glass"] !== undefined) await page.addStyleTag({ content: `
