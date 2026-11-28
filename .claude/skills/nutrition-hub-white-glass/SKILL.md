@@ -33,7 +33,8 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
    before add this for future use")*: plan edits without them, and offer them as a question.
 2. **Background**: keep the real background; remove it (§4 N) only when the owner asks for that video.
 3. **Glass**: clear Liquid Glass (strength 0.9), liquid edge, glossy highlights, every card a lens (about 1.14×),
-   tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
+   tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A). This is the
+   `liquid` look; the owner can pick another look per video (decision 13).
 4. **Accent colour: Logo Red** *(2026-11-27)*: `#D30204`, measured from the red "H" of the original logo (highlight
    `#FC2B16`, deep `#940102`; text `#C40205`), replaces the old signal orange everywhere. The token names
    (`--nh-orange`, `ORANGE`) stay for compatibility and now hold the red.
@@ -65,6 +66,19 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
     a varied-diet line (§8).
 12. **Repository**: never remove the installed skills or plugins; merge to `main` only on the owner's yes; keep the
     owner's personal details private.
+13. **Looks: ask before every final render** *(2026-11-28: "Use both the reference and ask which one to choose before
+    final rendering")*. Three looks for the glass cards and captions, set with `"look"` in `edit.json`:
+    - `liquid` (default): clear Liquid Glass tinted rose to ice, ink words; captions white to ice, Logo Red key word.
+    - `aura-rose`: the grading of the owner's reference (the Veri film): the real glass tinted from inside with a rose to
+      mauve aura and one soft rose bloom (#C07372, #615364, sampled from the reference), white words; captions white to
+      warm paper (#F2E6DD), rose key word (#E8968F).
+    - `aura-red`: the same grading in the brand reds (#940102 to Logo Red #D30204, a #FC2B16 bloom), white words, the
+      switches white with Logo Red knobs; captions white to warm paper, Logo Red key word (owner: "Use red colour in
+      grading").
+    Before the final render run `python3 scripts/timeline.py looks edit.json` (one card and one caption from this video
+    in all three looks, about a minute), show the owner the sheet, ask which one, set `"look"`, then render. The
+    looks live in `assets/looks/*.css` (render.cjs `--css`); everything else (logo, Logo Red elsewhere, type, motion)
+    stays the same in every look.
 
 ## 1. Logo: always the original file
 
@@ -344,8 +358,8 @@ All of these are implemented in `assets/brand.css`.
   |---|---|---|
   | Sticky text | `fx.py sticky --text "3–5 g a day" --badge 12 --anchor chest\|head\|hand`: a porcelain sticker that follows the speaker | 2–6 words; one sticker on screen |
   | Before + after | `fx.py wipe --before raw.mp4`: a white light bar sweeps right to left between "Before" and "After" chips. `--mode line` is the attention style of the owner's liquid-glass reference (R18): the divider keeps swinging with a glass ‹ › handle at chest height, labels at the top (`--words "Before,After"`) under an optional headline pill (`--text "Same reel. Watch the line."`) | Only edits, grades or product views. Never body, health or results comparisons (§8). |
-  | Pull-back reveal | `fx.py pullback`: the picture pulls back into a Liquid Glass editor (checklist, timeline with the take's real waveform), then pushes back in | — |
-  | Depth scatter | `fx.py scatter --words "Label,first"`: the first word (white) behind the head, the second (red) in front; letters fly in from scattered depths | Two short words only |
+  | Pull-back reveal | `fx.py pullback`: the picture pulls back into a Liquid Glass editor (title bar, side list, timeline with the take's real waveform), then pushes back in. The picture keeps its 9:16 shape at one scale (52%) all the way, so zoom out and zoom in match and the speaker is never stretched; the title bar sits inside the safe area. `--text` puts the spoken line in the title bar; `--items "Vitamin D3,Omega-3,…" --list-title "In this reel"` makes the side list the video's own, numbered (the default edit checklist means nothing to viewers) | — |
+  | Depth scatter | `fx.py scatter --words "Label,first"`: the first word (white) behind the top of the head, the second (red) in front on the upper chest, both inside the safe area; letters fly in from scattered depths. Start it 0.6 s before the first word is said (it lands then); `--word-at` lands the second word on its own spoken word. Placement holds on the speaker's median face, so a print on a shirt can't pull it away. Give it a real cut-out (`"matte": "matte.mp4"` from `person_cutout.py --matte-out`): the head oval leaves round holes in the letters | Two short words only |
   | Green screen | `fx.py bgswap --matte wall\|FILE --bg clip\|image\|stage\|blur`: the room behind the speaker becomes another background | Needs a real outline. Backgrounds are your own, licensed or the stage; never memes or other people's footage. |
   | Headline wall | `templates/headline-wall.html`: porcelain cards with a highlighted phrase pop in around the speaker | Real headlines only, quoted, with outlet and date (§8); the template's example cards say "Example" |
   | Phone mockup | `templates/phone-mockup.html?side=left\|right&screen=/abs/shot.png`: a porcelain phone swings in beside the head | A real screenshot or product photo, never a redrawn label |
@@ -681,6 +695,7 @@ inputs in the last column.
 | An animated science or maths diagram (absorption, a dose curve, a ratio, a graph that draws itself) | `manim-composer` to plan, then `manimce-best-practices` to build (vendored, MIT; `pip install manim`) | White or ice background, ink type in Inter, Logo Red #D30204 as the one accent, no shadows beside words, unit and source on every number; render a clip and place it with `timeline.py` |
 | A small vector animation as a Lottie file (icon, check mark, loader, stat counter, lower third) for the app, the website, Remotion or HyperFrames | `text-to-lottie` skill (vendored, MIT; Skottie player in its `player/` folder) | §2 palette, §5 critically damped motion (no bounce), no shadows beside words; never the logo (use the original file as a layer) |
 | A whole film made in OpenMotion Cloud (templates, recreating a reference, AI media) | `openmotion` skills (vendored, Apache-2.0), only with the owner's OK: the footage goes to their cloud and generation spends credits; connect from the owner's own app (this cloud session can't reach it) | All the owner's standing decisions; nothing it generates replaces the real logo, products or the owner's voice |
+| An AI still or clip the owner can't film (generic b-roll: sunlight through an office window, vegetables on a table; a background plate or texture) | `open-generative-ai` skill (vendored, MIT; Flux, Midjourney, Kling, Veo, Sora, Seedance… through MuAPI), only with the owner's OK for that job: every generation spends MuAPI credits | Never the logo, products, labels, results or a real person's face or body (face swap and product shots are blocked); disclose AI; grade it and cut it in as 1-4 s b-roll |
 | Ideas: 240 Claude motion videos with the prompt or skill behind each | prompt-motion.com (allowed in this repo's cloud environment; `reference/learned-tools.md`) | Borrow the technique, rebuild it in Liquid Glass |
 | Finish or re-cut the edit on a desktop editor | DaVinci Resolve via `timeline.py export` (.otio) | Effects are markers; render them with `timeline.py render` |
 | Royalty-free music | Mixkit (free licence covers social and ads, no attribution; check each track's licence page) or Epidemic Sound with a commercial plan | 18–22 dB under the voice |

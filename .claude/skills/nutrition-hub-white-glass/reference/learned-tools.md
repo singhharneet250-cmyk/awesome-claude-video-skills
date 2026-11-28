@@ -67,6 +67,7 @@ ours lively; look at the 2 fps contact sheet as the test did.
 | `cinetic` | github.com/Leonxlnx/cinetic @ f4bbfc8 | MIT | Launch, product and promo films from code, held to measured gates (words in the middle, one element carried, hidden cuts, copy check, `forensics.py`). Its own rule says a supplied brand wins, so its "no orange", "no serif" and "no glassmorphism" house bans don't apply to us. |
 | `product-film` | github.com/Rieranthony/product-film-skill @ fe11efc | MIT | A product film on the brand's design system, cut to music on measured beats (`scripts/beats.py`), with stills and verify steps |
 | `camera-3d-captions` | github.com/heygen-com/hyperframes-community-skills @ ba7a0bb | Apache-2.0 | Captions in depth around a talking head (groups at depths, a hero word behind the head, a ring of words). Its whip-ins and push-ins are camera zooms: not on our reels. |
+| `open-generative-ai` | github.com/Anil-matcha/Open-Generative-AI @ 7746dd2 (the app, described) + github.com/SamurAIGPT/muapi-skills @ 1dd7527 (core scripts, vendored) | MIT | AI images, video and music from 600+ models through MuAPI (paid credits, owner's OK first). Face swap, dress change and product shots are blocked in the scripts; logo, celebrity and try-on recipes were left out. Owner, 2026-11-28: "Add open generative ai from github". |
 
 Each description says to load `nutrition-hub-white-glass` first. Python packages they need were installed in this
 session (scipy, soundfile, pyloudnorm, librosa, fonttools, brotli, uharfbuzz, imageio-ffmpeg, opentimelineio); a fresh

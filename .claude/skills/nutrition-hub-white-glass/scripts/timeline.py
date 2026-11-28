@@ -27,7 +27,9 @@ edit.json (paths are relative to the file; every track is optional):
   "sfx":      [{"t": 4.9, "sfx": "thud"}],
   "endcard":  {"template": "reel-9x16.html", "from": 8.15},
   "motion_blur": 4,                        sub-frames per frame for rendered graphics (render.cjs --blur); 1 = off
-  "continues": true                        this edit is a middle part of a longer reel: the 1.5 s hook rule is skipped
+  "continues": true,                       this edit is a middle part of a longer reel: the 1.5 s hook rule is skipped
+  "look": "aura-red"                       glass cards and captions: liquid (default), aura-rose or aura-red; ask the owner
+                                           with `timeline.py looks edit.json` before the final render
 }
 Rules checked: no b-roll in the 1.5 s hook; b-roll shots 1-4 s with 1 s of face between; effects need
 the speaker (not over b-roll), at least 1.55 s, each kind once; overlays don't overlap; everything
@@ -140,6 +142,8 @@ def check(e, motion=False):
     def bad(level, msg):
         issues.append((level, msg))
 
+    if e.get("look", "liquid") not in LOOKS:
+        bad("FAIL", f"look \"{e.get('look')}\": use one of {', '.join(LOOKS)} (timeline.py looks edit.json shows them)")
     br = sorted(e.get("broll", []), key=lambda b: b["start"])
     for i, b in enumerate(br):
         tag = f"b-roll {b['start']:.2f}-{b['end']:.2f} ({bname(b)})"
@@ -242,8 +246,9 @@ def draw(e, D, br, ov, moments, out):
         d.line((x, top - 10, x, H - 50), fill="#EEF2F6" if t % 5 else "#DCE3EA", width=1)
         if t % (1 if total <= 20 else 5) == 0:
             d.text((x - 6, H - 44), f"{t}s", font=f12, fill=mist)
-    d.rectangle((X(0), top - 14, X(HOOK), top - 8), fill=orange)
-    d.text((X(0) + 4, top - 34), "hook: speaker only", font=f12, fill=orange)
+    if not e.get("continues"):                                   # a middle part of a longer reel has no hook
+        d.rectangle((X(0), top - 14, X(HOOK), top - 8), fill=orange)
+        d.text((X(0) + 4, top - 34), "hook: speaker only", font=f12, fill=orange)
 
     def block(r, a, b, label, fill, fg=ink, outline=None):
         y = top + r * row
@@ -339,6 +344,51 @@ def reframe(e, info, work):
 def media(work, kind, key, ext, blur=()):
     """A rendered file named by what made it (template, settings), so an old render is never picked up by mistake."""
     return work / f"{kind}-{hashlib.sha1((key + ' '.join(map(str, blur))).encode()).hexdigest()[:10]}{ext}"
+
+
+# Looks for the glass cards and captions (owner, 2026-11-28: "Use both the reference and ask which one to choose before
+# final rendering"). Set "look" in edit.json after the owner picks one from `timeline.py looks edit.json`.
+LOOKS = {"liquid": "Liquid Glass", "aura-rose": "Reference rose", "aura-red": "Red grading"}
+
+
+def look_css(look):
+    return SK / "assets" / "looks" / f"{look}.css" if look and look != "liquid" else None
+
+
+def glass_args(o, look):
+    """glass.py options for an overlay: its own strength and lens, and clear glass under an aura look (the look's
+    colour layer tints it, and its words are white)."""
+    return [*(["--strength", str(o["glass_strength"])] if "glass_strength" in o else []),
+            *(["--lens", str(o["glass_lens"])] if "glass_lens" in o else []),
+            *(["--grad", "0", "--tint", "0"] if look_css(look) else [])]
+
+
+def caption_cmd(e, cur, ass, work, look=None):
+    """The captions.py command for this edit (used by render and by looks)."""
+    cap = e["captions"]
+    cmd = [PY, HERE / "captions.py", e["_words"], "--out", ass, "--match", cur, "--position", cap.get("position", "auto")]
+    avoid = []                                  # captions never cover an overlay while it shows
+    for o in e.get("overlays", []):
+        box = overlay_box(o["template"], o["_dur"], work)
+        if box:
+            avoid.append(f"{o['start']:.2f}-{o['start'] + o['_dur']:.2f}:{box[0]},{box[1]},{box[2]},{box[3]}")
+    if avoid and cap.get("position", "auto") == "auto":
+        cmd += ["--avoid", ";".join(avoid)]
+    mw = cap.get("max_words", 3 if cap.get("position", "auto") == "auto" else None)   # short captions fit beside the head
+    if mw:
+        cmd += ["--max-words", str(mw)]
+    if cap.get("keywords"):
+        cmd += ["--keywords", ",".join(cap["keywords"])]
+    if cap.get("style"):                       # footage | strong | ink: e.g. "strong" for a darker halo on a red wall
+        cmd += ["--style", cap["style"]]
+    if cap.get("serif_words"):                 # serif accent words: NOT for the owner's videos (standing decision 6)
+        cmd += ["--serif-words", ",".join(cap["serif_words"])]
+    look = look or e.get("look", "liquid")
+    if look != "liquid":
+        cmd += ["--look", look]
+    if cap.get("blur"):
+        cmd += ["--plan-out", work / "caption_plan.json"]
+    return cmd
 
 
 def overlay_box(template, dur, work):
@@ -482,6 +532,100 @@ def export(e, render_media=True):
     return out, srt, issues
 
 
+def looks(e, at=None, cap_at=None):
+    """The same moment in every look, side by side, to ask the owner which one before the final render (owner,
+    2026-11-28). Row 1: a glass card (the first real-glass overlay, or the one on screen at --at). Row 2: a caption
+    with a key word (or the one at --caption-at). Renders single frames only: about a minute."""
+    from PIL import Image, ImageDraw, ImageFont
+    import re
+    D, info, issues, _ = check(e)
+    work = e["_base"] / "timeline_work"
+    work.mkdir(exist_ok=True)
+    sp = encode.probe(e["_src"])
+    vf = (TONEMAP if info["hdr"] else "") + encode.scale(1080, 1920, sp["w"], sp["h"]) + \
+        ("," + GRADE if e.get("grade", True) else "") + ",setsar=1"
+
+    def graded(t, out):
+        run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-ss", f"{t:.3f}", "-i", e["_src"], "-vf", vf, "-frames:v", "1", out],
+            f"graded frame at {t:.2f} s")
+
+    ovs = [o for o in e.get("overlays", []) if o.get("glass", "real") == "real"]
+    o = next((o for o in ovs if at is not None and o["start"] <= at < o["start"] + o["_dur"]), None) if at is not None else \
+        (ovs[0] if ovs else None)
+    if o is None:
+        die("No glass card on screen there: give --at a time inside a real-glass overlay.")
+    at = o["start"] + 0.75 * o["_dur"] if at is None else at
+    tl = round(max(0.0, at - o["start"]), 2)
+    tpl = SK / "templates" / o["template"]
+    base, mask = work / "looks_base.png", work / "looks_mask.png"
+    graded(at, base)
+    run(["node", HERE / "render.cjs", tpl, "--transparent", "--glass-mask", "--still", str(tl), "--out", mask], "glass shapes")
+    cards = {}
+    for look in LOOKS:
+        css = look_css(look)
+        content, vid, frame = work / f"looks_{look}.png", work / f"looks_{look}.mp4", work / f"looks_{look}_card.png"
+        run(["node", HERE / "render.cjs", tpl, "--transparent", "--real-glass", "--still", str(tl), "--out", content,
+             *(["--css", css] if css else [])], f"{LOOKS[look]}: the card")
+        run([PY, HERE / "glass.py", base, vid, "--content", content, "--mask", mask, "--at", "0", *glass_args(o, look)],
+            f"{LOOKS[look]}: real glass")
+        run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-i", vid, "-frames:v", "1", frame], "frame")
+        cards[look] = frame
+    caps = {}
+    if e.get("captions"):
+        if cap_at is None:                                  # the first cue with a key word, else the first cue
+            kws = [k.lower() for k in e["captions"].get("keywords", [])]
+            cues = []
+            if str(e["_words"]).lower().endswith(".srt"):
+                for blk in Path(e["_words"]).read_text(encoding="utf-8").strip().split("\n\n"):
+                    ln = blk.strip().splitlines()
+                    if len(ln) >= 3 and "-->" in ln[1]:
+                        t0, t1 = [sum(float(x) * m for x, m in zip(v.strip().replace(",", ".").split(":"), (3600, 60, 1)))
+                                  for v in ln[1].split("-->")]
+                        cues.append(((t0 + t1) / 2, " ".join(ln[2:]).lower()))
+            hit = next((c for c in cues if any(k in c[1] for k in kws)), cues[0] if cues else None)
+            cap_at = hit[0] if hit else None
+        if cap_at is not None:
+            cbase = work / "looks_capbase.png"
+            graded(cap_at, cbase)
+            src = work / "01_graded.mp4" if (work / "01_graded.mp4").is_file() else e["_src"]
+            for look in LOOKS:
+                ass = work / f"looks_{look}.ass"
+                run(caption_cmd(e, src, ass, work, look), f"{LOOKS[look]}: captions")
+                frame = work / f"looks_{look}_cap.png"
+                esc = str(ass).replace(":", r"\:")
+                run(["ffmpeg", "-y", "-v", "error", "-nostdin", "-loop", "1", "-framerate", "30", "-t", "0.2", "-i", cbase, "-vf",
+                     f"setpts=PTS+{cap_at:.3f}/TB,ass={esc}:fontsdir={SK / 'assets' / 'fonts'}", "-frames:v", "1", frame], "caption frame")
+                ys = []                                         # where the caption on screen at cap_at sits
+                for ln in ass.read_text(encoding="utf-8").splitlines():
+                    if ln.startswith("Dialogue:"):
+                        f = ln.split(",", 9)
+                        t0, t1 = (sum(float(x) * m for x, m in zip(v.split(":"), (3600, 60, 1))) for v in (f[1], f[2]))
+                        m = re.search(r"\\pos\(\d+,(\d+)\)", f[9])
+                        if t0 <= cap_at <= t1 and m:
+                            ys.append(int(m.group(1)))
+                caps[look] = (frame, ys)
+    fb = next((f for f in ("/usr/share/fonts/opentype/inter/Inter-SemiBold.otf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf")
+               if Path(f).is_file()), None)
+    F = ImageFont.truetype(fb, 30) if fb else ImageFont.load_default()
+    cw, chh = 360, 640
+    sheet = Image.new("RGB", (3 * cw + 20, 56 + chh + (120 if caps else 0)), "white")
+    d = ImageDraw.Draw(sheet)
+    for i, look in enumerate(LOOKS):
+        x = i * (cw + 10)
+        d.text((x + 6, 12), f"{i + 1}  {LOOKS[look]}" + ("  (now)" if look == e.get("look", "liquid") else ""), font=F, fill=(32, 43, 56))
+        sheet.paste(Image.open(cards[look]).convert("RGB").resize((cw, chh)), (x, 56))
+        if look in caps:
+            fr, ys = caps[look]
+            im = Image.open(fr).convert("RGB")
+            y = int(sorted(ys)[len(ys) // 2]) if ys else 1500
+            band = im.crop((90, max(0, y - 150), 990, min(1920, y + 40)))       # 900 x 190, scaled without squashing
+            band = band.resize((cw, round(cw * band.height / band.width)))
+            sheet.paste(band, (x, 56 + chh + 30))
+    out = e["_path"].with_suffix(".looks.png")
+    sheet.save(out)
+    return out, at, cap_at
+
+
 def render(e):
     D, info, issues, png = check(e)
     for lvl, msg in issues:
@@ -504,12 +648,13 @@ def render(e):
         spec.write_text(json.dumps([{k: v for k, v in b.items() if not k.startswith("_") and k != "template"} | {"file": b["_file"]}
                                     | ({"grade": False} if b.get("template") else {}) for b in e["broll"]]))
         nxt = work / "02_broll.mp4"
-        run([PY, HERE / "broll.py", cur, nxt, "--spec", spec, "--plan-out", work / "broll_plan.json"], "b-roll cutaways")
+        run([PY, HERE / "broll.py", cur, nxt, "--spec", spec, "--plan-out", work / "broll_plan.json",
+             *(["--hold-start", "0"] if e.get("continues") else [])], "b-roll cutaways")   # a middle part has no hook
         cur = nxt
     for i, f in enumerate(sorted(e.get("effects", []), key=lambda f: f["start"])):
         nxt = work / f"03_fx{i}_{f['effect']}.mp4"
         cmd = [PY, HERE / "fx.py", f["effect"], cur, nxt, "--at", f"{f['start']}-{f['end']}"]
-        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before", "mode", "top", "word", "word_at", "color"):
+        for k in ("words", "matte", "tilt", "spheres", "radius", "stage", "text", "badge", "anchor", "bg", "before", "mode", "top", "word", "word_at", "color", "items", "list_title"):
             if k in f:
                 v = f[k]
                 if k in ("matte", "bg", "before") and v not in ("wall", "head", "stage", "blur"):
@@ -529,26 +674,7 @@ def render(e):
     ass = None
     if cap:
         ass = work / "captions.ass"
-        cmd = [PY, HERE / "captions.py", e["_words"], "--out", ass, "--match", cur, "--position", cap.get("position", "auto")]
-        avoid = []                              # captions never cover an overlay while it shows
-        for o in e.get("overlays", []):
-            box = overlay_box(o["template"], o["_dur"], work)
-            if box:
-                avoid.append(f"{o['start']:.2f}-{o['start'] + o['_dur']:.2f}:{box[0]},{box[1]},{box[2]},{box[3]}")
-        if avoid and cap.get("position", "auto") == "auto":
-            cmd += ["--avoid", ";".join(avoid)]
-        mw = cap.get("max_words", 3 if cap.get("position", "auto") == "auto" else None)   # short captions fit beside the head
-        if mw:
-            cmd += ["--max-words", str(mw)]
-        if cap.get("keywords"):
-            cmd += ["--keywords", ",".join(cap["keywords"])]
-        if cap.get("style"):                       # footage | strong | ink: e.g. "strong" for a darker halo on a red wall
-            cmd += ["--style", cap["style"]]
-        if cap.get("serif_words"):                 # serif accent words: NOT for the owner's videos (standing decision 6)
-            cmd += ["--serif-words", ",".join(cap["serif_words"])]
-        if cap.get("blur"):
-            cmd += ["--plan-out", work / "caption_plan.json"]
-        run(cmd, "captions")
+        run(caption_cmd(e, cur, ass, work), "captions")
         if cap.get("blur"):
             nxt = work / "04_blur.mp4"
             run([PY, HERE / "bottom_blur.py", cur, nxt, "--plan", work / "caption_plan.json"], "bottom blur band (only when needed)")
@@ -556,12 +682,14 @@ def render(e):
     for i, o in sorted(enumerate(e.get("overlays", [])), key=lambda x: x[1]["start"]):
         tpl, nxt = SK / "templates" / o["template"], work / f"05_overlay{i}.mp4"
         if o.get("glass", "real") == "real":    # real glass: the footage is bent, frosted and lit under each panel (glass.py)
-            mov, mask = media(work, "overlay", o["template"], ".glass.mov", blur), media(work, "overlay", o["template"], ".mask.mov", blur)
-            run(["node", HERE / "render.cjs", tpl, "--transparent", "--real-glass", "--out", mov, *blur], f"render overlay {o['template']}")
+            look = e.get("look", "liquid"); css = look_css(look)
+            mov = media(work, "overlay", o["template"] + (f" @look={look}" if css else ""), ".glass.mov", blur)
+            mask = media(work, "overlay", o["template"], ".mask.mov", blur)
+            run(["node", HERE / "render.cjs", tpl, "--transparent", "--real-glass", "--out", mov, *blur, *(["--css", css] if css else [])],
+                f"render overlay {o['template']}" + (f" ({LOOKS[look]})" if css else ""))
             run(["node", HERE / "render.cjs", tpl, "--transparent", "--glass-mask", "--out", mask, *blur], "render its glass shapes")
-            run([PY, HERE / "glass.py", cur, nxt, "--content", mov, "--mask", mask, "--at", str(o["start"]),
-                 *(["--strength", str(o["glass_strength"])] if "glass_strength" in o else []),
-                 *(["--lens", str(o["glass_lens"])] if "glass_lens" in o else [])], "real glass over the footage")
+            run([PY, HERE / "glass.py", cur, nxt, "--content", mov, "--mask", mask, "--at", str(o["start"]), *glass_args(o, look)],
+                "real glass over the footage")
         else:                                   # "glass": "flat": the near-opaque panels, as rendered
             mov = media(work, "overlay", o["template"], ".mov", blur)
             run(["node", HERE / "render.cjs", tpl, "--transparent", "--out", mov, *blur], f"render overlay {o['template']}")
@@ -623,7 +751,9 @@ def render(e):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("action", choices=["check", "edit", "render", "export"]); ap.add_argument("edit")
+    ap.add_argument("action", choices=["check", "edit", "looks", "render", "export"]); ap.add_argument("edit")
+    ap.add_argument("--at", type=float, help="looks: a time with a glass card on screen (default: the first one)")
+    ap.add_argument("--caption-at", type=float, help="looks: a time with a caption (default: the first with a key word)")
     ap.add_argument("--no-render", action="store_true", help="export: don't render missing media (they import offline)")
     ap.add_argument("--motion", action="store_true", help="check: add head and hand moments to the drawing")
     a = ap.parse_args()
@@ -640,6 +770,11 @@ def main():
         out, issues = editor(e, a.motion)
         print(f"timeline editor: {out}\nOpen it in a browser: drag and trim, then Copy edit.json and save it over {e['_path'].name}"
               f" (or paste it back to Claude). {len(issues)} rule note(s) now.")
+        return
+    if a.action == "looks":
+        out, at, cap_at = looks(e, a.at, a.caption_at)
+        print(f"looks: {out} (card at {at:.2f} s" + (f", caption at {cap_at:.2f} s)" if cap_at is not None else ")") +
+              "\nShow the owner and ask which one; then set \"look\" in edit.json (" + ", ".join(LOOKS) + ") and render.")
         return
     if a.action == "export":
         out, srt, issues = export(e, render_media=not a.no_render)

@@ -306,6 +306,12 @@ BANDS = 6
 RAMPS = {"footage": ("#FFFFFF", "#FFFFFF", "#D6E3F2"),          # white to cool ice
          "strong": ("#FFFFFF", "#FFFFFF", "#D6E3F2"),
          "ink": ("#46668C", "#202B38", "#121922")}             # = the ink type gradient
+# Looks (owner, 2026-11-28: a reference's grading on the glass cards and captions; "use both and ask which one before
+# final rendering"). Over footage the words run white -> warm paper instead of white -> ice; aura-rose also sets the key
+# word to the reference's rose. Captions on light walls (ink) keep their colours in every look.
+LOOKS = {"liquid": None,
+         "aura-rose": {"base": ("#FFFFFF", "#FFFFFF", "#F2E6DD"), "accent": "#E8968F"},
+         "aura-red": {"base": ("#FFFFFF", "#FFFFFF", "#F2E6DD"), "accent": None}}
 
 
 def _rgb(h):
@@ -412,6 +418,8 @@ def main():
     ap.add_argument("--keywords", default="", help="comma-separated claim words to highlight when a caption has no number")
     ap.add_argument("--offset", type=float, default=0.0, help="shift every caption by this many seconds")
     ap.add_argument("--flat", action="store_true", help="solid caption colours (default: top-to-bottom brand gradients)")
+    ap.add_argument("--look", choices=sorted(LOOKS), default="liquid",
+                    help="liquid (default): white -> ice; aura-rose: white -> warm paper, rose key word (reference A); aura-red: white -> warm paper, Logo Red key word")
     ap.add_argument("--style", choices=sorted(STYLES), default=None,
                     help="footage: white words with a soft shadow (default); strong: white with a stronger shadow for busy light-and-dark backgrounds; ink: dark words for light walls and the white stage")
     ap.add_argument("--match", metavar="VIDEO", help="match the caption colours to this video: base white/ink from its caption zone, key-word colour from its own strongest colour (scripts/caption_colors.py)")
@@ -429,6 +437,7 @@ def main():
     ap.add_argument("--serif-words", default="",
                     help="comma-separated words to set in Instrument Serif Italic in the caption colour (R6 typeface accent, at most one per caption)")
     args = ap.parse_args()
+    LOOK = LOOKS[args.look]
 
     global ORANGE, SERIF_WORDS
     SERIF_WORDS = {w.strip().lower() for w in args.serif_words.split(",") if w.strip()}
@@ -535,7 +544,9 @@ def main():
                 n_lines, fs_ = len(wrap(tokens)), 62
                 top = 1920 - margin_v - n_lines * fs_ * 1.2
             events += gradient_events(ass_time(s), ass_time(e), STYLES[style], margin_v, text,
-                                      top, fs_ * 1.2, n_lines, RAMPS[style], key_ramp(acc))
+                                      top, fs_ * 1.2, n_lines,
+                                      LOOK["base"] if LOOK and style != "ink" else RAMPS[style],
+                                      key_ramp(LOOK["accent"] if LOOK and LOOK["accent"] and style != "ink" and not args.accent else acc))
         srt_blocks.append(f"{n}\n{srt_stamp(s)} --> {srt_stamp(e)}\n" + "\n".join(" ".join(l) for l in wrap(tokens)))
 
     args.out.write_text(style_header() + "\n".join(events) + "\n", encoding="utf-8")

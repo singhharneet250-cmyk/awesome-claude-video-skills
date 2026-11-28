@@ -285,7 +285,7 @@ def main():
         return
     enc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", rate, "-i", "-",
                             "-i", str(a.video), "-map", "0:v", "-map", "1:a?", *encode.WORK,
-                            "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", "-shortest", a.out], stdin=subprocess.PIPE)
+                            "-pix_fmt", "yuv420p", "-c:a", "copy", "-movflags", "+faststart", a.out], stdin=subprocess.PIPE)
     menc = subprocess.Popen(["ffmpeg", "-y", "-v", "error", "-f", "rawvideo", "-pix_fmt", "gray", "-s", f"{W}x{H}", "-r", rate, "-i", "-",
                              "-c:v", "libx264", "-crf", "4", "-pix_fmt", "yuv420p", a.matte_out], stdin=subprocess.PIPE) if a.matte_out else None
     bgs = background(a.bg, W, H, rate) if a.bg != "blur" else None

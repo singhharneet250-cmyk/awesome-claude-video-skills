@@ -149,16 +149,38 @@ class FileMatte:
         has_alpha = tags.get("alpha_mode") == "1" or any(a in st.get("pix_fmt", "") for a in ("yuva", "rgba", "argb", "bgra", "gbrap"))
         dec = ["-c:v", "libvpx-vp9"] if st.get("codec_name") == "vp9" and has_alpha else []   # ffmpeg's own VP9 decoder drops alpha
         vf = (f"alphaextract,scale={W}:{H}" if has_alpha else f"scale={W}:{H}")
-        raw = subprocess.run(["ffmpeg", "-v", "error", *dec, "-i", str(path), "-vf", vf, "-f", "rawvideo",
-                              "-pix_fmt", "gray", "-"], capture_output=True).stdout
-        self.frames = np.frombuffer(raw, np.uint8).reshape(-1, H, W)
-        if len(self.frames) == 0:
+        # streamed frame by frame (a full-length 1080x1920 matte is 4 GB in memory); effects ask for frames in order
+        self.cmd = ["ffmpeg", "-v", "error", *dec, "-i", str(path), "-vf", vf, "-f", "rawvideo", "-pix_fmt", "gray", "-"]
+        self.W, self.H, self.proc, self.pos, self.last = W, H, None, 0, None
+        cnt = subprocess.run(["ffprobe", "-v", "error", "-count_packets", "-select_streams", "v:0", "-show_entries",
+                              "stream=nb_read_packets", "-of", "csv=p=0", str(path)], capture_output=True, text=True).stdout.strip()
+        n = int(cnt) if cnt.isdigit() else 0
+        if n == 0:
             sys.exit(f"Could not read the matte video {path}.")
-        if abs(len(self.frames) - n_frames) > 2:
-            print(f"note: the matte has {len(self.frames)} frames and the footage {n_frames}; they are matched by frame number")
+        if abs(n - n_frames) > 2:
+            print(f"note: the matte has {n} frames and the footage {n_frames}; they are matched by frame number")
+
+    def _read(self):
+        buf = self.proc.stdout.read(self.W * self.H)
+        if len(buf) < self.W * self.H:
+            return None
+        self.pos += 1
+        return np.frombuffer(buf, np.uint8).reshape(self.H, self.W)
 
     def __call__(self, k):
-        return self.frames[min(k, len(self.frames) - 1)].astype(np.float32) / 255
+        if self.proc is None or k < self.pos - 1:          # first call, or a step back: start the stream again
+            if self.proc is not None:
+                self.proc.kill()
+            self.proc = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, bufsize=self.W * self.H * 2)
+            self.pos, self.last = 0, None
+        while self.pos <= k:
+            fr = self._read()
+            if fr is None:                                  # past the end: hold the last frame
+                break
+            self.last = fr
+        if self.last is None:
+            sys.exit("The matte video has no frames.")
+        return self.last.astype(np.float32) / 255
 
 
 def main():

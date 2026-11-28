@@ -230,7 +230,10 @@ class Wipe:
 class Pullback:
     def __init__(self, a, W, H, fh_px, info):
         self.a, self.W, self.H = a, W, H
-        self.rect = (0.07 * W, 0.15 * H, 0.66 * W, 0.62 * H)             # the picture inside the editor
+        # the picture inside the editor: the whole frame at one scale (52%), so it keeps its 9:16 shape all through the
+        # zoom out and back in (owner, 2026-11-27: the old box was wider than 9:16 and stretched the speaker 25%)
+        S = 0.52
+        self.rect = (0.07 * W, 0.195 * H, 0.07 * W + S * W, 0.195 * H + S * H)
         self.chrome = self._chrome(a.video, info)
 
     def _chrome(self, video, info):
@@ -242,25 +245,36 @@ class Pullback:
         d = ImageDraw.Draw(im)
         f = lambda s, b=False: ImageFont.truetype(fx.find_font(), int(s * W / 1080))
         u = W / 1080
-        d.rounded_rectangle((40 * u, 60 * u, W - 40 * u, 150 * u), int(26 * u), fill=(255, 255, 255, 235), outline=(32, 43, 56, 20))
+        TB = 0.135 * H                                                  # the title bar sits inside the Reels safe area (not under the app's header)
+        d.rounded_rectangle((40 * u, TB, W - 40 * u, TB + 90 * u), int(26 * u), fill=(255, 255, 255, 235), outline=(32, 43, 56, 20))
         for i, c in enumerate(((211, 2, 4), (201, 213, 226), (201, 213, 226))):
-            im = fx.grad_shape(im, "ellipse", (72 * u + i * 30 * u, 95 * u, 90 * u + i * 30 * u, 113 * u), c)
+            im = fx.grad_shape(im, "ellipse", (72 * u + i * 30 * u, TB + 36 * u, 90 * u + i * 30 * u, TB + 54 * u), c)
             d = ImageDraw.Draw(im)
         title = getattr(self.a, "text", None) or "Nutrition Hub · reel edit"   # --text: the line the step back is for
-        d.text((W / 2, 105 * u), title, font=f(44 if getattr(self.a, "text", None) else 30), fill=(32, 43, 56, 255), anchor="mm")
+        d.text((W / 2, TB + 45 * u), title, font=f(44 if getattr(self.a, "text", None) else 30), fill=(32, 43, 56, 255), anchor="mm")
         x0, y0, x1, y1 = self.rect
         px0 = x1 + 34 * u
         d.rounded_rectangle((px0, y0, W - 40 * u, y0 + 520 * u), int(26 * u), fill=(255, 255, 255, 240), outline=(32, 43, 56, 20))
-        d.text((px0 + 28 * u, y0 + 30 * u), "CHECKLIST", font=f(22), fill=(196, 2, 5, 255))
-        for i, item in enumerate(("Grade", "Captions", "B-roll", "Sound", "Export")):
+        items = [x.strip() for x in (getattr(self.a, "items", None) or "").split(",") if x.strip()]
+        numbered = bool(items)                    # --items: the video's own list (e.g. its chapters), numbered 01, 02...
+        if not numbered:
+            items = ["Grade", "Captions", "B-roll", "Sound", "Export"]
+        head = getattr(self.a, "list_title", None) or "CHECKLIST"
+        d.text((px0 + 28 * u, y0 + 30 * u), head.upper(), font=f(22), fill=(196, 2, 5, 255))
+        for i, item in enumerate(items[:6]):
             yy = y0 + (92 + i * 80) * u
-            done = i < 4
+            done = numbered or i < len(items) - 1
             im = fx.grad_shape(im, "ellipse", (px0 + 28 * u, yy, px0 + 62 * u, yy + 34 * u), (211, 2, 4) if done else (234, 240, 246))
             d = ImageDraw.Draw(im)
-            if done:
+            if numbered:                          # a number, not a tick: a list, not a verdict
+                d.text((px0 + 45 * u, yy + 17 * u), str(i + 1), font=f(19), fill=(255, 255, 255, 255), anchor="mm")
+            elif done:
                 d.line((px0 + 37 * u, yy + 17 * u, px0 + 44 * u, yy + 25 * u, px0 + 55 * u, yy + 10 * u), fill=(255, 255, 255, 255), width=int(4 * u))
-            d.text((px0 + 80 * u, yy + 17 * u), item, font=f(28), fill=(32, 43, 56, 255) if done else (89, 104, 121, 255), anchor="lm")
-        ty0, ty1 = 0.71 * H, 0.93 * H
+            fs = 28
+            while fs > 18 and d.textlength(item, font=f(fs)) > (W - 40 * u) - (px0 + 80 * u) - 20 * u:
+                fs -= 1                           # a long name still fits the card
+            d.text((px0 + 80 * u, yy + 17 * u), item, font=f(fs), fill=(32, 43, 56, 255) if done else (89, 104, 121, 255), anchor="lm")
+        ty0, ty1 = y1 + 0.02 * H, 0.93 * H      # the timeline sits under the picture
         d.rounded_rectangle((40 * u, ty0, W - 40 * u, ty1), int(26 * u), fill=(255, 255, 255, 240), outline=(32, 43, 56, 20))
         lanes = [(ty0 + 40 * u, [(0.0, 0.22, (234, 240, 246)), (0.24, 0.52, (201, 213, 226)), (0.54, 0.80, (234, 240, 246)), (0.82, 1.0, (201, 213, 226))]),
                  (ty0 + 110 * u, [(0.10, 0.30, (211, 2, 4)), (0.58, 0.74, (211, 2, 4))])]
@@ -319,14 +333,14 @@ class Scatter:
         rng = np.random.default_rng(7)
         self.a, self.W, self.H = a, W, H
         self.layers = []
-        for li, (word, px, color) in enumerate(((words[0], 1.7 * fh_px, fx.WHITE), (words[1], 1.25 * fh_px, fx.ORANGE))):
+        for li, (word, px, color) in enumerate(((words[0], 1.45 * fh_px, fx.WHITE), (words[1], 1.2 * fh_px, fx.ORANGE))):
             from PIL import ImageFont
             font = ImageFont.truetype(str(BEBAS), int(px))
             while px > 40 and sum(font.getlength(ch) * 1.04 for ch in word.upper()) > 0.9 * W:   # a close shot: never wider than the frame
                 px *= 0.94; font = ImageFont.truetype(str(BEBAS), int(px))
             letters = [text_sprite(ch, px, color, BEBAS, shadow=0.3) for ch in word.upper()]
             widths = [font.getlength(ch) * 1.04 for ch in word.upper()]      # the font's own advance, slightly open
-            self.layers.append({"letters": letters, "widths": widths,
+            self.layers.append({"letters": letters, "widths": widths, "px": px,
                                 "scatter": [(rng.uniform(-0.5, 0.5) * W, rng.uniform(-0.25, 0.25) * H, rng.uniform(0.4, 1.9), rng.uniform(-35, 35))
                                             for _ in letters], "behind": li == 0})
 
@@ -334,16 +348,26 @@ class Scatter:
         a, W, H = self.a, self.W, self.H
         if not a.s <= t <= a.e:
             return f
-        pin = fx.ease_out((t - a.s) / 0.6)
-        pout = fx.ease_in((t - (a.e - 0.45)) / 0.45) if t > a.e - 0.45 else 0.0
-        spread = (1 - pin) + pout
+        OUT = 0.3
+        pout = fx.ease_in((t - (a.e - OUT)) / OUT) if t > a.e - OUT else 0.0
+        # the first word lands 0.6 s in (start the effect 0.6 s before it is said); the second on --word-at if given
+        lands = [a.s + 0.6, a.word_at if getattr(a, "word_at", None) is not None else a.s + 0.6]
         fh = face["fh"] * H
         cx = face["cx"] * W
-        centres = [(cx, (face["top"] + face["chin"]) / 2 * H - 0.15 * fh), (cx, face["chin"] * H + 1.3 * fh)]
+        # first word BEHIND the top of the head (the head hides only the foot of the middle letters, so it still
+        # reads), second word in front on the upper chest; both inside the Reels safe area (13.5%-77% of the height)
+        cap = [0.72 * L["px"] for L in self.layers]
+        y0 = max(face["top"] * H - 0.68 * fh, 0.135 * H + cap[0] / 2)
+        y1 = min(face["chin"] * H + 0.75 * fh, 0.77 * H - cap[1] / 2)
+        centres = [(cx, y0), (cx, y1)]
         back = f.copy()
         out_front = []
-        for layer, (lx, ly) in zip(self.layers, centres):
+        for layer, (lx, ly), land in zip(self.layers, centres, lands):
+            dur_in = 0.6 if land == lands[0] else 0.45
+            pin = fx.ease_out((t - (land - dur_in)) / dur_in) if t > land - dur_in else 0.0
+            spread = (1 - pin) + pout
             total = sum(layer["widths"])
+            lx = min(max(lx, total / 2 + 0.05 * W), W - total / 2 - 0.05 * W)     # never off the side of the frame
             x = lx - total / 2
             for spr, w, (dx, dy, depth, rot) in zip(layer["letters"], layer["widths"], layer["scatter"]):
                 sc = 1 + (depth - 1) * spread

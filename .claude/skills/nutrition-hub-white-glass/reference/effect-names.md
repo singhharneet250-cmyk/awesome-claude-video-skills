@@ -26,7 +26,7 @@ footage, is kept out of this public repo).
 | Word Orbit | Word chips circle at chin level, passing behind the head | `fx.py orbit --words … --tilt 65` |
 | Frame Escape (Frame Break) | The picture shrinks into a frame; the head breaks out over its top edge, hands out of its sides | `fx.py escape --top -0.6` (edge at eye level: the real break; the old default 0.35 sits below the chin), `--stage blur` keeps your room, `--word HEALTH --word-at 4.3` a big red word behind the head |
 | Word Behind | One huge word slams in behind your head on the real background (a hook) | `fx.py behind --word SALARY` (white; `--color red`), needs a matte |
-| Depth Scatter | One big word behind the head, one in front | `fx.py scatter` |
+| Depth Scatter | One big word behind the top of the head, one in front on the chest | `fx.py scatter` (`--word-at` lands the second word on its spoken word; `--matte matte.mp4` from `person_cutout.py --matte-out` for a clean outline) |
 | Sticky Text | A sticker that follows the speaker | `fx.py sticky` |
 | Green Screen | The room behind becomes the stage, a blur or a clip | `fx.py bgswap` |
 
@@ -35,7 +35,7 @@ footage, is kept out of this public repo).
 | Name | What it is | Where |
 |---|---|---|
 | Headline Wall | Real headlines on cards around the speaker | `templates/headline-wall.html` (`?cards=Headline with *mark*\|Outlet · 29 Oct 2025\|x\|y\|rot;…`: real headlines only, quoted as published; `?w=420&size=34` for a close shot; `?start=`, `?stagger=`, `?hold=`) |
-| Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line) |
+| Phone Mockup | A phone beside the head with a real screenshot or photo | `templates/phone-mockup.html` (`?screen=/abs.png`, `?side=`, `?top=`, `?scale=0.85` for close shots, `?start=` and `?hold=` to fit a spoken line, `?inset=130` on the right to keep clear of the Reels like/comment/share buttons) |
 | UI World | Glass app cards act out a task | `templates/ui-world.html` |
 | Chat Takeover | A chat: pick a contact, type, send, reply (above the head or full screen) | `templates/chat-takeover.html` (`?message=`, `?reply=`, `?kicker=`, `?label=` (keep "Example chat" unless the chat is real and shared with consent), `?hold=`, `?cps=34` to fit the typing to the spoken line) |
 | Comment Bubble | A comment types the keyword, then a reply with "Open link" | `chat-takeover.html?layout=comment` |
@@ -51,7 +51,7 @@ footage, is kept out of this public repo).
 | Soft Dissolve | A 0.25 s dissolve | `broll.py --transition soft` |
 | Before + After | A light bar wipes from before to after (edits and products only) | `fx.py wipe` |
 | Watch the Line | Before + After in R18's attention style: the line keeps swinging with a glass handle, labels and a headline pill on top | `fx.py wipe --mode line --words "Before,After" --text "Same reel. Watch the line."` |
-| Pull-back Reveal | The picture pulls back into an editing screen | `fx.py pullback` (`--text "Remember: not every supplement"` puts the spoken line in the editor's title bar) |
+| Pull-back Reveal | The picture pulls back (keeping its 9:16 shape) into an editing screen | `fx.py pullback` (`--text "Remember: not every supplement"` puts the spoken line in the editor's title bar; `--items` + `--list-title` set the numbered side list, e.g. the reel's chapters) |
 
 ## Captions and type
 
@@ -111,6 +111,9 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 |---|---|---|
 | Liquid Glass | Glass panels over footage that really bend and light the video behind them; panels "materialize" | `glass.py` (automatic in `timeline.py render`; `"glass": "flat"` turns it off) |
 | Clear Glass | The house default since 2026-11-26: see-through, ink text, no shadows | `glass.py` (default; `--variant regular` for the old frosted look) |
+| Reference Rose look | The owner's reference grading: the glass tinted rose to mauve from inside with a soft bloom, white words; captions white to warm paper, rose key word | `"look": "aura-rose"` in `edit.json` (`assets/looks/aura-rose.css`, `captions.py --look`) |
+| Red Grading look | The same grading in the brand reds: deep red to Logo Red glass with a red bloom, white words; captions white to warm paper, Logo Red key word | `"look": "aura-red"` |
+| Look Sheet | One card and one caption from the video in all three looks, to ask the owner before the final render | `timeline.py looks edit.json` (`--at`, `--caption-at`) |
 | Liquid Edge | The thick rounded edge bends the picture like a drop of water | `glass.py --liquid 1.0` (0 = flat slab) |
 | Glossy Glass | Rim specular + bloom, a far-edge line, fresnel edges and a soft curved sheen | `glass.py --gloss 1.0` (0 = rim light only) |
 | Lens Cards | Every glass card is a convex lens: what is behind it is magnified ~1.14× in the middle, easing to the edge | `glass.py --lens 0.12` (default; 0 = flat), `"glass_lens"` per overlay |
