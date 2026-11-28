@@ -111,6 +111,9 @@ For a TV or laptop screen, render any scene at 16:9 with `--size 1920x1080`.
 |---|---|---|
 | Liquid Glass | Glass panels over footage that really bend and light the video behind them; panels "materialize" | `glass.py` (automatic in `timeline.py render`; `"glass": "flat"` turns it off) |
 | Clear Glass | The house default since 2026-11-26: see-through, ink text, no shadows | `glass.py` (default; `--variant regular` for the old frosted look) |
+| Reference Rose look | The owner's reference grading: the glass tinted rose to mauve from inside with a soft bloom, white words; captions white to warm paper, rose key word | `"look": "aura-rose"` in `edit.json` (`assets/looks/aura-rose.css`, `captions.py --look`) |
+| Red Grading look | The same grading in the brand reds: deep red to Logo Red glass with a red bloom, white words; captions white to warm paper, Logo Red key word | `"look": "aura-red"` |
+| Look Sheet | One card and one caption from the video in all three looks, to ask the owner before the final render | `timeline.py looks edit.json` (`--at`, `--caption-at`) |
 | Liquid Edge | The thick rounded edge bends the picture like a drop of water | `glass.py --liquid 1.0` (0 = flat slab) |
 | Glossy Glass | Rim specular + bloom, a far-edge line, fresnel edges and a soft curved sheen | `glass.py --gloss 1.0` (0 = rim light only) |
 | Lens Cards | Every glass card is a convex lens: what is behind it is magnified ~1.14× in the middle, easing to the edge | `glass.py --lens 0.12` (default; 0 = flat), `"glass_lens"` per overlay |

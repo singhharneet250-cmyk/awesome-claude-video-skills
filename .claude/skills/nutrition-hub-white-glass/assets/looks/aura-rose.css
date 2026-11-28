@@ -1,0 +1,17 @@
+/* Look "aura-rose" (owner, 2026-11-28): reference A's grading on every glass card. The real glass stays (rim,
+   refraction, gloss come from glass.py, run with --grad 0 --tint 0); a rose -> mauve aura with one soft rose bloom
+   tints it from inside, and every word on the glass turns white. Colours sampled from the reference's cards
+   (#C07372 rose, #615364 mauve). Used by timeline.py when edit.json has "look": "aura-rose". */
+.nh-glass::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(58% 75% at 86% 82%, rgba(214, 128, 124, .80), rgba(214, 128, 124, 0) 72%),
+    radial-gradient(50% 60% at 12% 14%, rgba(238, 176, 166, .45), rgba(238, 176, 166, 0) 70%),
+    linear-gradient(140deg, rgba(112, 88, 108, .74) 0%, rgba(97, 83, 100, .78) 50%, rgba(170, 104, 110, .80) 100%); }
+.nh-glass > * { z-index: 1; }
+.nh-glass, .nh-glass * { color: #FFFFFF !important; -webkit-text-fill-color: #FFFFFF !important; }
+.nh-glass .nh-kicker { color: rgba(255, 255, 255, .78) !important; -webkit-text-fill-color: rgba(255, 255, 255, .78) !important; }
+/* Toggle List switches */
+.mk-card.nh-glass > div > div:first-child { font-weight: 600 !important; }
+.mk-card.nh-glass > div > div:nth-child(2) { background: rgba(255, 255, 255, .22) !important; }
+.mk-card.nh-glass > div > div:nth-child(2) > div:nth-child(1) { background: linear-gradient(135deg, #F8C4BC, #E0928C) !important; }
+.mk-card.nh-glass > div > div:nth-child(2) > div:nth-child(2) { background: #FFFFFF !important; box-shadow: none !important; }

@@ -33,7 +33,8 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
    before add this for future use")*: plan edits without them, and offer them as a question.
 2. **Background**: keep the real background; remove it (§4 N) only when the owner asks for that video.
 3. **Glass**: clear Liquid Glass (strength 0.9), liquid edge, glossy highlights, every card a lens (about 1.14×),
-   tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A).
+   tinted soft rose to cool ice, brand ink text, no drop shadows and no glow beside words (§2, §4 A). This is the
+   `liquid` look; the owner can pick another look per video (decision 13).
 4. **Accent colour: Logo Red** *(2026-11-27)*: `#D30204`, measured from the red "H" of the original logo (highlight
    `#FC2B16`, deep `#940102`; text `#C40205`), replaces the old signal orange everywhere. The token names
    (`--nh-orange`, `ORANGE`) stay for compatibility and now hold the red.
@@ -65,6 +66,19 @@ Collected from the owner's messages, 2026-11-25 to 2026-11-27. They win over eve
     a varied-diet line (§8).
 12. **Repository**: never remove the installed skills or plugins; merge to `main` only on the owner's yes; keep the
     owner's personal details private.
+13. **Looks: ask before every final render** *(2026-11-28: "Use both the reference and ask which one to choose before
+    final rendering")*. Three looks for the glass cards and captions, set with `"look"` in `edit.json`:
+    - `liquid` (default): clear Liquid Glass tinted rose to ice, ink words; captions white to ice, Logo Red key word.
+    - `aura-rose`: the grading of the owner's reference (the Veri film): the real glass tinted from inside with a rose to
+      mauve aura and one soft rose bloom (#C07372, #615364, sampled from the reference), white words; captions white to
+      warm paper (#F2E6DD), rose key word (#E8968F).
+    - `aura-red`: the same grading in the brand reds (#940102 to Logo Red #D30204, a #FC2B16 bloom), white words, the
+      switches white with Logo Red knobs; captions white to warm paper, Logo Red key word (owner: "Use red colour in
+      grading").
+    Before the final render run `python3 scripts/timeline.py looks edit.json` (one card and one caption from this video
+    in all three looks, about a minute), show the owner the sheet, ask which one, set `"look"`, then render. The
+    looks live in `assets/looks/*.css` (render.cjs `--css`); everything else (logo, Logo Red elsewhere, type, motion)
+    stays the same in every look.
 
 ## 1. Logo: always the original file
 
